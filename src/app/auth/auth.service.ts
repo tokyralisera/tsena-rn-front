@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { LoginRequest } from './login/interfaces/login.request';
@@ -9,6 +9,9 @@ import { LoginResponse } from './login/interfaces/login.response';
   providedIn: 'root',
 })
 export class AuthService {
+  private http = inject(HttpClient)
+  private router = inject(Router)
+  
   private apiUrl = 'http://localhost:3000/auth';
   private tokenKey = 'auth_token';
   private userKey = 'user_data';
@@ -16,7 +19,6 @@ export class AuthService {
     this.hasToken()
   );
 
-  constructor(private http: HttpClient, private router: Router) {}
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http
