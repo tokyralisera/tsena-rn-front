@@ -1,5 +1,4 @@
 <div class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-
     <!-- Carte de connexion -->
     <div class="w-full max-w-md">
         <div class="bg-white rounded-2xl shadow-lg p-8">
@@ -9,8 +8,18 @@
                 <p class="text-gray-600 text-sm">Apidiro ny mombamomba anao</p>
             </div>
 
+            <!-- Message d'erreur général -->
+            <div *ngIf="errorMessage" class="alert alert-error mb-6 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="font-medium">{{ errorMessage }}</span>
+            </div>
+
             <!-- Formulaire -->
-            <form class="space-y-6">
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
                 <!-- Champ telephone -->
                 <div class="form-control w-full">
                     <label class="label pb-2">
@@ -26,7 +35,23 @@
                             </svg>
                         </div>
                         <input type="tel" placeholder="032 32 032 32"
-                            class="input input-bordered rounded-lg w-full bg-gray-50 border-gray-200 placeholder-gray-400 h-12 pl-10" />
+                            class="input input-bordered rounded-lg w-full bg-gray-50 border-gray-200 placeholder-gray-400 h-12 pl-10 transition-colors duration-200"
+                            formControlName="telephone"
+                            [class.input-error]="loginForm.get('telephone')?.invalid && loginForm.get('telephone')?.touched"
+                            [class.border-red-500]="loginForm.get('telephone')?.invalid && loginForm.get('telephone')?.touched" />
+                    </div>
+                    <div *ngIf="loginForm.get('telephone')?.invalid && loginForm.get('telephone')?.touched"
+                        class="mt-2">
+                        <div class="flex items-center text-red-600 bg-red-50 px-3 py-2 rounded-lg text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span *ngIf="loginForm.get('telephone')?.errors?.['required']">Laharana finday ilaina</span>
+                            <span *ngIf="loginForm.get('telephone')?.errors?.['pattern']">Laharana finday tsy mety
+                                (isa 10-15)</span>
+                        </div>
                     </div>
                 </div>
 
@@ -45,25 +70,46 @@
                             </svg>
                         </div>
                         <input type="password" placeholder="Teny miafina"
-                            class="input input-bordered rounded-lg w-full bg-gray-50 border-gray-200 placeholder-gray-400 h-12 pl-10" />
+                            class="input input-bordered rounded-lg w-full bg-gray-50 border-gray-200 placeholder-gray-400 h-12 pl-10 transition-colors duration-200"
+                            formControlName="password"
+                            [class.input-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                            [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" />
+                    </div>
+                    <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="mt-2">
+                        <div class="flex items-center text-red-600 bg-red-50 px-3 py-2 rounded-lg text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span *ngIf="loginForm.get('password')?.errors?.['required']">Teny miafina ilaina</span>
+                            <span *ngIf="loginForm.get('password')?.errors?.['minlength']">Teny miafina tokony ho 6
+                                marika farafahakeliny</span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Options - Centré -->
                 <div class="flex items-center justify-center pt-2">
-                    <a href="#" class="text-sm text-tsena-blue hover:underline">Adino ny teny miafina ?</a>
+                    <a routerLink="/forgot-password"
+                        class="text-sm text-blue-600 hover:underline transition-colors duration-200">Adino ny teny
+                        miafina ?</a>
                 </div>
 
                 <!-- Bouton de connexion -->
                 <button type="submit"
-                    class="btn btn-primary w-full bg-blue-700 hover:bg-blue-800 transition-all duration-300 text-white border-none text-base font-medium h-12 rounded-lg">
-                    Hiditra
+                    class="btn w-full bg-blue-700 hover:bg-blue-800 transition-all duration-300 text-white border-none text-base font-medium h-12 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    [class.opacity-50]="loginForm.invalid || isLoading" [disabled]="loginForm.invalid || isLoading">
+                    <span *ngIf="!isLoading">Hiditra</span>
+                    <span *ngIf="isLoading" class="loading loading-spinner loading-sm"></span>
                 </button>
 
                 <!-- Lien d'inscription -->
                 <div class="text-center pt-4">
                     <span class="text-sm text-gray-600">Tsy manana kaonty ? </span>
-                    <a href="#" class="text-sm text-tsena-blue hover:underline font-medium">Hisoratra anarana</a>
+                    <a routerLink="/register"
+                        class="text-sm text-blue-600 hover:underline font-medium transition-colors duration-200">Hisoratra
+                        anarana</a>
                 </div>
             </form>
         </div>

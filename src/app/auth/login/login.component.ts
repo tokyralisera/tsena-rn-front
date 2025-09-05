@@ -1,16 +1,16 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AuthService } from '../auth.service';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { LoginRequest } from './interfaces/login.request';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../auth.service';
+import { LoginRequest } from './interfaces/login.request';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss',
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
   loginForm: FormGroup;
@@ -25,10 +25,9 @@ export class LoginComponent {
     this.loginForm = this.fb.group({
       telephone: [
         '',
-        [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)],
+        [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]
       ],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
@@ -39,18 +38,24 @@ export class LoginComponent {
 
       const credentials: LoginRequest = {
         telephone: this.loginForm.value.telephone,
-        password: this.loginForm.value.password,
+        password: this.loginForm.value.password
       };
+
       this.authService.login(credentials).subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.router.navigate(['/landing']);
+          this.router.navigate(['/']);
         },
         error: (error) => {
           this.isLoading = false;
           this.errorMessage = error.error?.message || 'Erreur de connexion';
-        },
+        }
+      });
+    } else {
+      Object.keys(this.loginForm.controls).forEach(key => {
+        this.loginForm.get(key)?.markAsTouched();
       });
     }
+  
   }
 }
