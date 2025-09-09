@@ -4,21 +4,22 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { LoginRequest } from './login/interfaces/login.request';
 import { LoginResponse } from './login/interfaces/login.response';
+import { SignupRequest } from './signup/interfaces/signup.request';
+import { SignupResponse } from './signup/interfaces/signup.response';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private http = inject(HttpClient)
-  private router = inject(Router)
-  
+  private http = inject(HttpClient);
+  private router = inject(Router);
+
   private apiUrl = 'http://localhost:3000/auth';
   private tokenKey = 'auth_token';
   private userKey = 'user_data';
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(
     this.hasToken()
   );
-
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http
@@ -30,6 +31,10 @@ export class AuthService {
           this.isAuthenticatedSubject.next(true);
         })
       );
+  }
+
+  signup(credentials: SignupRequest): Observable<SignupResponse> {
+    return this.http.post<SignupResponse>(`${this.apiUrl}/signup`, credentials);
   }
 
   private setUser(user: any): void {
