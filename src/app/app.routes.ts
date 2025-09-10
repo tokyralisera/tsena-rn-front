@@ -3,6 +3,8 @@ import { LoginComponent } from './auth/login/login.component';
 import { NgModule } from '@angular/core';
 import { SignupComponent } from './auth/signup/signup.component';
 import { LandingComponent } from './landing/landing.component';
+import { HeaderComponent } from './shared/components/header/header.component';
+import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 
 export const routes: Routes = [
   {
@@ -11,6 +13,7 @@ export const routes: Routes = [
   },
   { path: 'signup', component: SignupComponent },
   { path: '', component: LandingComponent },
+  { path: 'header', component: HeaderComponent },
 ];
 
 @NgModule({

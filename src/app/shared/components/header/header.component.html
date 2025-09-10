@@ -1,0 +1,54 @@
+<!-- Fixed navbar layout with proper flex classes and improved structure -->
+<header class="w-full bg-white shadow-sm border-b border-gray-200 px-4 py-2">
+  <div class="flex items-center justify-between w-full max-w-7xl mx-auto">
+    <!-- Logo Section -->
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <span class="text-xl font-bold text-red-500">Tsena RN</span>
+    </div>
+
+    <!-- Search Section -->
+    <div class="flex-1 max-w-md mx-8">
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+        <input type="text" placeholder="Rechercher..."
+          class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+      </div>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <!-- Notification Bell -->
+      <button class="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 17h5l-5 5v-5zM10.97 4.97a.235.235 0 0 0-.02 0L9 7h6l-1.95-2.03a.235.235 0 0 0-.02 0L12 4l-1.03.97zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z">
+          </path>
+        </svg>
+        <!-- Notification indicator -->
+        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+      </button>
+
+      <!-- Messages -->
+      <button class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+          </path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+<app-sidebar></app-sidebar>
