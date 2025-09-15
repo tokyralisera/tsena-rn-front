@@ -29,6 +29,7 @@ export class AuthService {
           this.setToken(response.access_token);
           this.setUser(response.user);
           this.isAuthenticatedSubject.next(true);
+          this.redirectBasedOnRole(response.user.role);
         })
       );
   }
@@ -51,7 +52,7 @@ export class AuthService {
 
   getUser(): any {
     const user = localStorage.getItem(this.userKey);
-    return user ? JSON.stringify(user) : null;
+    return user ? JSON.parse(user) : null;
   }
 
   logout(): void {
@@ -67,5 +68,29 @@ export class AuthService {
 
   private hasToken(): boolean {
     return !!this.getToken();
+  }
+
+  getUserRole(): string {
+    const user = this.getUser();
+    return user?.role || '';
+  }
+
+  private redirectBasedOnRole(role: string): void {
+    const normalizedRole = role.trim().toUpperCase();
+
+    const roleRoutes: { [key: string]: string } = {
+      SUPERADMIN: '/home/superadmin',
+      ADMIN: '/home/admin',
+      USER: '/home/user',
+    };
+
+    const route = roleRoutes[normalizedRole];
+
+    if (route) {
+      this.router.navigate([route]);
+    } else {
+      console.warn('Rôle inconnu:', role);
+      this.router.navigate(['/error']);
+    }
   }
 }
