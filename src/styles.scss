@@ -2,3 +2,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Styles pour Font Awesome */
+fa-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Assurer que les icônes ont la bonne taille */
+fa-icon.svg-inline--fa {
+  width: 1em;
+  height: 1em;
+}

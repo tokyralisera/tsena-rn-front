@@ -6,6 +6,7 @@ import { LoginRequest } from './login/interfaces/login.request';
 import { LoginResponse } from './login/interfaces/login.response';
 import { SignupRequest } from './signup/interfaces/signup.request';
 import { SignupResponse } from './signup/interfaces/signup.response';
+import { AuthStateService } from './auth-state.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +14,7 @@ import { SignupResponse } from './signup/interfaces/signup.response';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private authStateService = inject(AuthStateService);
 
   private apiUrl = 'http://localhost:3000/auth';
   private tokenKey = 'auth_token';
@@ -30,6 +32,7 @@ export class AuthService {
           this.setUser(response.user);
           this.isAuthenticatedSubject.next(true);
           this.redirectBasedOnRole(response.user.role);
+          this.authStateService.setCurrentUser(response.user);
         })
       );
   }
@@ -58,6 +61,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
+    localStorage.removeItem('auth_token');
     this.isAuthenticatedSubject.next(false);
     this.router.navigate(['/login']);
   }
@@ -89,7 +93,6 @@ export class AuthService {
     if (route) {
       this.router.navigate([route]);
     } else {
-      console.warn('Rôle inconnu:', role);
       this.router.navigate(['/error']);
     }
   }

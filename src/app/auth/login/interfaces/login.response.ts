@@ -3,9 +3,11 @@ export interface User {
   nomUtilisateur: string;
   prenomUtilisateur: string;
   telephone: string;
-  role: string;
-  langue: string;
-  sexe: string;
+  role: 'USER' | 'ADMIN' | 'SUPERADMIN';
+  langue: 'MALAGASY' | 'FRANCAIS' | 'ENGLISH';
+  sexe: 'HOMME' | 'FEMME';
+  NIF: string;
+  STAT: string;
   isActive: boolean;
 }
 
