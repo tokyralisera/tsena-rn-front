@@ -1,79 +1,68 @@
-<div class="w-64 bg-white border-r border-gray-200 flex flex-col" style="height: calc(100vh - 64px);">
+<div class="w-64 bg-white border-r border-gray-200 flex flex-col" 
+     style="height: calc(100vh - 64px);">
+  
   <!-- Main Navigation -->
   <div class="flex-1 py-4 overflow-y-auto">
-    <!-- Active Tab - Actus (you can change this to any active tab) -->
-    <!-- <div class="px-4 mb-2">
-      <div class="flex items-center px-3 py-2 bg-blue-100 text-blue-600 rounded-lg">
-        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <span class="font-medium">Actus</span>
-      </div>
-    </div> -->
-
-    <!-- Navigation Items -->
     <nav class="px-4 space-y-1">
-      <!-- Offre -->
-      <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z">
-          </path>
-        </svg>
-        <span>Offres</span>
-      </a>
-
-      <!-- Demande -->
-      <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-            clip-rule="evenodd"></path>
-        </svg>
-        <span>Demandes</span>
-      </a>
-
-      <!-- Infos -->
-      <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-            clip-rule="evenodd"></path>
-        </svg>
-        <span>Infos</span>
-      </a>
-
-      <!-- Logistiques -->
-      <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
-          <path
-            d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z">
-          </path>
-        </svg>
-        <span>Logistiques</span>
-      </a>
+      <!-- Items du menu principal -->
+      @for (item of filterMenuByRole(mainMenuItems); track item.label) {
+        <!-- Items avec route -->
+        @if (item.route && !item.action) {
+          <a 
+            [routerLink]="item.route" 
+            routerLinkActive="bg-blue-100 text-blue-600"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors group">
+            
+            <fa-icon [icon]="item.icon" class="w-5 h-5 mr-3 flex-shrink-0"></fa-icon>
+            
+            <span class="whitespace-nowrap">{{ item.label }}</span>
+          </a>
+        }
+        
+        <!-- Items avec action -->
+        @if (item.action && !item.route) {
+          <button 
+            (click)="item.action!()"
+            class="flex items-center w-full px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors group">
+            
+            <fa-icon [icon]="item.icon" class="w-5 h-5 mr-3 flex-shrink-0"></fa-icon>
+            
+            <span class="whitespace-nowrap">{{ item.label }}</span>
+          </button>
+        }
+      }
     </nav>
   </div>
 
   <!-- Bottom Section -->
-  <div class="border-t border-gray-200 p-4 space-y-1 flex-shrink-0">
-    <!-- Mon Compte -->
-    <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-      <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-      </svg>
-      <span>Mon Compte</span>
-    </a>
-
-    <!-- Déconnexion -->
-    <a href="#" class="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-      <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd"
-          d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
-          clip-rule="evenodd"></path>
-      </svg>
-      <span>Déconnexion</span>
-    </a>
+  <div class="border-t border-gray-200 p-4 space-y-1">
+    <!-- Items du menu bas -->
+    @for (item of filterMenuByRole(bottomMenuItems); track item.label) {
+      <!-- Items avec route -->
+      @if (item.route && !item.action) {
+        <a 
+          [routerLink]="item.route" 
+          routerLinkActive="bg-blue-100 text-blue-600"
+          class="flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors group">
+          
+          <fa-icon [icon]="item.icon" class="w-5 h-5 mr-3 flex-shrink-0"></fa-icon>
+          
+          <span class="whitespace-nowrap">{{ item.label }}</span>
+        </a>
+      }
+      
+      <!-- Items avec action -->
+      @if (item.action && !item.route) {
+        <button 
+          (click)="item.action!()"
+          class="flex items-center w-full px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors group">
+          
+          <fa-icon [icon]="item.icon" class="w-5 h-5 mr-3 flex-shrink-0"></fa-icon>
+          
+          <span class="whitespace-nowrap">{{ item.label }}</span>
+        </button>
+      }
+    }
   </div>
 </div>

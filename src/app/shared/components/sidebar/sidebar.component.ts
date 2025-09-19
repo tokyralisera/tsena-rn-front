@@ -16,23 +16,26 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthStateService } from '../../../auth/auth-state.service';
 import { AuthService } from '../../../auth/auth.service';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 export interface MenuItem {
   label: string;
   icon: any;
-  route: string;
-  role: Array<'USER' | 'ADMIN' | 'SUPERADMIN'>;
+  route?: string;        
+  action?: () => void;   
+  roles: Array<'USER' | 'ADMIN' | 'SUPERADMIN'>;
 }
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [],
+  imports: [FontAwesomeModule, CommonModule, RouterModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent implements OnInit {
   currentUser: Utilisateur | null = null;
-  isExpanded = true;
 
   // Icônes Font Awesome
   faBox = faBox;
@@ -45,44 +48,51 @@ export class SidebarComponent implements OnInit {
   faUser = faUser;
   faSignOutAlt = faSignOutAlt;
   faChevronLeft = faChevronLeft;
+  faSignOut = faSignOut;
 
   mainMenuItems: MenuItem[] = [
     {
       label: 'Offres',
       icon: faBox,
       route: '/offres',
-      role: ['USER', 'ADMIN'],
+      roles: ['USER', 'ADMIN']
     },
     {
       label: 'Demandes',
       icon: faQuestionCircle,
       route: '/demandes',
-      role: ['USER', 'ADMIN'],
+      roles: ['USER', 'ADMIN']
     },
     {
       label: 'Infos Utiles',
       icon: faInfoCircle,
       route: '/infos',
-      role: ['USER', 'ADMIN'],
+      roles: ['USER', 'ADMIN', 'SUPERADMIN']
     },
     {
       label: 'Logistiques',
       icon: faTruck,
       route: '/logistiques',
-      role: ['USER', 'ADMIN'],
+      roles: ['USER', 'ADMIN']
+    },
+    {
+      label: 'Approbations',
+      icon: faCheckCircle,
+      route: '/approbations',
+      roles: ['ADMIN', 'SUPERADMIN']
     },
     {
       label: 'Utilisateurs',
       icon: faUsers,
       route: '/utilisateurs',
-      role: ['ADMIN', 'SUPERADMIN'],
+      roles: ['SUPERADMIN']
     },
     {
       label: 'Dashboard',
       icon: faChartLine,
-      route: '/offres',
-      role: ['ADMIN', 'SUPERADMIN'],
-    },
+      route: '/dashboard',
+      roles: ['ADMIN', 'SUPERADMIN']
+    }
   ];
 
   bottomMenuItems: MenuItem[] = [
@@ -90,36 +100,47 @@ export class SidebarComponent implements OnInit {
       label: 'Mon Compte',
       icon: faUser,
       route: '/profile',
-      role: ['USER', 'ADMIN', 'SUPERADMIN'],
+      roles: ['USER', 'ADMIN', 'SUPERADMIN']
     },
-        {
+    {
       label: 'Déconnexion',
       icon: faSignOut,
-      route: '/logout',
-      role: ['USER', 'ADMIN', 'SUPERADMIN'],
-    },
+      action: () => this.logout(), 
+      roles: ['USER', 'ADMIN', 'SUPERADMIN']
+    }
   ];
 
-  constructor(private authStateService: AuthStateService, private authService: AuthService){}
+  constructor(
+    private authStateService: AuthStateService, 
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    // Initialiser le currentUser depuis le localStorage
+    const userData = localStorage.getItem('user_data');
+    if (userData) {
+      this.currentUser = JSON.parse(userData);
+    }
+    
+    // S'abonner aux changements
     this.authStateService.currentUser.subscribe(user => {
       this.currentUser = user;
-    })
+      console.log('Current user in sidebar:', user);
+    });
   }
 
   logout(): void {
     this.authService.logout();
-    window.location.href = '/login'
+    window.location.href = '/login';
   }
 
   filterMenuByRole(menuItems: MenuItem[]): MenuItem[] {
-    if (!this.currentUser) return [];
-    return menuItems.filter(item => item.role.includes(this.currentUser!.role));
-  }
-
-  isMenuItemVisible(menuItem: MenuItem): boolean {
-    if (!this.currentUser) return false;
-    return menuItem.role.includes(this.currentUser.role);
+    const userRole = this.currentUser?.role;
+    if (!userRole) {
+      console.log('No user role found');
+      return [];
+    }
+    console.log('Filtering for role:', userRole);
+    return menuItems.filter(item => item.roles.includes(userRole));
   }
 }
