@@ -137,10 +137,8 @@ export class SidebarComponent implements OnInit {
   filterMenuByRole(menuItems: MenuItem[]): MenuItem[] {
     const userRole = this.currentUser?.role;
     if (!userRole) {
-      console.log('No user role found');
       return [];
     }
-    console.log('Filtering for role:', userRole);
     return menuItems.filter(item => item.roles.includes(userRole));
   }
 }

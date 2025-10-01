@@ -21,4 +21,8 @@ export class AuthStateService {
   getCurrentUser(): Utilisateur | null {
     return this.currentUserSubject.value;
   }
+
+  clearCurentUser() {
+    this.currentUserSubject.next(null)
+  }
 }
