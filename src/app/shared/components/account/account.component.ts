@@ -1,10 +1,13 @@
 import { UpdateProfileRequest } from './../../interfaces/profil.interface';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+
 import { Utilisateur } from '../../interfaces/utilisateur.interface';
-import { UsersService } from '../../services/users.services';
+import { UsersService } from '../../services/users.service';
 import { AuthStateService } from '../../../auth/auth-state.service';
-import { MessageService } from 'primeng/api';
+import { NotificationService } from '../../services/notification.service';
 
 interface SexeOption {
   label: string;
@@ -19,7 +22,7 @@ interface LangueOption {
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './account.component.html',
   styleUrl: './account.component.scss',
 })
@@ -44,7 +47,7 @@ export class AccountComponent implements OnInit {
     private fb: FormBuilder,
     private usersService: UsersService,
     private authStateService: AuthStateService,
-    private messageService: MessageService
+    private notificationService : NotificationService
   ) {
     this.accountForm = this.fb.group({
       nomUtilisateur: [
@@ -84,11 +87,7 @@ export class AccountComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        this.showToast(
-          'error',
-          'Erreur',
-          'Erreur lors du chargement du profil'
-        );
+        this.notificationService.error('Erreur lors du chargement du profil')
       },
     });
   }
@@ -127,28 +126,23 @@ export class AccountComponent implements OnInit {
           this.isLoading = false;
           if (response.data) {
             this.currentUser = response.data;
-            // S'assurer que l'utilisateur n'est pas null avant de mettre à jour le state
             if (this.currentUser) {
               this.authStateService.setCurrentUser(this.currentUser);
               this.isEditing = false;
-              this.showToast('success', 'Succes', 'Profil mis a jour avec succes');
+              this.notificationService.success('Profil mis a jour avec succes');
             }
           }
         },
         error: (error) => {
           this.isLoading = false;
-          this.showToast(
-            'error',
-            'Erreur',
+          this.notificationService.error(
             error.error?.message || 'Erreur lors de la mise a jour'
           );
         },
       });
     } else {
       this.markFromGroupTouched();
-      this.showToast(
-        'warn',
-        'Attention',
+      this.notificationService.warning(
         'Veuillez corriger les erreurs dans le formulaire'
       );
     }
@@ -167,16 +161,5 @@ export class AccountComponent implements OnInit {
     });
   }
 
-  private showToast(
-    severity: 'success' | 'error' | 'warn',
-    summary: string,
-    detail: string
-  ) {
-    this.messageService.add({
-      severity: severity,
-      summary: summary,
-      detail: detail,
-      life: 5000,
-    });
-  }
+  
 }

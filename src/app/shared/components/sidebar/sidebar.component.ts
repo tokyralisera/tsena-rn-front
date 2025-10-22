@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Utilisateur } from '../../interfaces/utilisateur.interface';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
+  faBarChart,
   faBox,
   faChartLine,
   faCheckCircle,
@@ -50,6 +51,8 @@ export class SidebarComponent implements OnInit {
   faChevronLeft = faChevronLeft;
   faSignOut = faSignOut;
 
+  //!Ne pas mettre le / dans la variable route des menu items
+
   mainMenuItems: MenuItem[] = [
     {
       label: 'Offres',
@@ -81,6 +84,12 @@ export class SidebarComponent implements OnInit {
       route: '/approbations',
       roles: ['ADMIN', 'SUPERADMIN']
     },
+        {
+      label: 'Categories',
+      icon: faBarChart,
+      route: 'category',
+      roles: ['ADMIN', 'SUPERADMIN']
+    },
     {
       label: 'Utilisateurs',
       icon: faUsers,
@@ -99,7 +108,7 @@ export class SidebarComponent implements OnInit {
     {
       label: 'Mon Compte',
       icon: faUser,
-      route: '/profile',
+      route: '', // sera défini dynamiquement
       roles: ['USER', 'ADMIN', 'SUPERADMIN']
     },
     {
@@ -126,6 +135,10 @@ export class SidebarComponent implements OnInit {
     this.authStateService.currentUser.subscribe(user => {
       this.currentUser = user;
       console.log('Current user in sidebar:', user);
+      if (user) {
+        // Route dynamique selon le rôle
+        this.bottomMenuItems[0].route = `/home/${user.role.toLowerCase()}/profile`;
+      }
     });
   }
 

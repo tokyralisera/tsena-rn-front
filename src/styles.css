@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Configuration de base */
+:root {
+  --primary: #1d4ed8;
+  --primary-focus: #1e40af;
+}
+
+/* Styles globaux */
+body {
+  @apply bg-gray-50;
+}
+
+/* DaisyUI overrides */
+.btn {
+  @apply font-medium;
+}
+
+.input, .select {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary;
+}
+
+.card {
+  @apply shadow-lg;
+}

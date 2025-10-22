@@ -1,0 +1,207 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+// Animations personnalisées
+.card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+// Boutons avec effet hover
+.btn {
+  transition: all 0.2s ease-in-out;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+// Style pour les alertes
+.toast {
+  .alert {
+    animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(8px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Animation du modal
+.modal-box {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Style pour le tableau
+.table {
+  thead {
+    tr {
+      th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        padding: 1rem;
+      }
+    }
+  }
+  
+  tbody {
+    tr {
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+      }
+      
+      td {
+        padding: 1rem;
+        vertical-align: middle;
+      }
+    }
+  }
+}
+
+// Badge avec animation
+.badge {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+// Avatar avec effet
+.avatar {
+  .placeholder {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: rotate(5deg) scale(1.1);
+    }
+  }
+}
+
+// Stats card
+.stats {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+}
+
+// Dropdown
+.dropdown {
+  &-content {
+    animation: dropdownFadeIn 0.2s ease-out;
+  }
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Loading spinner
+.loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive tweaks
+@media (max-width: 768px) {
+  .stats {
+    width: 100%;
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+// Focus states personnalisés
+input:focus,
+button:focus {
+  outline: 2px solid hsl(var(--p));
+  outline-offset: 2px;
+}
+
+// Amélioration du contraste
+.text-base-content\/60 {
+  color: hsl(var(--bc) / 0.6);
+}
+
+.text-base-content\/50 {
+  color: hsl(var(--bc) / 0.5);
+}
+
+// Gradient backgrounds
+.bg-gradient-to-br {
+  background-image: linear-gradient(
+    to bottom right,
+    var(--tw-gradient-stops)
+  );
+}
+
+// Smooth scroll
+html {
+  scroll-behavior: smooth;
+}
+
+// Sélection de texte personnalisée
+::selection {
+  background-color: hsl(var(--p) / 0.3);
+  color: hsl(var(--pc));
+}
+
+// Amélioration de la lisibilité
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
