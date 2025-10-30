@@ -11,6 +11,9 @@ import { SuperadminComponent } from './home/superadmin/superadmin.component';
 import { roleGuard } from './auth/role.guard';
 import { AccountComponent } from './shared/components/account/account.component';
 import { CategoriesComponent } from './home/admin/categories/categories.component';
+import { PaysComponent } from './home/admin/pays/pays.component';
+import { VilleComponent } from './home/admin/ville/ville.component';
+import { ApprobationOffreComponent } from './home/admin/offre/offre.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -25,10 +28,7 @@ export const routes: Routes = [
         component: UserComponent,
         canActivate: [authGuard, roleGuard],
         data: { expectedRoles: ['USER'] },
-        children: [
-          { path: 'profile', component: AccountComponent }
-          
-        ]
+        children: [{ path: 'profile', component: AccountComponent }],
       },
       {
         path: 'admin',
@@ -37,8 +37,11 @@ export const routes: Routes = [
         data: { expectedRoles: ['ADMIN'] },
         children: [
           { path: 'profile', component: AccountComponent },
-          { path: 'category', component: CategoriesComponent }
-        ]
+          { path: 'category', component: CategoriesComponent },
+          { path: 'pays', component: PaysComponent },
+          { path: 'villes', component: VilleComponent },
+          { path: 'approbations-offres', component: ApprobationOffreComponent },
+        ],
       },
       {
         path: 'superadmin',
@@ -47,14 +50,15 @@ export const routes: Routes = [
         data: { expectedRoles: ['SUPERADMIN'] },
         children: [
           { path: 'profile', component: AccountComponent },
-          { path: 'category', component: CategoriesComponent}
-        ]
-      }
-    ]
+          { path: 'category', component: CategoriesComponent },
+          { path: 'pays', component: PaysComponent },
+          { path: 'villes', component: VilleComponent },
+          { path: 'approbations-offres', component: ApprobationOffreComponent },
+        ],
+      },
+    ],
   },
 
   { path: 'error', component: ErrorComponent },
-  { path: '**', redirectTo: '/error' }
+  { path: '**', redirectTo: '/error' },
 ];
-
-

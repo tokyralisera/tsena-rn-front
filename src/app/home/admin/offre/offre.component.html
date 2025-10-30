@@ -1,0 +1,243 @@
+<div class="page-container p-8">
+  <!-- En-tête avec icône -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="page-title">Approbation Offres</h1>
+        <p class="page-subtitle">Validez ou rejetez les publications en attente</p>
+      </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="stats-card">
+      <div class="stat-item">
+        <span class="stat-label">Total Catégories</span>
+        <span class="stat-value">{{ statistics.enAttente }}</span>
+        <span class="stat-description">Publications en attente</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message si aucune publication -->
+  <div *ngIf="!loading && publications.length === 0" class="empty-state">
+    <svg xmlns="http://www.w3.org/2000/svg" class="empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <p class="empty-text">Aucune publication en attente de validation</p>
+  </div>
+
+  <!-- Liste des publications -->
+  <div class="publications-list" *ngIf="!loading && publications.length > 0">
+    <div class="publication-card" *ngFor="let publication of publications">
+      <div class="publication-avatar">
+        <span class="avatar-letter">{{ publication.titre.charAt(0).toUpperCase() }}</span>
+      </div>
+      
+      <div class="publication-info">
+        <h3 class="publication-title">{{ publication.titre }}</h3>
+        <p class="publication-author">
+          <svg xmlns="http://www.w3.org/2000/svg" class="inline-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          {{ getAuteurFullName(publication) }}
+        </p>
+      </div>
+
+      <div class="publication-actions">
+        <button class="btn-view" (click)="openDetailModal(publication)">
+          <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          Voir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" class="loader-container">
+    <span class="loading loading-spinner loading-lg"></span>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-wrapper" *ngIf="totalPages > 1 && !loading">
+    <div class="join">
+      <button 
+        class="join-item btn btn-sm" 
+        [disabled]="currentPage === 1"
+        (click)="changePage(currentPage - 1)"
+      >
+        «
+      </button>
+      <button 
+        *ngFor="let page of getPageNumbers()" 
+        class="join-item btn btn-sm"
+        [class.btn-active]="page === currentPage"
+        (click)="changePage(page)"
+      >
+        {{ page }}
+      </button>
+      <button 
+        class="join-item btn btn-sm" 
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(currentPage + 1)"
+      >
+        »
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détails de la Publication -->
+<input type="checkbox" [checked]="showDetailModal" class="modal-toggle" />
+<div class="modal" [class.modal-open]="showDetailModal">
+  <div class="modal-box max-w-4xl" *ngIf="selectedPublication">
+    <!-- En-tête du modal -->
+    <div class="modal-header">
+      <h3 class="modal-title">Détails de la Publication</h3>
+      <button class="btn-close" (click)="closeDetailModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Contenu du modal -->
+    <div class="modal-content">
+      <!-- Informations principales -->
+      <div class="info-section">
+        <div class="info-row">
+          <span class="info-label">Titre :</span>
+          <span class="info-value font-semibold">{{ selectedPublication.titre }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Auteur :</span>
+          <span class="info-value">{{ getAuteurFullName(selectedPublication) }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Téléphone :</span>
+          <span class="info-value">{{ selectedPublication.auteur.telephone }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Description :</span>
+          <p class="info-value text-justify">{{ selectedPublication.description }}</p>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Type :</span>
+          <span class="badge badge-primary badge-lg">{{ selectedPublication.type }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Localisation :</span>
+          <div class="flex gap-2">
+            <span class="badge badge-outline">{{ selectedPublication.ville.nom }}</span>
+            <span class="badge badge-outline">{{ selectedPublication.ville.pays.nom }} ({{ selectedPublication.ville.pays.code }})</span>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Date de création :</span>
+          <span class="info-value">{{ formatDate(selectedPublication.createdAt) }}</span>
+        </div>
+      </div>
+
+      <!-- Photos de l'offre -->
+      <div class="photos-section">
+        <h4 class="section-title">Photos de l'offre</h4>
+        <div class="photos-grid">
+          <div *ngFor="let image of selectedPublication.images" class="photo-item">
+            <img [src]="image.url" [alt]="selectedPublication.titre" class="photo-img" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau des produits -->
+      <div class="products-section">
+        <h4 class="section-title">Produits de l'offre</h4>
+        <div class="table-wrapper">
+          <table class="products-table">
+            <thead>
+              <tr>
+                <th>Libellé</th>
+                <th>Catégorie</th>
+                <th class="text-right">Quantité</th>
+                <th class="text-right">Prix Unitaire</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let produit of selectedPublication.offre.produits">
+                <td class="font-medium">{{ produit.libelle }}</td>
+                <td>
+                  <span class="badge badge-ghost">{{ produit.categorie.libelle }}</span>
+                </td>
+                <td class="text-right">{{ produit.quantite }} {{ produit.uniteMesure }}</td>
+                <td class="text-right">{{ formatPrice(produit.prixUnitaire) }}</td>
+                <td class="text-right font-semibold">{{ formatPrice(calculateProductTotal(produit)) }}</td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="4" class="text-right font-bold">Total Général :</td>
+                <td class="text-right font-bold text-primary">{{ formatPrice(calculateOffreTotal()) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions du modal -->
+    <div class="modal-actions">
+      <button class="btn-reject" (click)="openConfirmModal('REJETER')" [disabled]="loading">
+        <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Rejeter
+      </button>
+      <button class="btn-validate" (click)="openConfirmModal('VALIDER')" [disabled]="loading">
+        <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Valider
+      </button>
+    </div>
+  </div>
+  <div class="modal-backdrop" (click)="closeDetailModal()"></div>
+</div>
+
+<!-- Modal de Confirmation -->
+<input type="checkbox" [checked]="showConfirmModal" class="modal-toggle" />
+<div class="modal" [class.modal-open]="showConfirmModal">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4">Confirmer l'action</h3>
+    <p class="py-4">
+      Êtes-vous sûr de vouloir 
+      <span class="font-bold">{{ actionType === 'VALIDER' ? 'valider' : 'rejeter' }}</span>
+      cette publication ?
+    </p>
+    <div class="modal-action">
+      <button class="btn btn-ghost" (click)="closeConfirmModal()" [disabled]="loading">
+        Annuler
+      </button>
+      <button 
+        class="btn"
+        [ngClass]="actionType === 'VALIDER' ? 'btn-success' : 'btn-error'"
+        (click)="confirmAction()"
+        [disabled]="loading"
+      >
+        <span class="loading loading-spinner" *ngIf="loading"></span>
+        Confirmer
+      </button>
+    </div>
+  </div>
+  <div class="modal-backdrop" (click)="closeConfirmModal()"></div>
+</div>

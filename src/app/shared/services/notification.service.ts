@@ -1,46 +1,106 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+
+export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
 export interface Notification {
-  type: 'success' | 'error' | 'warning' | 'info';
+  id: string;
+  type: NotificationType;
+  title: string;
   message: string;
-  title?: string;
   duration?: number;
+  dismissible?: boolean;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class NotificationService {
-  private notificationSubject = new BehaviorSubject<Notification | null>(null);
-  public notification$ = this.notificationSubject.asObservable();
+  private notificationsSubject = new BehaviorSubject<Notification[]>([]);
+  public notifications$: Observable<Notification[]> = this.notificationsSubject.asObservable();
 
-  show(notification: Notification) {
-    this.notificationSubject.next({
-      ...notification,
-      duration: notification.duration || 5000,
-    });
+  private defaultDuration = 5000; // 5 secondes
 
-    setTimeout(() => {
-      this.clear();
-    }, notification.duration || 5000);
+  constructor() {}
+
+
+  success(titleOrMessage: string, message?: string, duration?: number): void {
+    if (message === undefined) {
+      this.show('success', 'Succès', titleOrMessage, duration);
+    } else {
+      this.show('success', titleOrMessage, message, duration);
+    }
   }
 
-  clear() {
-    this.notificationSubject.next(null);
+
+  error(titleOrMessage: string, message?: string, duration?: number): void {
+    if (message === undefined) {
+      this.show('error', 'Erreur', titleOrMessage, duration);
+    } else {
+      this.show('error', titleOrMessage, message, duration);
+    }
   }
 
-  success(message: string, title: string = 'Succès') {
-    this.show({ type: 'success', message, title });
+
+  warning(titleOrMessage: string, message?: string, duration?: number): void {
+    if (message === undefined) {
+      this.show('warning', 'Attention', titleOrMessage, duration);
+    } else {
+      this.show('warning', titleOrMessage, message, duration);
+    }
   }
 
-  error(message: string, title: string = 'Erreur') {
-    this.show({ type: 'error', message, title });
+
+  info(titleOrMessage: string, message?: string, duration?: number): void {
+    if (message === undefined) {
+      this.show('info', 'Information', titleOrMessage, duration);
+    } else {
+      this.show('info', titleOrMessage, message, duration);
+    }
   }
 
-  warning(message: string, title: string = 'Attention') {
-    this.show({ type: 'warning', message, title });
+
+  show(
+    type: NotificationType,
+    title: string,
+    message: string,
+    duration: number = this.defaultDuration,
+    dismissible: boolean = true
+  ): void {
+    const notification: Notification = {
+      id: this.generateId(),
+      type,
+      title,
+      message,
+      duration,
+      dismissible
+    };
+
+    const currentNotifications = this.notificationsSubject.value;
+    this.notificationsSubject.next([...currentNotifications, notification]);
+
+    //? Auto-dismiss après la durée spécifiée
+    if (duration > 0) {
+      setTimeout(() => {
+        this.dismiss(notification.id);
+      }, duration);
+    }
   }
 
-  info(message: string, title: string = 'Information') {
-    this.show({ type: 'info', message, title });
+
+  dismiss(id: string): void {
+    const currentNotifications = this.notificationsSubject.value;
+    const filteredNotifications = currentNotifications.filter(n => n.id !== id);
+    this.notificationsSubject.next(filteredNotifications);
+  }
+
+
+  clear(): void {
+    this.notificationsSubject.next([]);
+  }
+
+
+  private generateId(): string {
+    return `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }

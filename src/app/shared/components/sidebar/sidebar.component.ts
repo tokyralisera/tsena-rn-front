@@ -8,6 +8,8 @@ import {
   faCheckCircle,
   faChevronLeft,
   faInfoCircle,
+  faLocation,
+  faLocationDot,
   faQuestionCircle,
   faSignOut,
   faSignOutAlt,
@@ -23,8 +25,8 @@ import { RouterModule } from '@angular/router';
 export interface MenuItem {
   label: string;
   icon: any;
-  route?: string;        
-  action?: () => void;   
+  route?: string;
+  action?: () => void;
   roles: Array<'USER' | 'ADMIN' | 'SUPERADMIN'>;
 }
 
@@ -58,50 +60,62 @@ export class SidebarComponent implements OnInit {
       label: 'Offres',
       icon: faBox,
       route: '/offres',
-      roles: ['USER', 'ADMIN']
+      roles: ['USER', 'ADMIN'],
     },
     {
       label: 'Demandes',
       icon: faQuestionCircle,
       route: '/demandes',
-      roles: ['USER', 'ADMIN']
+      roles: ['USER', 'ADMIN'],
     },
     {
       label: 'Infos Utiles',
       icon: faInfoCircle,
       route: '/infos',
-      roles: ['USER', 'ADMIN', 'SUPERADMIN']
+      roles: ['USER', 'ADMIN', 'SUPERADMIN'],
     },
     {
       label: 'Logistiques',
       icon: faTruck,
       route: '/logistiques',
-      roles: ['USER', 'ADMIN']
+      roles: ['USER', 'ADMIN'],
     },
     {
-      label: 'Approbations',
+      label: 'Approbations Offres',
       icon: faCheckCircle,
-      route: '/approbations',
-      roles: ['ADMIN', 'SUPERADMIN']
+      route: 'approbations-offres',
+      roles: ['ADMIN', 'SUPERADMIN'],
     },
-        {
+    {
       label: 'Categories',
       icon: faBarChart,
       route: 'category',
-      roles: ['ADMIN', 'SUPERADMIN']
+      roles: ['ADMIN', 'SUPERADMIN'],
+    },
+      {
+      label: 'Pays',
+      icon: faLocation,
+      route: 'pays',
+      roles: ['ADMIN', 'SUPERADMIN'],
+    },
+          {
+      label: 'Villes',
+      icon: faLocationDot,
+      route: 'villes',
+      roles: ['ADMIN', 'SUPERADMIN'],
     },
     {
       label: 'Utilisateurs',
       icon: faUsers,
       route: '/utilisateurs',
-      roles: ['SUPERADMIN']
+      roles: ['SUPERADMIN'],
     },
     {
       label: 'Dashboard',
       icon: faChartLine,
       route: '/dashboard',
-      roles: ['ADMIN', 'SUPERADMIN']
-    }
+      roles: ['ADMIN', 'SUPERADMIN'],
+    },
   ];
 
   bottomMenuItems: MenuItem[] = [
@@ -109,18 +123,18 @@ export class SidebarComponent implements OnInit {
       label: 'Mon Compte',
       icon: faUser,
       route: '', // sera défini dynamiquement
-      roles: ['USER', 'ADMIN', 'SUPERADMIN']
+      roles: ['USER', 'ADMIN', 'SUPERADMIN'],
     },
     {
       label: 'Déconnexion',
       icon: faSignOut,
-      action: () => this.logout(), 
-      roles: ['USER', 'ADMIN', 'SUPERADMIN']
-    }
+      action: () => this.logout(),
+      roles: ['USER', 'ADMIN', 'SUPERADMIN'],
+    },
   ];
 
   constructor(
-    private authStateService: AuthStateService, 
+    private authStateService: AuthStateService,
     private authService: AuthService
   ) {}
 
@@ -130,9 +144,9 @@ export class SidebarComponent implements OnInit {
     if (userData) {
       this.currentUser = JSON.parse(userData);
     }
-    
+
     // S'abonner aux changements
-    this.authStateService.currentUser.subscribe(user => {
+    this.authStateService.currentUser.subscribe((user) => {
       this.currentUser = user;
       console.log('Current user in sidebar:', user);
       if (user) {
@@ -152,6 +166,6 @@ export class SidebarComponent implements OnInit {
     if (!userRole) {
       return [];
     }
-    return menuItems.filter(item => item.roles.includes(userRole));
+    return menuItems.filter((item) => item.roles.includes(userRole));
   }
 }

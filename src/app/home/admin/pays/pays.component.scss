@@ -1,0 +1,64 @@
+// Styles personnalisés pour le composant Pays
+
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+// Animation pour les lignes du tableau
+.table tbody tr {
+  transition: all 0.2s ease;
+}
+
+// Style pour les inputs en mode uppercase
+input.uppercase {
+  text-transform: uppercase;
+}
+
+// Amélioration de l'espacement pour mobile
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .card-body {
+    padding: 0.5rem;
+  }
+
+  .table {
+    font-size: 0.875rem;
+  }
+
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+// Style pour le loading state
+.loading-overlay {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// Amélioration du focus pour l'accessibilité
+.btn:focus-visible,
+.input:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+// Réutilisation du même style que categories.component.scss
+@import '../categories/categories.component.scss';
