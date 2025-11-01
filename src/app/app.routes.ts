@@ -14,6 +14,7 @@ import { CategoriesComponent } from './home/admin/categories/categories.componen
 import { PaysComponent } from './home/admin/pays/pays.component';
 import { VilleComponent } from './home/admin/ville/ville.component';
 import { ApprobationOffreComponent } from './home/admin/offre/offre.component';
+import { OffresUserComponent } from './home/user/offre/offre.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -28,7 +29,9 @@ export const routes: Routes = [
         component: UserComponent,
         canActivate: [authGuard, roleGuard],
         data: { expectedRoles: ['USER'] },
-        children: [{ path: 'profile', component: AccountComponent }],
+        children: [{ path: 'profile', component: AccountComponent },
+          { path: 'offres', component: OffresUserComponent },
+        ],
       },
       {
         path: 'admin',

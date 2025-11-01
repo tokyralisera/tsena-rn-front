@@ -113,7 +113,7 @@ export interface Statistics {
 @Injectable({
   providedIn: 'root'
 })
-export class PublicationService {
+export class PublicationOffreService {
   private apiUrl = `${environment.apiUrl}/publications/offres`;
 
   constructor(private http: HttpClient) {}

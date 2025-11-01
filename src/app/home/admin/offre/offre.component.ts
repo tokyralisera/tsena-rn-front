@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Publication, PublicationStatut, PublicationService, Produit } from '../../../shared/services/publication-offre.service';
+import { Publication, PublicationStatut, PublicationOffreService, Produit } from '../../../shared/services/publication-offre.service';
 
 
 @Component({
@@ -32,7 +32,7 @@ export class ApprobationOffreComponent implements OnInit {
 
   PublicationStatut = PublicationStatut;
 
-  constructor(private publicationService: PublicationService) {}
+  constructor(private publicationService: PublicationOffreService) {}
 
   ngOnInit(): void {
     this.loadPublications();

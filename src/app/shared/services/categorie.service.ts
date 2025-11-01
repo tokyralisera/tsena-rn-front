@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { environment } from "../../../environment/environment";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { Observable } from "rxjs";
+import { HttpClient } from "@angular/common/http";
+import { map, Observable } from "rxjs";
 
 export interface Categorie {
   id: number;
@@ -13,6 +13,12 @@ export interface Categorie {
   };
 }
 
+export interface ApiResponse<T> {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: T;
+}
 
 export interface CategorieResponse {
     success : boolean;
@@ -22,46 +28,32 @@ export interface CategorieResponse {
 }
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
 export class CategorieService {
-    private apiUrl = `${environment.apiUrl}/categories`
+  private apiUrl = `${environment.apiUrl}/categories`;
 
-    constructor(private http: HttpClient){}
+  constructor(private http: HttpClient) {}
 
-    //? A voir demain car j'ai deja cette fonction dans les auth
-    // private getHeaders(): HttpHeaders {
-    //     const token = localStorage.getItem('access_token')
-    //     return new HttpHeaders({
-    //         'Content-Type': 'application/json',
-    //         Authorization: 'Bearer ${token}'
-    //     })
-    // }
-
-    getAll(): Observable<CategorieResponse>{
-        return this.http.get<CategorieResponse>(this.apiUrl)
-    }
-
-    getById(id: number): Observable<CategorieResponse>{
-        return this.http.get<CategorieResponse>(`${this.apiUrl}/${id}`)
-    }
-
-    create(nom: string): Observable<CategorieResponse>{
-        return this.http.post<CategorieResponse>(
-            `${this.apiUrl}`, {nom}
-        )
-    }
-
-      update(id: number, nom: string): Observable<CategorieResponse> {
-    return this.http.put<CategorieResponse>(
-      `${this.apiUrl}/${id}`,
-      { nom }
+  getAll(): Observable<Categorie[]> {
+    return this.http.get<ApiResponse<Categorie[]>>(this.apiUrl).pipe(
+      map(response => response.data)
     );
   }
 
+  getById(id: number): Observable<CategorieResponse> {
+    return this.http.get<CategorieResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  create(nom: string): Observable<CategorieResponse> {
+    return this.http.post<CategorieResponse>(`${this.apiUrl}`, { nom });
+  }
+
+  update(id: number, nom: string): Observable<CategorieResponse> {
+    return this.http.put<CategorieResponse>(`${this.apiUrl}/${id}`, { nom });
+  }
+
   delete(id: number): Observable<CategorieResponse> {
-    return this.http.delete<CategorieResponse>(
-      `${this.apiUrl}/${id}`
-    );
+    return this.http.delete<CategorieResponse>(`${this.apiUrl}/${id}`);
   }
 }

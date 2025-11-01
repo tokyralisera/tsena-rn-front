@@ -38,8 +38,8 @@ export class CategoriesComponent implements OnInit {
   loadCategories(): void {
     this.loading = true;
     this.categoriesService.getAll().subscribe({
-      next: (response) => {
-        this.categories = response.data as Categorie[];
+      next: (categories: Categorie[]) => {
+        this.categories = categories;
         this.loading = false;
       },
       error: (error) => {

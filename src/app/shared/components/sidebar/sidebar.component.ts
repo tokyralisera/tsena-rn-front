@@ -59,7 +59,7 @@ export class SidebarComponent implements OnInit {
     {
       label: 'Offres',
       icon: faBox,
-      route: '/offres',
+      route: 'offres',
       roles: ['USER', 'ADMIN'],
     },
     {
