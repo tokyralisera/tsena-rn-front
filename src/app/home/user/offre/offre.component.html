@@ -96,7 +96,7 @@
                 <tr class="total-row">
                   <td colspan="4" class="text-right font-bold">Total :</td>
                   <td class="text-right font-bold">
-                    <!-- {{ formatPrice(publication.offre.produits.reduce((sum, p) => sum + (p.prixUnitaire * p.quantite), 0)) }} -->
+                    {{ formatPrice(calculatePublicationTotal(publication.offre.produits)) }}
                   </td>
                 </tr>
               </tbody>
@@ -170,255 +170,51 @@
   <div class="modal-backdrop" (click)="closeAllModals()"></div>
 </div>
 
-<!-- Modal Créer/Modifier Offre -->
-<input type="checkbox" [checked]="showCreateModal || showEditModal" class="modal-toggle" />
-<div class="modal" [class.modal-open]="showCreateModal || showEditModal">
-  <div class="modal-box max-w-5xl max-h-[90vh] overflow-y-auto">
-    <h3 class="font-bold text-lg mb-4">
-      {{ showEditModal ? 'Modifier l\'Offre' : 'Créer une Offre' }}
-    </h3>
+<input type="checkbox" [checked]="showMyOffersModal" class="modal-toggle" />
+<div class="modal" [class.modal-open]="showMyOffersModal">
+  <div class="modal-box max-w-4xl max-h-[80vh]">
+    <h3 class="font-bold text-lg mb-4">Mes Offres</h3>
+    
+    <!-- Loader -->
+    <div *ngIf="loading" class="flex justify-center py-8">
+      <span class="loading loading-spinner loading-lg"></span>
+    </div>
 
-    <form [formGroup]="offreForm" (ngSubmit)="onSubmit()">
-      <!-- Titre -->
-      <div class="form-control mb-4">
-        <label class="label">
-          <span class="label-text">Titre <span class="text-error">*</span></span>
-        </label>
-        <input 
-          type="text" 
-          placeholder="Ex: Vente de riz de qualité" 
-          class="input input-bordered"
-          formControlName="titre"
-        />
-      </div>
+    <!-- Liste vide -->
+    <div *ngIf="!loading && myPublications.length === 0" class="text-center py-8">
+      <p class="text-gray-500">Vous n'avez aucune offre pour le moment</p>
+    </div>
 
-      <!-- Description -->
-      <div class="form-control mb-4">
-        <label class="label">
-          <span class="label-text">Description <span class="text-error">*</span></span>
-        </label>
-        <textarea 
-          placeholder="Décrivez votre offre en détails..."
-          class="textarea textarea-bordered h-24"
-          formControlName="description"
-        ></textarea>
-      </div>
-
-      <!-- Localisation -->
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Pays <span class="text-error">*</span></span>
-          </label>
-          <select 
-            class="select select-bordered"
-            formControlName="paysId"
-            (change)="onPaysChange($any($event.target).value)"
-          >
-            <option [ngValue]="null">Sélectionner un pays</option>
-            <option *ngFor="let p of pays" [ngValue]="p.id">{{ p.nom }}</option>
-          </select>
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Ville <span class="text-error">*</span></span>
-          </label>
-          <select 
-            class="select select-bordered"
-            formControlName="villeId"
-            [disabled]="!offreForm.value.paysId"
-          >
-            <option [ngValue]="null">Sélectionner une ville</option>
-            <option *ngFor="let v of villes" [ngValue]="v.id">{{ v.nom }}</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Photos -->
-      <div class="form-control mb-4">
-        <label class="label">
-          <span class="label-text">Photos <span class="text-error">*</span> (Max {{ maxImages }})</span>
-        </label>
-        <input 
-          type="file" 
-          accept="image/*"
-          multiple
-          class="file-input file-input-bordered"
-          (change)="onFileSelected($event)"
-          [disabled]="imagePreviews.length >= maxImages"
-        />
-        
-        <!-- Aperçu des images -->
-        <div class="image-previews" *ngIf="imagePreviews.length > 0">
-          <div *ngFor="let preview of imagePreviews; let i = index" class="image-preview-item">
-            <img [src]="preview.url" [alt]="'Image ' + (i+1)" />
-            <button 
-              type="button"
-              class="btn-remove-image"
-              (click)="removeImage(i)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+    <!-- Liste des offres -->
+    <div class="my-offers-list" *ngIf="!loading && myPublications.length > 0">
+      <div *ngFor="let pub of myPublications" class="my-offer-item">
+        <div class="flex-1">
+          <h4 class="font-semibold text-base">{{ pub.titre }}</h4>
+          <p class="text-sm text-gray-600 mt-1">{{ formatDate(pub.createdAt) }}</p>
+          <div class="flex gap-2 mt-2">
+            <span class="badge" [ngClass]="getStatutBadgeClass(pub.statut)">{{ pub.statut }}</span>
+            <span class="badge" [ngClass]="getOffreStatutBadgeClass(pub.offre.statut)">{{ pub.offre.statut }}</span>
           </div>
         </div>
-      </div>
-
-      <!-- Produits -->
-      <div class="products-form-section mb-4">
-        <div class="flex justify-between items-center mb-3">
-          <label class="label-text font-semibold">Produits <span class="text-error">*</span></label>
-          <button 
-            type="button" 
-            class="btn btn-sm btn-circle btn-primary"
-            (click)="addProduit()"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        <div class="flex gap-2">
+          <button class="btn btn-sm btn-ghost" (click)="openEditModal(pub)">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
+            Modifier
+          </button>
+          <button class="btn btn-sm btn-error" (click)="openDeleteModal(pub)">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Supprimer
           </button>
         </div>
-
-        <div class="overflow-x-auto">
-          <table class="table table-compact w-full">
-            <thead>
-              <tr>
-                <th>Libellé</th>
-                <th>Catégorie</th>
-                <th>Quantité</th>
-                <th>Unité</th>
-                <th>Prix Unit.</th>
-                <th>Total</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody formArrayName="produits">
-              <tr *ngFor="let produit of produits.controls; let i = index" [formGroupName]="i">
-                <td>
-                  <input 
-                    type="text" 
-                    placeholder="Libellé"
-                    class="input input-sm input-bordered w-full"
-                    formControlName="libelle"
-                  />
-                </td>
-                <td>
-                  <select class="select select-sm select-bordered" formControlName="categorieId">
-                    <option [ngValue]="null">Catégorie</option>
-                    <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.nom }}</option>
-                  </select>
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    step="0.01"
-                    class="input input-sm input-bordered w-20"
-                    formControlName="quantite"
-                  />
-                </td>
-                <td>
-                  <select class="select select-sm select-bordered" formControlName="uniteMesure">
-                    <option *ngFor="let unite of uniteMesureOptions" [value]="unite">{{ unite }}</option>
-                  </select>
-                </td>
-                <td>
-                  <input 
-                    type="number" 
-                    step="0.01"
-                    class="input input-sm input-bordered w-28"
-                    formControlName="prixUnitaire"
-                  />
-                </td>
-                <td class="font-semibold">
-                  {{ formatPrice(calculateProduitTotal(i)) }}
-                </td>
-                <td>
-                  <button 
-                    type="button"
-                    class="btn btn-sm btn-ghost btn-circle text-error"
-                    (click)="removeProduit(i)"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-              <tr class="bg-base-200 font-bold" *ngIf="produits.length > 0">
-                <td colspan="5" class="text-right">Total de l'offre :</td>
-                <td colspan="2" class="text-primary text-lg">{{ formatPrice(calculateOffreTotal()) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </div>
+    </div>
 
-      <!-- Marquer comme vendu (uniquement en mode édition) -->
-      <div *ngIf="showEditModal && selectedPublication?.statut === 'VALIDE'" class="mb-4">
-        <button 
-          type="button"
-          class="btn btn-warning btn-block"
-          (click)="markAsSold(selectedPublication!)"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          Marquer comme Vendu
-        </button>
-      </div>
-
-      <!-- Actions -->
-      <div class="modal-action">
-        <button 
-          type="button"
-          class="btn btn-ghost"
-          (click)="closeAllModals()"
-          [disabled]="loading"
-        >
-          Annuler
-        </button>
-        <button 
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="loading"
-        >
-          <span class="loading loading-spinner" *ngIf="loading"></span>
-          {{ showEditModal ? 'Modifier' : 'Soumettre mon Offre' }}
-        </button>
-      </div>
-    </form>
-  </div>
-  <div class="modal-backdrop" (click)="closeAllModals()"></div>
-</div>
-
-<!-- Modal Confirmation Suppression -->
-<input type="checkbox" [checked]="showDeleteModal" class="modal-toggle" />
-<div class="modal" [class.modal-open]="showDeleteModal">
-  <div class="modal-box">
-    <h3 class="font-bold text-lg mb-4">Confirmer la suppression</h3>
-    <p class="py-4">
-      Êtes-vous sûr de vouloir supprimer l'offre 
-      <span class="font-bold">{{ selectedPublication?.titre }}</span> ?
-      Cette action est irréversible.
-    </p>
     <div class="modal-action">
-      <button 
-        class="btn btn-ghost"
-        (click)="closeAllModals()"
-        [disabled]="loading"
-      >
-        Annuler
-      </button>
-      <button 
-        class="btn btn-error"
-        (click)="confirmDelete()"
-        [disabled]="loading"
-      >
-        <span class="loading loading-spinner" *ngIf="loading"></span>
-        Supprimer
-      </button>
+      <button class="btn" (click)="closeAllModals()">Fermer</button>
     </div>
   </div>
   <div class="modal-backdrop" (click)="closeAllModals()"></div>

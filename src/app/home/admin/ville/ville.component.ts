@@ -8,7 +8,7 @@ import { Pays, PaysService } from '../../../shared/services/pays.service';
 @Component({
   selector: 'app-ville',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule,],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './ville.component.html',
   styleUrl: './ville.component.scss'
 })
@@ -60,19 +60,13 @@ export class VilleComponent implements OnInit {
 
   loadVilles(): void {
     this.loading = true;
-    this.villeService.getAll(
-      this.currentPage, 
-      this.itemsPerPage, 
-      this.searchTerm,
-      this.selectedPaysFilter || undefined
-    ).subscribe({
-      next: (response) => {
+    this.villeService.getAll(this.selectedPaysFilter || undefined).subscribe({
+      next: (response: any) => {
         this.villes = response.data;
-        this.totalItems = response.total;
-        this.totalPages = Math.ceil(response.total / this.itemsPerPage);
+        this.totalItems = response.data.length;
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Erreur lors du chargement des villes', error);
         this.loading = false;
         this.showToast('Erreur lors du chargement des villes', 'error');

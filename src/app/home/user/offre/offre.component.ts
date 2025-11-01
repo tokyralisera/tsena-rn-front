@@ -94,6 +94,9 @@ export class OffresUserComponent implements OnInit {
     this.loadPays();
   }
 
+  // ==========================================
+  // CHARGEMENT DES DONNÉES
+  // ==========================================
 
   /**
    * Charge les publications publiques (VALIDÉES)
@@ -176,21 +179,35 @@ export class OffresUserComponent implements OnInit {
    * Charge les villes quand un pays est sélectionné
    */
   onPaysChange(paysId: number): void {
+    console.log('🔍 Pays sélectionné:', paysId);
+    
     this.offreForm.patchValue({ villeId: null });
     this.villes = [];
     
     if (paysId) {
-      this.villeService.getAll(1, 1000, '', paysId).subscribe({
+      console.log('📡 Appel API pour charger les villes du pays:', paysId);
+      
+      this.villeService.getAll(paysId).subscribe({
         next: (response: any) => {
+          console.log('✅ Réponse API villes:', response);
+          console.log('📦 Villes reçues:', response.data);
           this.villes = response.data;
+          
+          if (this.villes.length === 0) {
+            this.notificationService.warning('Aucune ville trouvée pour ce pays');
+          }
         },
         error: (error: any) => {
-          console.error('Erreur', error);
+          console.error('❌ Erreur lors du chargement des villes:', error);
+          this.notificationService.error('Erreur lors du chargement des villes');
         },
       });
     }
   }
 
+  // ==========================================
+  // GESTION DU FORMARRAY DES PRODUITS
+  // ==========================================
 
   get produits(): FormArray {
     return this.offreForm.get('produits') as FormArray;
@@ -226,6 +243,9 @@ export class OffresUserComponent implements OnInit {
     }, 0);
   }
 
+  // ==========================================
+  // GESTION DES IMAGES
+  // ==========================================
 
   onFileSelected(event: any): void {
     const files: FileList = event.target.files;
@@ -258,6 +278,9 @@ export class OffresUserComponent implements OnInit {
     this.imagePreviews.splice(index, 1);
   }
 
+  // ==========================================
+  // GESTION DES MODALS
+  // ==========================================
 
   openCreateModal(): void {
     this.resetForm();
@@ -323,6 +346,9 @@ export class OffresUserComponent implements OnInit {
     this.villes = [];
   }
 
+  // ==========================================
+  // SOUMISSION DU FORMULAIRE
+  // ==========================================
 
   onSubmit(): void {
     if (this.offreForm.invalid) {
@@ -379,6 +405,9 @@ export class OffresUserComponent implements OnInit {
     });
   }
 
+  // ==========================================
+  // MARQUER COMME VENDU
+  // ==========================================
 
   markAsSold(publication: Publication): void {
     this.loading = true;
@@ -402,6 +431,9 @@ export class OffresUserComponent implements OnInit {
       });
   }
 
+  // ==========================================
+  // SUPPRESSION
+  // ==========================================
 
   confirmDelete(): void {
     if (!this.selectedPublication) return;
@@ -426,6 +458,9 @@ export class OffresUserComponent implements OnInit {
       });
   }
 
+  // ==========================================
+  // HELPERS / UTILITAIRES
+  // ==========================================
 
   formatPrice(price: number): string {
     return new Intl.NumberFormat('fr-MG', {
@@ -462,6 +497,13 @@ export class OffresUserComponent implements OnInit {
 
   getOffreStatutBadgeClass(statut: string): string {
     return statut === 'VENDU' ? 'badge-error' : 'badge-success';
+  }
+
+  /**
+   * Calcule le total d'une offre à partir de ses produits
+   */
+  calculatePublicationTotal(produits: Produit[]): number {
+    return produits.reduce((sum, p) => sum + (p.prixUnitaire * p.quantite), 0);
   }
 
   changePage(page: number): void {

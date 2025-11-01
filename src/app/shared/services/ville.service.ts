@@ -3,7 +3,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 
-
 export interface Ville {
   id: number;
   nom: string;
@@ -30,53 +29,71 @@ export interface UpdateVilleDto {
   paysId?: number;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
+export interface VilleResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: Ville[];
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class VilleService {
-  private apiUrl = `${environment.apiUrl}/villes`;
+  private apiUrl = `${environment.apiUrl}/ville`;
 
   constructor(private http: HttpClient) {}
 
-  getAll(page: number = 1, limit: number = 10, search?: string, paysId?: number): Observable<PaginatedResponse<Ville>> {
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('limit', limit.toString());
+  /**
+   * Récupère toutes les villes avec filtre optionnel par pays
+   * GET /ville?paysId=X
+   */
+  getAll(paysId?: number): Observable<VilleResponse> {
+    let params = new HttpParams();
     
-    if (search) {
-      params = params.set('search', search);
-    }
-
     if (paysId) {
       params = params.set('paysId', paysId.toString());
     }
 
-    return this.http.get<PaginatedResponse<Ville>>(this.apiUrl, { params });
+    return this.http.get<VilleResponse>(this.apiUrl, { params });
   }
 
-  getById(id: number): Observable<Ville> {
-    return this.http.get<Ville>(`${this.apiUrl}/${id}`);
+  /**
+   * Récupère une ville par ID
+   * GET /ville/:id
+   */
+  getById(id: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${id}`);
   }
 
-  getByPays(paysId: number): Observable<Ville[]> {
-    return this.http.get<Ville[]>(`${this.apiUrl}/pays/${paysId}`);
+  /**
+   * Récupère les villes d'un pays spécifique
+   * GET /ville/pays/:paysId
+   */
+  getByPays(paysId: number): Observable<VilleResponse> {
+    return this.http.get<VilleResponse>(`${this.apiUrl}/pays/${paysId}`);
   }
 
-  create(data: CreateVilleDto): Observable<Ville> {
-    return this.http.post<Ville>(this.apiUrl, data);
+  /**
+   * Crée une nouvelle ville
+   * POST /ville
+   */
+  create(data: CreateVilleDto): Observable<any> {
+    return this.http.post(this.apiUrl, data);
   }
 
-  update(id: number, data: UpdateVilleDto): Observable<Ville> {
-    return this.http.patch<Ville>(`${this.apiUrl}/${id}`, data);
+  /**
+   * Met à jour une ville
+   * PUT /ville/:id
+   */
+  update(id: number, data: UpdateVilleDto): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, data);
   }
 
+  /**
+   * Supprime une ville
+   * DELETE /ville/:id
+   */
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
