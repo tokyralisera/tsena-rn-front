@@ -1,3 +1,10 @@
  :host {
      display: block;
  }
+
+ .illustration {
+  height: auto;
+  object-fit: contain; /* garde les proportions */
+  background-color: transparent; /* pas de fond */
+  display: block;
+}

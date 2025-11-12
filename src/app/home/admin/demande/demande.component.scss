@@ -1,0 +1,119 @@
+
+// Header avec icône
+.flex.items-center.gap-4 {
+  animation: fadeIn 0.5s ease-out;
+}
+
+// Carte statistiques avec gradient
+.card.bg-gradient-to-r {
+  animation: fadeIn 0.6s ease-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  
+  &:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+  }
+}
+
+// Liste des demandes
+.space-y-4 {
+  > .card {
+    animation: fadeIn 0.4s ease-out;
+    border: 1px solid hsl(var(--b3));
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+  }
+}
+
+// Avatar
+.avatar {
+  .rounded-full {
+    background: linear-gradient(135deg, hsl(var(--p)) 0%, hsl(var(--s)) 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Boutons
+.btn {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Modal
+.modal-box {
+  animation: slideDown 0.3s ease-out;
+  
+  .table {
+    border: 1px solid hsl(var(--b3));
+    
+    thead tr {
+      background: hsl(var(--b2));
+      border-bottom: 2px solid hsl(var(--b3));
+    }
+    
+    tbody tr {
+      transition: background 0.15s ease;
+      
+      &:hover {
+        background: hsl(var(--b2));
+      }
+    }
+  }
+}
+
+// Badges
+.badge {
+  font-weight: 600;
+  border: 1px solid currentColor;
+  
+  &.badge-primary {
+    background: hsl(var(--p) / 0.1);
+    color: hsl(var(--p));
+  }
+  
+  &.badge-success {
+    background: hsl(var(--su) / 0.1);
+    color: hsl(var(--su));
+  }
+  
+  &.badge-warning {
+    background: hsl(var(--wa) / 0.1);
+    color: hsl(var(--wa));
+  }
+  
+  &.badge-error {
+    background: hsl(var(--er) / 0.1);
+    color: hsl(var(--er));
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -15,6 +15,11 @@ import { PaysComponent } from './home/admin/pays/pays.component';
 import { VilleComponent } from './home/admin/ville/ville.component';
 import { ApprobationOffreComponent } from './home/admin/offre/offre.component';
 import { OffresUserComponent } from './home/user/offre/offre.component';
+import { DemandeUserComponent } from './home/user/demande/demande.component';
+import { ApprobationsDemandesComponent } from './home/admin/demande/demande.component';
+import { InfosComponent } from './home/user/infos/infos.component';
+import { InfosCreationComponent } from './home/admin/infos/infos.component';
+
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -31,6 +36,8 @@ export const routes: Routes = [
         data: { expectedRoles: ['USER'] },
         children: [{ path: 'profile', component: AccountComponent },
           { path: 'offres', component: OffresUserComponent },
+          { path: 'demandes', component: DemandeUserComponent },
+          { path: 'infos', component: InfosComponent },
         ],
       },
       {
@@ -44,6 +51,9 @@ export const routes: Routes = [
           { path: 'pays', component: PaysComponent },
           { path: 'villes', component: VilleComponent },
           { path: 'approbations-offres', component: ApprobationOffreComponent },
+          { path: 'approbations-demandes', component: ApprobationsDemandesComponent },
+          { path: 'infos-creation', component: InfosCreationComponent },
+          
         ],
       },
       {
@@ -57,6 +67,9 @@ export const routes: Routes = [
           { path: 'pays', component: PaysComponent },
           { path: 'villes', component: VilleComponent },
           { path: 'approbations-offres', component: ApprobationOffreComponent },
+          { path: 'approbations-demandes', component: ApprobationsDemandesComponent },
+          { path: 'infos-creation', component: InfosCreationComponent },
+          
         ],
       },
     ],

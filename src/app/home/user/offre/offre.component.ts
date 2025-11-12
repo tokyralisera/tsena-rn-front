@@ -20,8 +20,9 @@ import {
 } from '../../../shared/services/categorie.service';
 import { Pays, PaysService } from '../../../shared/services/pays.service';
 import { Ville, VilleService } from '../../../shared/services/ville.service';
-import { NotificationService } from '../../../shared/services/notification.service';
+
 import { environment } from '../../../../environment/environment';
+import { ToastService } from '../../../shared/services/toast.service';
 
 export enum UniteMesure {
   PIECE = 'PIECE',
@@ -75,7 +76,7 @@ export class OffresUserComponent implements OnInit {
     private categorieService: CategorieService,
     private paysService: PaysService,
     private villeService: VilleService,
-    private notificationService: NotificationService,
+    private toastService: ToastService,
     private fb: FormBuilder,
     private http: HttpClient
   ) {
@@ -120,7 +121,7 @@ export class OffresUserComponent implements OnInit {
         error: (error: any) => {
           console.error('Erreur lors du chargement des offres', error);
           this.loading = false;
-          this.notificationService.error('Erreur lors du chargement des offres');
+          this.toastService.error('Erreur lors du chargement des offres');
         },
       });
   }
@@ -129,18 +130,47 @@ export class OffresUserComponent implements OnInit {
    * Charge MES publications (tous statuts)
    */
   loadMyPublications(): void {
+    console.log('🔍 Chargement de MES offres...');
+    
     this.loading = true;
+    
+    // ✅ Ajoute les paramètres page et limit
     this.http
-      .get<any>(`${environment.apiUrl}/publications/offres/me`)
+      .get<any>(`${environment.apiUrl}/publications/offres/me`, {
+        params: {
+          page: '1',
+          limit: '100'
+        }
+      })
       .subscribe({
         next: (response: any) => {
-          this.myPublications = response.data;
+          console.log('✅ Réponse complète:', response);
+          console.log('📦 Mes publications:', response.data);
+          console.log('📊 Nombre de publications:', response.data?.length);
+          
+          this.myPublications = response.data || [];
           this.loading = false;
+          
+          if (this.myPublications.length === 0) {
+            console.log('⚠️ Aucune publication trouvée pour cet utilisateur');
+          }
         },
         error: (error: any) => {
-          console.error('Erreur', error);
+          console.error('❌ Erreur complète:', error);
+          console.error('📡 Status:', error.status);
+          console.error('💬 Message:', error.message);
+          console.error('🔥 Erreur backend:', error.error);
+          
           this.loading = false;
-          this.notificationService.error('Erreur lors du chargement de vos offres');
+          
+          if (error.status === 401) {
+            this.toastService.error('Session expirée, veuillez vous reconnecter');
+          } else if (error.status === 400) {
+            console.error('🚨 Erreur 400 - Paramètres invalides');
+            this.toastService.error('Erreur de requête');
+          } else {
+            this.toastService.error('Erreur lors du chargement de vos offres');
+          }
         },
       });
   }
@@ -155,7 +185,7 @@ export class OffresUserComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Erreur', error);
-        this.notificationService.error('Erreur lors du chargement des catégories');
+        this.toastService.error('Erreur lors du chargement des catégories');
       },
     });
   }
@@ -170,7 +200,7 @@ export class OffresUserComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Erreur', error);
-        this.notificationService.error('Erreur lors du chargement des pays');
+        this.toastService.error('Erreur lors du chargement des pays');
       },
     });
   }
@@ -194,12 +224,12 @@ export class OffresUserComponent implements OnInit {
           this.villes = response.data;
           
           if (this.villes.length === 0) {
-            this.notificationService.warning('Aucune ville trouvée pour ce pays');
+            this.toastService.warning('Aucune ville trouvée pour ce pays');
           }
         },
         error: (error: any) => {
           console.error('❌ Erreur lors du chargement des villes:', error);
-          this.notificationService.error('Erreur lors du chargement des villes');
+          this.toastService.error('Erreur lors du chargement des villes');
         },
       });
     }
@@ -251,7 +281,7 @@ export class OffresUserComponent implements OnInit {
     const files: FileList = event.target.files;
 
     if (this.imagePreviews.length + files.length > this.maxImages) {
-      this.notificationService.warning(`Maximum ${this.maxImages} images autorisées`);
+      this.toastService.warning(`Maximum ${this.maxImages} images autorisées`);
       return;
     }
 
@@ -259,7 +289,7 @@ export class OffresUserComponent implements OnInit {
       const file = files[i];
 
       if (!file.type.startsWith('image/')) {
-        this.notificationService.warning('Seules les images sont autorisées');
+        this.toastService.warning('Seules les images sont autorisées');
         continue;
       }
 
@@ -294,6 +324,8 @@ export class OffresUserComponent implements OnInit {
   }
 
   openEditModal(publication: Publication): void {
+    console.log('✏️ Ouverture du modal d\'édition pour:', publication);
+    
     this.selectedPublication = publication;
     this.resetForm();
 
@@ -302,11 +334,29 @@ export class OffresUserComponent implements OnInit {
       titre: publication.titre,
       description: publication.description,
       paysId: publication.ville.pays.id,
-      villeId: publication.ville.id,
+      // ⚠️ Ne pas encore définir villeId, on attend le chargement des villes
     });
 
-    // Charger les villes du pays
-    this.onPaysChange(publication.ville.pays.id);
+    // Charger les villes du pays, puis définir la ville
+    console.log('📡 Chargement des villes pour le pays:', publication.ville.pays.id);
+    
+    this.villeService.getAll(publication.ville.pays.id).subscribe({
+      next: (response: any) => {
+        console.log('✅ Villes chargées:', response.data);
+        this.villes = response.data;
+        
+        // ✅ Maintenant on peut définir la ville
+        this.offreForm.patchValue({
+          villeId: publication.ville.id
+        });
+        
+        console.log('🏙️ Ville sélectionnée:', publication.ville.id);
+      },
+      error: (error: any) => {
+        console.error('❌ Erreur chargement villes:', error);
+        this.toastService.error('Erreur lors du chargement des villes');
+      }
+    });
 
     // Ajouter les produits
     publication.offre.produits.forEach((produit: Produit) => {
@@ -353,17 +403,17 @@ export class OffresUserComponent implements OnInit {
   onSubmit(): void {
     if (this.offreForm.invalid) {
       this.offreForm.markAllAsTouched();
-      this.notificationService.warning('Veuillez remplir tous les champs requis');
+      this.toastService.warning('Veuillez remplir tous les champs requis');
       return;
     }
 
     if (this.produits.length === 0) {
-      this.notificationService.warning('Ajoutez au moins un produit');
+      this.toastService.warning('Ajoutez au moins un produit');
       return;
     }
 
     if (!this.showEditModal && this.imagePreviews.length === 0) {
-      this.notificationService.warning('Ajoutez au moins une image');
+      this.toastService.warning('Ajoutez au moins une image');
       return;
     }
 
@@ -389,7 +439,7 @@ export class OffresUserComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        this.notificationService.success(
+        this.toastService.success(
           this.showEditModal
             ? 'Offre modifiée avec succès'
             : 'Offre créée avec succès'
@@ -400,7 +450,7 @@ export class OffresUserComponent implements OnInit {
       error: (error: any) => {
         console.error('Erreur', error);
         this.loading = false;
-        this.notificationService.error('Erreur lors de la soumission');
+        this.toastService.error('Erreur lors de la soumission');
       },
     });
   }
@@ -410,6 +460,8 @@ export class OffresUserComponent implements OnInit {
   // ==========================================
 
   markAsSold(publication: Publication): void {
+    console.log('🏷️ Marquage comme vendu pour:', publication.id);
+    
     this.loading = true;
     this.http
       .patch(
@@ -420,13 +472,20 @@ export class OffresUserComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.notificationService.success('Offre marquée comme vendue');
-          this.loadMyPublications();
+          console.log('✅ Offre marquée comme vendue');
+          this.toastService.success('Offre marquée comme vendue');
+          this.closeAllModals(); // Ferme tous les modals
+          this.loading = false;
+          
+          // Recharge les données après un court délai
+          setTimeout(() => {
+            this.loadMyPublications();
+          }, 300);
         },
         error: (error: any) => {
-          console.error('Erreur', error);
+          console.error('❌ Erreur:', error);
           this.loading = false;
-          this.notificationService.error('Erreur lors de la mise à jour');
+          this.toastService.error('Erreur lors de la mise à jour');
         },
       });
   }
@@ -445,7 +504,7 @@ export class OffresUserComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.notificationService.success('Offre supprimée avec succès');
+          this.toastService.success('Offre supprimée avec succès');
           this.closeAllModals();
           this.loadPublications();
           this.loadMyPublications();
@@ -453,7 +512,7 @@ export class OffresUserComponent implements OnInit {
         error: (error: any) => {
           console.error('Erreur', error);
           this.loading = false;
-          this.notificationService.error('Erreur lors de la suppression');
+          this.toastService.error('Erreur lors de la suppression');
         },
       });
   }

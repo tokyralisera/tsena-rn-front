@@ -1,0 +1,394 @@
+<div class="min-h-screen py-2" (click)="closeAllMenus()">
+  <div class="max-w-2xl mx-auto px-4">
+    
+    <!-- En-tête avec titre et bouton Ajouter -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-base-content">Gestion des Informations Utiles</h1>
+      </div>
+      
+      <!-- Bouton Ajouter -->
+      <button (click)="openCreateModal()" class="btn btn-primary gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        <span class="hidden sm:inline">Ajouter une publication</span>
+        <span class="sm:hidden">Ajouter</span>
+      </button>
+    </div>
+
+    <!-- État de chargement -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="error && !isLoading" class="alert alert-error mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>{{ error }}</span>
+    </div>
+
+    <!-- Liste des publications -->
+    <div *ngIf="!isLoading && !error" class="space-y-4">
+      
+      <!-- Message si aucune publication -->
+      <div *ngIf="publications.length === 0" class="card bg-base-100 shadow-xl">
+        <div class="card-body text-center py-12">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-content/30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+          <h3 class="text-xl font-semibold text-base-content/70">Aucune publication</h3>
+          <p class="text-base-content/50">Commencez par créer votre première publication</p>
+          <button (click)="openCreateModal()" class="btn btn-primary mt-4">Créer une publication</button>
+        </div>
+      </div>
+
+      <!-- Card de publication -->
+      <div *ngFor="let publication of publications" class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+        <div class="card-body p-0">
+          
+          <!-- En-tête : Auteur + Date + Menu actions -->
+          <div class="flex items-center gap-3 p-4 pb-3">
+            <div class="avatar placeholder">
+              <div [ngClass]="'w-12 h-12 rounded-full text-white ' + getAvatarColor(publication.author.id)">
+                <span class="text-lg font-semibold">{{ getAuthorInitials(publication.author) }}</span>
+              </div>
+            </div>
+            
+            <div class="flex-1">
+              <h3 class="font-semibold text-base-content">
+                {{ publication.author.prenomUtilisateur }} {{ publication.author.nomUtilisateur }}
+              </h3>
+              <div class="flex items-center gap-2 text-sm text-base-content/60">
+                <span>{{ getRelativeTime(publication.createdAt) }}</span>
+                <span *ngIf="publication.author.role !== 'USER'" class="badge badge-primary badge-xl">
+                  {{ publication.author.role }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Menu trois points -->
+            <div class="relative">
+              <button (click)="toggleMenu(publication, $event)" 
+                      class="btn btn-ghost btn-sm btn-circle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+
+              <!-- Dropdown menu -->
+              <div *ngIf="publication.showMenu" 
+                   class="absolute right-0 top-12 z-10 w-48 bg-base-100 rounded-lg shadow-xl border border-base-300">
+                <ul class="menu menu-compact">
+                  <li>
+                    <button (click)="openEditModal(publication)" class="gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                      </svg>
+                      Modifier
+                    </button>
+                  </li>
+                  <li>
+                    <button (click)="openDeleteModal(publication)" class="gap-2 text-error">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                      </svg>
+                      Supprimer
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Titre -->
+          <div class="px-4 pb-2">
+            <h2 class="text-xl font-bold text-base-content">{{ publication.title }}</h2>
+          </div>
+
+          <!-- Contenu texte -->
+          <div class="px-4 pb-3">
+            <p class="text-base-content whitespace-pre-wrap" 
+               [ngClass]="{'line-clamp-4': !publication.isExpanded && shouldTruncateContent(publication.content)}">
+              {{ publication.content }}
+            </p>
+            
+            <button 
+              *ngIf="shouldTruncateContent(publication.content)" 
+              (click)="toggleContentExpansion(publication)"
+              class="text-primary font-semibold hover:underline mt-2 text-sm">
+              {{ publication.isExpanded ? 'Voir moins' : 'Voir plus' }}
+            </button>
+          </div>
+
+          <!-- Section Images -->
+          <div class="w-full">
+            
+            <!-- 1 image -->
+            <div *ngIf="publication.images.length === 1" 
+                 class="w-full cursor-pointer hover:opacity-95 transition-opacity"
+                 (click)="openImageGallery(publication.images, 0)">
+              <img [src]="publication.images[0]" [alt]="publication.title"
+                   class="w-full h-auto max-h-[500px] object-cover" loading="lazy">
+            </div>
+
+            <!-- 2 images -->
+            <div *ngIf="publication.images.length === 2" class="grid grid-cols-2 gap-1">
+              <div *ngFor="let image of publication.images; let i = index"
+                   class="cursor-pointer hover:opacity-95 transition-opacity"
+                   (click)="openImageGallery(publication.images, i)">
+                <img [src]="image" [alt]="publication.title + ' - Image ' + (i + 1)"
+                     class="w-full h-64 object-cover" loading="lazy">
+              </div>
+            </div>
+
+            <!-- 3 images -->
+            <div *ngIf="publication.images.length === 3" class="grid grid-cols-2 gap-1">
+              <div class="col-span-2 cursor-pointer hover:opacity-95 transition-opacity"
+                   (click)="openImageGallery(publication.images, 0)">
+                <img [src]="publication.images[0]" [alt]="publication.title + ' - Image 1'"
+                     class="w-full h-80 object-cover" loading="lazy">
+              </div>
+              <div *ngFor="let image of publication.images.slice(1); let i = index"
+                   class="cursor-pointer hover:opacity-95 transition-opacity"
+                   (click)="openImageGallery(publication.images, i + 1)">
+                <img [src]="image" [alt]="publication.title + ' - Image ' + (i + 2)"
+                     class="w-full h-48 object-cover" loading="lazy">
+              </div>
+            </div>
+
+            <!-- 4+ images -->
+            <div *ngIf="publication.images.length >= 4" class="grid grid-cols-2 gap-1">
+              <div *ngFor="let image of publication.images.slice(0, 3); let i = index"
+                   class="cursor-pointer hover:opacity-95 transition-opacity"
+                   (click)="openImageGallery(publication.images, i)">
+                <img [src]="image" [alt]="publication.title + ' - Image ' + (i + 1)"
+                     class="w-full h-48 object-cover" loading="lazy">
+              </div>
+              
+              <div class="relative cursor-pointer group"
+                   (click)="openImageGallery(publication.images, 3)">
+                <img [src]="publication.images[3]" [alt]="publication.title + ' - Image 4'"
+                     class="w-full h-48 object-cover" loading="lazy">
+                
+                <div *ngIf="publication.images.length > 4" 
+                     class="absolute inset-0 bg-black/70 flex items-center justify-center group-hover:bg-black/80 transition-colors">
+                  <div class="text-center text-white">
+                    <span class="text-4xl font-bold">+{{ publication.images.length - 4 }}</span>
+                    <p class="text-sm mt-1">Voir tout</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Compteur de likes -->
+          <div class="px-4 py-3 border-t border-base-300">
+            <div class="flex items-center gap-1 text-sm text-base-content/60">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+              </svg>
+              <span class="font-medium">{{ publication.likesCount }}</span>
+            </div>
+          </div>
+
+          <!-- Bouton Like -->
+          <div class="border-t border-base-300">
+            <button (click)="toggleLike(publication)"
+                    class="w-full py-3 flex items-center justify-center gap-2 hover:bg-base-200 transition-colors"
+                    [ngClass]="publication.isLikedByUser ? 'text-primary' : 'text-base-content/70'">
+              
+              <svg *ngIf="publication.isLikedByUser" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+              </svg>
+              
+              <svg *ngIf="!publication.isLikedByUser" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+              </svg>
+              
+              <span class="font-semibold">{{ publication.isLikedByUser ? 'J\'aime' : 'Aimer' }}</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!isLoading && publications.length > 0 && totalPages > 1" class="flex justify-center mt-8">
+      <div class="join">
+        <button class="join-item btn btn-sm" [disabled]="currentPage === 1" (click)="previousPage()">«</button>
+        <button *ngFor="let page of getPaginationPages()" class="join-item btn btn-sm"
+                [ngClass]="{'btn-active': page === currentPage}" (click)="goToPage(page)">
+          {{ page }}
+        </button>
+        <button class="join-item btn btn-sm" [disabled]="currentPage === totalPages" (click)="nextPage()">»</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL 1 : CRÉATION/MODIFICATION ===== -->
+<dialog [class.modal-open]="isFormModalOpen" class="modal">
+  <div class="modal-box max-w-2xl">
+    <h3 class="font-bold text-2xl mb-4">
+      {{ isEditMode ? 'Modifier la publication' : 'Créer une nouvelle publication' }}
+    </h3>
+
+    <form [formGroup]="publicationForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Titre -->
+      <div class="form-control w-full mb-4">
+        <label class="label">
+          <span class="label-text font-semibold">Titre <span class="text-error">*</span></span>
+        </label>
+        <input type="text" formControlName="title" placeholder="Ex: Alerte circulation - Route Nationale 7"
+               class="input input-bordered w-full" [ngClass]="{'input-error': isFieldInvalid('title')}">
+        <label *ngIf="isFieldInvalid('title')" class="label">
+          <span class="label-text-alt text-error">{{ getFieldError('title') }}</span>
+        </label>
+      </div>
+
+      <!-- Contenu -->
+      <div class="form-control w-full mb-4">
+        <label class="label">
+          <span class="label-text font-semibold">Contenu <span class="text-error">*</span></span>
+        </label>
+        <textarea formControlName="content" rows="6" 
+                  placeholder="Décrivez les informations importantes..."
+                  class="textarea textarea-bordered w-full" 
+                  [ngClass]="{'textarea-error': isFieldInvalid('content')}"></textarea>
+        <label *ngIf="isFieldInvalid('content')" class="label">
+          <span class="label-text-alt text-error">{{ getFieldError('content') }}</span>
+        </label>
+      </div>
+
+      <!-- Upload d'images -->
+      <div class="form-control w-full mb-4">
+        <label class="label">
+          <span class="label-text font-semibold">
+            Images <span *ngIf="!isEditMode" class="text-error">*</span>
+            <span class="text-sm font-normal">(Max 5 images, 5MB chacune)</span>
+          </span>
+        </label>
+        <input type="file" accept="image/*" multiple (change)="onFileSelected($event)"
+               class="file-input file-input-bordered w-full">
+        <label class="label">
+          <span class="label-text-alt">Formats acceptés: JPG, PNG, WEBP</span>
+        </label>
+      </div>
+
+      <!-- Aperçu des images -->
+      <div *ngIf="previewUrls.length > 0" class="mb-4">
+        <p class="font-semibold mb-2">Aperçu des images ({{ previewUrls.length }})</p>
+        <div class="grid grid-cols-3 gap-2">
+          <div *ngFor="let url of previewUrls; let i = index" class="relative group">
+            <img [src]="url" alt="Aperçu" class="w-full h-32 object-cover rounded-lg">
+            <button type="button" (click)="removeImage(i)"
+                    class="absolute top-1 right-1 btn btn-circle btn-xs btn-error opacity-0 group-hover:opacity-100 transition-opacity">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-action">
+        <button type="button" (click)="closeFormModal()" class="btn btn-ghost" [disabled]="isSubmitting">
+          Annuler
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">{{ isEditMode ? 'Modifier' : 'Créer' }}</span>
+          <span *ngIf="isSubmitting" class="loading loading-spinner loading-sm"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button (click)="closeFormModal()">close</button>
+  </form>
+</dialog>
+
+<!-- ===== MODAL 2 : GALERIE D'IMAGES ===== -->
+<div *ngIf="isGalleryModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4">
+  
+  <button (click)="closeImageGallery()"
+          class="absolute top-4 right-4 btn btn-circle btn-ghost text-white hover:bg-white/20 z-10">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
+
+  <button *ngIf="currentImageIndex > 0" (click)="previousImage()"
+          class="absolute left-4 btn btn-circle btn-ghost text-white hover:bg-white/20 z-10">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+    </svg>
+  </button>
+
+  <div class="max-w-5xl max-h-full flex items-center justify-center">
+    <img [src]="getCurrentImage()" alt="Image galerie" class="max-w-full max-h-[90vh] object-contain">
+  </div>
+
+  <button *ngIf="currentImageIndex < selectedImages.length - 1" (click)="nextImage()"
+          class="absolute right-4 btn btn-circle btn-ghost text-white hover:bg-white/20 z-10">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+  </button>
+
+  <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm">
+    {{ currentImageIndex + 1 }} / {{ selectedImages.length }}
+  </div>
+
+  <div *ngIf="selectedImages.length > 1" 
+       class="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex gap-2 overflow-x-auto max-w-full px-4">
+    <div *ngFor="let image of selectedImages; let i = index"
+         (click)="goToImage(i)" class="cursor-pointer flex-shrink-0"
+         [ngClass]="{'ring-2 ring-primary': i === currentImageIndex, 'opacity-50': i !== currentImageIndex}">
+      <img [src]="image" alt="Miniature" class="w-16 h-16 object-cover rounded">
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== MODAL 3 : CONFIRMATION SUPPRESSION ===== -->
+<dialog [class.modal-open]="isDeleteModalOpen" class="modal">
+  <div class="modal-box">
+    <h3 class="font-bold text-xl mb-4">Confirmer la suppression</h3>
+    
+    <div class="alert alert-warning mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span>Cette action est irréversible !</span>
+    </div>
+
+    <p class="mb-4">
+      Êtes-vous sûr de vouloir supprimer la publication 
+      <strong>"{{ publicationToDelete?.title }}"</strong> ?
+    </p>
+    <p class="text-sm text-base-content/70">
+      Toutes les images et les likes associés seront également supprimés.
+    </p>
+
+    <div class="modal-action">
+      <button (click)="closeDeleteModal()" class="btn btn-ghost" [disabled]="isDeleting">
+        Annuler
+      </button>
+      <button (click)="confirmDelete()" class="btn btn-error" [disabled]="isDeleting">
+        <span *ngIf="!isDeleting">Supprimer</span>
+        <span *ngIf="isDeleting" class="loading loading-spinner loading-sm"></span>
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button (click)="closeDeleteModal()">close</button>
+  </form>
+</dialog>

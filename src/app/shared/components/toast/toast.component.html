@@ -1,0 +1,50 @@
+<div class="toast-container">
+  <div
+    *ngFor="let toast of toasts"
+    class="alert shadow-lg toast-item"
+    [ngClass]="getToastClass(toast.type)"
+    [style.--duration]="toast.duration + 'ms'"
+  >
+    <!-- Icône + Message sur la même ligne -->
+    <div class="flex items-center gap-3">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="stroke-current flex-shrink-0 h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          [attr.d]="getToastIcon(toast.type)"
+        />
+      </svg>
+      <span>{{ toast.message }}</span>
+    </div>
+
+    <!-- Bouton fermer -->
+    <button
+      (click)="removeToast(toast.id)"
+      class="btn btn-sm btn-circle btn-ghost"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+
+    <!-- Barre de progression -->
+    <div class="toast-progress"></div>
+  </div>
+</div>

@@ -185,6 +185,7 @@
         font-weight: 600;
         color: #6b7280;
         border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap; // Empêche le retour à la ligne des en-têtes
       }
     }
 
@@ -203,6 +204,15 @@
 
         td {
           padding: 0.5rem;
+          
+          // ✅ Gestion des badges de catégorie
+          .badge {
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
         }
       }
     }

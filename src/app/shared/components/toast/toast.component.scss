@@ -1,0 +1,98 @@
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+  pointer-events: none;
+}
+
+.toast-item {
+  pointer-events: auto;
+  min-width: 300px;
+  position: relative;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+
+  &.alert-success {
+    background-color: #d1fae5;
+    border-color: #10b981;
+    color: #065f46;
+  }
+
+  &.alert-error {
+    background-color: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+  }
+
+  &.alert-warning {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+    color: #92400e;
+  }
+
+  &.alert-info {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+    color: #1e40af;
+  }
+
+  // Barre de progression
+  .toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+    background-color: currentColor;
+    opacity: 0.5;
+    animation: progress var(--duration, 5000ms) linear;
+  }
+
+  // Bouton fermer
+  .btn-circle {
+    flex-shrink: 0;
+  }
+}
+
+// Animations
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+// Responsive
+@media (max-width: 640px) {
+  .toast-container {
+    top: auto;
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    max-width: none;
+  }
+
+  .toast-item {
+    min-width: auto;
+    width: 100%;
+  }
+}

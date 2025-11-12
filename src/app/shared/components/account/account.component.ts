@@ -7,7 +7,7 @@ import { RouterModule } from '@angular/router';
 import { Utilisateur } from '../../interfaces/utilisateur.interface';
 import { UsersService } from '../../services/users.service';
 import { AuthStateService } from '../../../auth/auth-state.service';
-import { NotificationService } from '../../services/notification.service';
+import { ToastService } from '../../services/toast.service';
 
 interface SexeOption {
   label: string;
@@ -47,7 +47,7 @@ export class AccountComponent implements OnInit {
     private fb: FormBuilder,
     private usersService: UsersService,
     private authStateService: AuthStateService,
-    private notificationService : NotificationService
+    private toastService : ToastService
   ) {
     this.accountForm = this.fb.group({
       nomUtilisateur: [
@@ -87,7 +87,7 @@ export class AccountComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        this.notificationService.error('Erreur lors du chargement du profil')
+        this.toastService.error('Erreur lors du chargement du profil')
       },
     });
   }
@@ -129,20 +129,20 @@ export class AccountComponent implements OnInit {
             if (this.currentUser) {
               this.authStateService.setCurrentUser(this.currentUser);
               this.isEditing = false;
-              this.notificationService.success('Profil mis a jour avec succes');
+              this.toastService.success('Profil mis a jour avec succes');
             }
           }
         },
         error: (error) => {
           this.isLoading = false;
-          this.notificationService.error(
+          this.toastService.error(
             error.error?.message || 'Erreur lors de la mise a jour'
           );
         },
       });
     } else {
       this.markFromGroupTouched();
-      this.notificationService.warning(
+      this.toastService.warning(
         'Veuillez corriger les erreurs dans le formulaire'
       );
     }
