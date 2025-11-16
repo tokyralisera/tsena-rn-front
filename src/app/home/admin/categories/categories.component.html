@@ -1,340 +1,275 @@
-<!-- Alert Messages -->
-<div class="toast toast-top toast-end z-[9999]" *ngIf="showAlert">
-  <div 
-    class="alert shadow-2xl min-w-[300px]"
-    [ngClass]="{
-      'alert-success': alertType === 'success',
-      'alert-error': alertType === 'error',
-      'alert-info': alertType === 'info'
-    }"
-  >
-    <div class="flex items-center justify-between w-full gap-3">
-      <div class="flex items-center gap-2">
-        <svg *ngIf="alertType === 'success'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <svg *ngIf="alertType === 'error'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span class="font-medium">{{ alertMessage }}</span>
-      </div>
-      <button class="btn btn-ghost btn-sm btn-circle" (click)="closeAlert()">✕</button>
-    </div>
-  </div>
-</div>
-
-<!-- Container adapté à votre layout existant -->
-<div class="p-16">
-  <!-- En-tête avec design moderne -->
-  <div class="mb-8">
-    <div class="flex items-center gap-4">
-      <div class="p-3 bg-primary/10 rounded-xl">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<!-- Container principal avec spacing uniforme -->
+<div class="page-container">
+  
+  <!-- En-tête moderne avec gradient -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" class="header-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
         </svg>
       </div>
-      <div>
-        <h1 class="text-3xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          Gestion des Catégories
-        </h1>
-        <p class="text-base-content/60 mt-1">
-          Organisez et gérez les catégories de produits
-        </p>
+      <div class="header-text">
+        <h1 class="header-title">Gestion des Catégories</h1>
+        <p class="header-subtitle">Organisez et gérez les catégories de produits</p>
+      </div>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">{{ filteredCategories.length }}</div>
+        <div class="stat-label">Catégories</div>
       </div>
     </div>
   </div>
 
-  <!-- Action Bar avec Stats -->
-  <div class="flex flex-col lg:flex-row justify-between items-center gap-4 mb-8">
-    <button 
-      class="btn btn-primary btn-lg gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
-      (click)="openAddModal()"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+  <!-- Barre d'actions -->
+  <div class="actions-bar">
+    <div class="filters-group">
+      <!-- Recherche avec animation -->
+      <div class="search-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input 
+          type="text" 
+          placeholder="Rechercher une catégorie..." 
+          class="input input-bordered search-input"
+          [(ngModel)]="searchTerm"
+        />
+        @if (searchTerm) {
+          <button class="clear-search-btn" (click)="clearSearch()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Bouton Ajouter avec animation -->
+    <button class="btn btn-primary gap-2 add-btn" (click)="openAddModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
-      Nouvelle Catégorie
+      Nouvelle catégorie
     </button>
-
-    <!-- Stats Card améliorée -->
-    <div class="stats bg-base-200 shadow-xl border border-base-300">
-      <div class="stat py-4 px-6">
-        <div class="stat-figure text-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-          </svg>
-        </div>
-        <div class="stat-title text-xs font-semibold opacity-70">Total Catégories</div>
-        <div class="stat-value text-3xl text-primary">{{ categories.length }}</div>
-        <div class="stat-desc text-xs mt-1">Catégories actives</div>
-      </div>
-    </div>
   </div>
 
-  <!-- Loading Spinner -->
-  <div *ngIf="loading && categories.length === 0" class="flex flex-col justify-center items-center py-20">
-    <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
-    <p class="text-base-content/60">Chargement des catégories...</p>
-  </div>
-
-  <!-- Liste des Catégories -->
-  <div *ngIf="!loading || categories.length > 0" class="space-y-6">
-    
-    <!-- Version Mobile (Cards) -->
-    <div class="grid grid-cols-1 lg:hidden gap-4">
-      <div 
-        *ngFor="let categorie of categories" 
-        class="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-300"
-      >
-        <div class="card-body p-5">
-          <div class="flex justify-between items-start gap-4">
-            <div class="flex-1">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="avatar placeholder">
-                  <div class="bg-primary/10 text-primary rounded-lg w-12 h-12 flex items-center justify-center">
-                    <span class="text-xl font-bold">{{ categorie.nom.charAt(0).toUpperCase() }}</span>
-                  </div>
-                </div>
-                <div>
-                  <h3 class="font-bold text-lg">{{ categorie.nom }}</h3>
-                  <p class="text-xs text-base-content/50">ID: #{{ categorie.id }}</p>
-                </div>
+  <!-- Tableau moderne -->
+  <div class="data-card">
+    <div class="overflow-x-auto">
+      <table class="table table-zebra">
+        <thead>
+          <tr>
+            <th class="table-header">
+              <div class="flex items-center gap-2">
+                <span class="font-semibold">Catégorie</span>
               </div>
-              
-              <div class="flex items-center gap-2 mt-3">
-                <div class="badge badge-primary badge-lg gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                  {{ categorie._count?.produits || 0 }} produits
+            </th>
+            <th class="table-header text-center">Produits</th>
+            <th class="table-header">Créée le</th>
+            <th class="table-header text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading) {
+            <tr>
+              <td colspan="4" class="text-center py-12">
+                <div class="flex flex-col items-center gap-3">
+                  <span class="loading loading-spinner loading-lg text-primary"></span>
+                  <span class="text-base-content/60">Chargement des catégories...</span>
                 </div>
-              </div>
-            </div>
-            
-            <!-- Actions Dropdown -->
-            <div class="dropdown dropdown-end">
-              <label tabindex="0" class="btn btn-ghost btn-sm btn-circle">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                </svg>
-              </label>
-              <ul tabindex="0" class="dropdown-content z-10 menu p-2 shadow-xl bg-base-100 rounded-box w-52 border border-base-300">
-                <li>
-                  <button (click)="openEditModal(categorie)" class="text-info gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Modifier
-                  </button>
-                </li>
-                <li>
-                  <button (click)="confirmDelete()" class="text-error gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Supprimer
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Version Desktop (Table améliorée) -->
-    <div class="hidden lg:block">
-      <div class="overflow-x-auto bg-base-100 rounded-2xl shadow-2xl border border-base-300">
-        <table class="table w-full">
-          <thead>
-            <tr class="border-b-2 border-base-300">
-              <th class="bg-base-200">
-                <div class="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                  </svg>
-                  ID
-                </div>
-              </th>
-              <th class="bg-base-200">
-                <div class="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              </td>
+            </tr>
+          }
+          
+          @if (!loading && filteredCategories.length === 0) {
+            <tr>
+              <td colspan="4" class="text-center py-12">
+                <div class="flex flex-col items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-base-content/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
-                  Catégorie
+                  <div class="text-center">
+                    <p class="font-semibold text-base-content/70">Aucune catégorie trouvée</p>
+                    <p class="text-sm text-base-content/50">Essayez de modifier votre recherche ou ajoutez une nouvelle catégorie</p>
+                  </div>
                 </div>
-              </th>
-              <th class="text-center bg-base-200">
-                <div class="flex items-center justify-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                  Produits
-                </div>
-              </th>
-              <th class="bg-base-200">
-                <div class="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Date de création
-                </div>
-              </th>
-              <th class="text-right bg-base-200">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let categorie of categories; let i = index" class="hover:bg-base-200/50 transition-colors">
-              <td>
-                <span class="badge badge-ghost badge-lg font-mono">#{{ categorie.id }}</span>
               </td>
+            </tr>
+          }
+          
+          @for (cat of filteredCategories; track cat.id) {
+            <tr class="table-row-hover">
               <td>
                 <div class="flex items-center gap-3">
-                  <div class="avatar placeholder">
-                    <div class="bg-primary/10 text-primary rounded-lg w-10 h-10 flex items-center justify-center">
-                      <span class="text-lg font-bold">{{ categorie.nom.charAt(0).toUpperCase() }}</span>
-                    </div>
+                  <div class="category-icon">
+                    <span class="category-letter">{{ cat.nom.charAt(0).toUpperCase() }}</span>
                   </div>
                   <div>
-                    <div class="font-bold text-base">{{ categorie.nom }}</div>
+                    <div class="font-semibold text-base-content">{{ cat.nom }}</div>
+                    <div class="text-xs text-base-content/60">ID: {{ cat.id }}</div>
                   </div>
                 </div>
               </td>
               <td class="text-center">
-                <span class="badge badge-primary badge-lg gap-2">
+                <div class="product-count-badge">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
-                  {{ categorie._count?.produits || 0 }}
-                </span>
-              </td>
-              <td>
-                <div class="text-sm">
-                  <div class="font-medium">{{ categorie.createdAt | date: 'dd/MM/yyyy' }}</div>
-                  <div class="text-xs text-base-content/50">{{ categorie.createdAt | date: 'HH:mm' }}</div>
+                  <span>{{ cat._count?.produits || 0 }}</span>
                 </div>
               </td>
               <td>
-                <div class="flex justify-end gap-2">
+                <div class="flex items-center gap-2 text-sm text-base-content/70">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {{ cat.createdAt | date:'dd/MM/yyyy' }}
+                </div>
+              </td>
+              <td class="text-right">
+                <div class="action-buttons">
                   <button 
-                    class="btn btn-sm btn-info btn-outline gap-2 hover:scale-105 transition-transform"
-                    (click)="openEditModal(categorie)"
-                    [disabled]="loading"
+                    class="btn btn-sm btn-ghost action-btn edit-btn" 
+                    (click)="openEditModal(cat)"
+                    title="Modifier"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    Modifier
                   </button>
                   <button 
-                    class="btn btn-sm btn-error btn-outline gap-2 hover:scale-105 transition-transform"
-                    (click)="confirmDelete()"
-                    [disabled]="loading"
+                    class="btn btn-sm btn-ghost action-btn delete-btn" 
+                    (click)="openDeleteModal(cat)"
+                    title="Supprimer"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    Supprimer
                   </button>
                 </div>
               </td>
             </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Empty State Amélioré -->
-    <div *ngIf="categories.length === 0 && !loading" class="text-center py-20">
-      <div class="max-w-md mx-auto">
-        <div class="mb-8">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-32 w-32 mx-auto text-base-content/10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-          </svg>
-        </div>
-        <h3 class="text-2xl font-bold mb-3">Aucune catégorie pour le moment</h3>
-        <p class="text-base-content/60 mb-6">Commencez par créer votre première catégorie pour organiser vos produits</p>
-        <button class="btn btn-primary btn-lg gap-2 shadow-xl" (click)="openAddModal()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Créer ma première catégorie
-        </button>
-      </div>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
-</div>
 
-<!-- Modal pour Ajouter/Modifier -->
-<dialog id="modal_form" class="modal modal-bottom sm:modal-middle">
-  <div class="modal-box relative">
-    <div class="flex items-center gap-3 mb-6">
-      <div class="p-2 bg-primary/10 rounded-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+  <!-- Modal Ajouter/Modifier -->
+  <input type="checkbox" [checked]="isModalOpen" class="modal-toggle" id="category-modal" />
+  <div class="modal" [class.modal-open]="isModalOpen">
+    <div class="modal-box max-w-md modern-modal">
+      <div class="modal-header-custom">
+        <h3 class="modal-title-custom">
+          @if (isEditMode) {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Modifier la catégorie
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Nouvelle catégorie
+          }
+        </h3>
+        <button class="btn btn-sm btn-circle btn-ghost" (click)="closeModal()">✕</button>
+      </div>
+      
+      <form (ngSubmit)="onSubmit()" class="form-modern">
+        <!-- Nom -->
+        <div class="form-group-modern">
+          <label class="label-modern">
+            <span>Nom de la catégorie</span>
+            <span class="required-indicator">*</span>
+          </label>
+          <input 
+            type="text" 
+            placeholder="Ex: Céréales, Légumes..." 
+            class="input input-bordered w-full input-modern"
+            [class.input-error]="!categorieForm.nom.trim() && formSubmitted"
+            [(ngModel)]="categorieForm.nom"
+            name="nom"
+          />
+          @if (!categorieForm.nom.trim() && formSubmitted) {
+            <label class="label">
+              <span class="label-text-alt text-error">Le nom est requis</span>
+            </label>
+          }
+        </div>
+
+        <!-- Actions -->
+        <div class="modal-actions-custom">
+          <button 
+            type="button" 
+            class="btn btn-ghost" 
+            (click)="closeModal()"
+            [disabled]="loading"
+          >
+            Annuler
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary gap-2"
+            [disabled]="loading || !categorieForm.nom.trim()"
+          >
+            @if (loading) {
+              <span class="loading loading-spinner loading-sm"></span>
+            }
+            {{ isEditMode ? 'Enregistrer' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+    <label class="modal-backdrop" for="category-modal" (click)="closeModal()"></label>
+  </div>
+
+  <!-- Modal Suppression -->
+  <input type="checkbox" [checked]="showDeleteModal" class="modal-toggle" id="delete-modal" />
+  <div class="modal" [class.modal-open]="showDeleteModal">
+    <div class="modal-box modern-modal delete-modal">
+      <div class="delete-icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" class="delete-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
-      <h3 class="text-xl font-bold">{{ isEditMode ? 'Modifier' : 'Nouvelle' }} Catégorie</h3>
-    </div>
-
-    <form (ngSubmit)="onSubmit()" class="space-y-4">
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Nom de la catégorie</span>
-          <span class="label-text-alt text-error">*</span>
-        </label>
-        <input 
-          type="text"
-          class="input input-bordered input-lg focus:input-primary"
-          [(ngModel)]="categorieForm.nom"
-          name="nom"
-          required
-          placeholder="Ex: Céréales, Légumes..."
-          [class.input-error]="!categorieForm.nom.trim() && formSubmitted"
-        />
-      </div>
-
-      <div class="modal-action gap-2">
+      
+      <h3 class="delete-modal-title">Confirmer la suppression</h3>
+      <p class="delete-modal-text">
+        Êtes-vous sûr de vouloir supprimer la catégorie 
+        <span class="font-bold text-error">{{ selectedCategory?.nom }}</span> ?
+        <br><br>
+        <span class="text-sm text-base-content/60">Cette action est irréversible et supprimera tous les produits associés.</span>
+      </p>
+      
+      <div class="modal-actions-custom">
         <button 
-          type="button"
-          class="btn btn-ghost"
-          (click)="closeModal()"
+          class="btn btn-ghost" 
+          (click)="closeDeleteModal()"
+          [disabled]="loading"
         >
           Annuler
         </button>
         <button 
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="!categorieForm.nom.trim()"
+          class="btn btn-error gap-2" 
+          (click)="confirmDelete()"
+          [disabled]="loading"
         >
-          <span *ngIf="loading" class="loading loading-spinner loading-sm"></span>
-          {{ isEditMode ? 'Enregistrer' : 'Créer' }}
+          @if (loading) {
+            <span class="loading loading-spinner loading-sm"></span>
+          }
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Supprimer définitivement
         </button>
       </div>
-    </form>
-  </div>
-  <form method="dialog" class="modal-backdrop">
-    <button>Fermer</button>
-  </form>
-</dialog>
-
-<!-- Modal de Confirmation pour Suppression -->
-<dialog id="modal_delete" class="modal modal-bottom sm:modal-middle">
-  <div class="modal-box">
-    <h3 class="font-bold text-lg text-error">⚠️ Confirmer la suppression</h3>
-    <p class="py-4">
-      Êtes-vous sûr de vouloir supprimer la catégorie "{{ selectedCategory?.nom }}" ?<br>
-      <span class="text-sm text-base-content/60">Cette action est irréversible.</span>
-    </p>
-    <div class="modal-action">
-      <button class="btn btn-ghost" (click)="closeDeleteModal()">Annuler</button>
-      <button class="btn btn-error" (click)="confirmDelete()">
-        <span *ngIf="loading" class="loading loading-spinner loading-sm"></span>
-        Supprimer
-      </button>
     </div>
+    <label class="modal-backdrop" for="delete-modal" (click)="closeDeleteModal()"></label>
   </div>
-  <form method="dialog" class="modal-backdrop">
-    <button>Fermer</button>
-  </form>
-</dialog>
+
+</div>

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreatePaysDto, Pays, PaysService, UpdatePaysDto } from '../../../shared/services/pays.service';
-
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-pays',
@@ -16,7 +16,6 @@ export class PaysComponent implements OnInit {
   loading = false;
   currentPage = 1;
   totalPages = 1;
-  totalItems = 0;
   itemsPerPage = 10;
   searchTerm = '';
 
@@ -28,7 +27,8 @@ export class PaysComponent implements OnInit {
 
   constructor(
     private paysService: PaysService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private toastService: ToastService
   ) {
     this.paysForm = this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
@@ -45,14 +45,13 @@ export class PaysComponent implements OnInit {
     this.paysService.getAll(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
       next: (response) => {
         this.pays = response.data;
-        this.totalItems = response.total;
         this.totalPages = Math.ceil(response.total / this.itemsPerPage);
         this.loading = false;
       },
       error: (error) => {
         console.error('Erreur lors du chargement des pays', error);
         this.loading = false;
-        this.showToast('Erreur lors du chargement des pays', 'error');
+        this.toastService.error('Erreur lors du chargement des pays');
       }
     });
   }
@@ -93,10 +92,14 @@ export class PaysComponent implements OnInit {
   onSubmit(): void {
     if (this.paysForm.invalid) {
       this.paysForm.markAllAsTouched();
+      this.toastService.warning('Veuillez remplir tous les champs requis');
       return;
     }
 
-    const formData = this.paysForm.value;
+    const formData = {
+      ...this.paysForm.value,
+      code: this.paysForm.value.code.toUpperCase()
+    };
 
     if (this.isEditMode && this.selectedPays) {
       this.updatePays(this.selectedPays.id, formData);
@@ -109,14 +112,14 @@ export class PaysComponent implements OnInit {
     this.loading = true;
     this.paysService.create(data).subscribe({
       next: () => {
-        this.showToast('Pays créé avec succès', 'success');
+        this.toastService.success('Pays créé avec succès');
         this.closeModal();
         this.loadPays();
       },
       error: (error) => {
         console.error('Erreur lors de la création du pays', error);
         this.loading = false;
-        this.showToast('Erreur lors de la création du pays', 'error');
+        this.toastService.error('Erreur lors de la création du pays');
       }
     });
   }
@@ -125,14 +128,14 @@ export class PaysComponent implements OnInit {
     this.loading = true;
     this.paysService.update(id, data).subscribe({
       next: () => {
-        this.showToast('Pays modifié avec succès', 'success');
+        this.toastService.success('Pays modifié avec succès');
         this.closeModal();
         this.loadPays();
       },
       error: (error) => {
         console.error('Erreur lors de la modification du pays', error);
         this.loading = false;
-        this.showToast('Erreur lors de la modification du pays', 'error');
+        this.toastService.error('Erreur lors de la modification du pays');
       }
     });
   }
@@ -143,14 +146,14 @@ export class PaysComponent implements OnInit {
     this.loading = true;
     this.paysService.delete(this.selectedPays.id).subscribe({
       next: () => {
-        this.showToast('Pays supprimé avec succès', 'success');
+        this.toastService.success('Pays supprimé avec succès');
         this.closeDeleteModal();
         this.loadPays();
       },
       error: (error) => {
         console.error('Erreur lors de la suppression du pays', error);
         this.loading = false;
-        this.showToast('Erreur lors de la suppression du pays', 'error');
+        this.toastService.error('Erreur lors de la suppression du pays');
       }
     });
   }
@@ -158,6 +161,13 @@ export class PaysComponent implements OnInit {
   onSearch(): void {
     this.currentPage = 1;
     this.loadPays();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.currentPage = 1;
+    this.loadPays();
+    this.toastService.info('Recherche réinitialisée');
   }
 
   changePage(page: number): void {
@@ -183,17 +193,21 @@ export class PaysComponent implements OnInit {
     return pages;
   }
 
-  showToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
-    // Implémentation simple du toast
-    // Vous pouvez utiliser une bibliothèque de toast plus sophistiquée si nécessaire
-    console.log(`[${type.toUpperCase()}] ${message}`);
-  }
-
   get nomControl() {
     return this.paysForm.get('nom');
   }
 
   get codeControl() {
     return this.paysForm.get('code');
+  }
+
+  get filteredPays(): Pays[] {
+    if (!this.searchTerm) return this.pays;
+    
+    const term = this.searchTerm.toLowerCase();
+    return this.pays.filter(pays => 
+      pays.nom.toLowerCase().includes(term) ||
+      pays.code.toLowerCase().includes(term)
+    );
   }
 }

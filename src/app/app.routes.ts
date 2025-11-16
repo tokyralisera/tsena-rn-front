@@ -19,6 +19,7 @@ import { DemandeUserComponent } from './home/user/demande/demande.component';
 import { ApprobationsDemandesComponent } from './home/admin/demande/demande.component';
 import { InfosComponent } from './home/user/infos/infos.component';
 import { InfosCreationComponent } from './home/admin/infos/infos.component';
+import { DashboardComponent } from './home/superadmin/dashboard/dashboard.component';
 
 
 export const routes: Routes = [
@@ -69,7 +70,7 @@ export const routes: Routes = [
           { path: 'approbations-offres', component: ApprobationOffreComponent },
           { path: 'approbations-demandes', component: ApprobationsDemandesComponent },
           { path: 'infos-creation', component: InfosCreationComponent },
-          
+          { path: 'dashboard', component: DashboardComponent },
         ],
       },
     ],

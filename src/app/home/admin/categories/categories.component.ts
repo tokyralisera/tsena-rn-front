@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CategorieService, Categorie } from '../../../shared/services/categorie.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-categories',
@@ -13,23 +14,24 @@ import { CategorieService, Categorie } from '../../../shared/services/categorie.
 export class CategoriesComponent implements OnInit {
   categories: Categorie[] = [];
   loading: boolean = false;
+  searchTerm: string = '';
   
   isModalOpen: boolean = false;
   isEditMode: boolean = false;
+  showDeleteModal: boolean = false;
   
   categorieForm = {
     id: 0,
     nom: ''
   };
-  
-  alertMessage: string = '';
-  alertType: 'success' | 'error' | 'info' = 'info';
-  showAlert: boolean = false;
 
   selectedCategory: Categorie | null = null;
   formSubmitted = false;
 
-  constructor(private categoriesService: CategorieService) {}
+  constructor(
+    private categoriesService: CategorieService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadCategories();
@@ -44,7 +46,7 @@ export class CategoriesComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur:', error);
-        this.showAlertMessage('Erreur lors du chargement des catégories', 'error');
+        this.toastService.error('Erreur lors du chargement des catégories');
         this.loading = false;
       }
     });
@@ -54,28 +56,26 @@ export class CategoriesComponent implements OnInit {
     this.isEditMode = false;
     this.categorieForm = { id: 0, nom: '' };
     this.formSubmitted = false;
-    const modal = document.getElementById('modal_form') as HTMLDialogElement;
-    modal?.showModal();
+    this.isModalOpen = true;
   }
 
   openEditModal(categorie: Categorie): void {
     this.isEditMode = true;
     this.categorieForm = { ...categorie };
     this.formSubmitted = false;
-    const modal = document.getElementById('modal_form') as HTMLDialogElement;
-    modal?.showModal();
+    this.isModalOpen = true;
   }
 
   closeModal(): void {
-    const modal = document.getElementById('modal_form') as HTMLDialogElement;
-    modal?.close();
+    this.isModalOpen = false;
     this.formSubmitted = false;
+    this.categorieForm = { id: 0, nom: '' };
   }
 
   onSubmit(): void {
     this.formSubmitted = true;
     if (!this.categorieForm.nom.trim()) {
-      this.showAlertMessage('Le nom de la catégorie est requis', 'error');
+      this.toastService.warning('Le nom de la catégorie est requis');
       return;
     }
 
@@ -84,34 +84,28 @@ export class CategoriesComponent implements OnInit {
     if (this.isEditMode) {
       this.categoriesService.update(this.categorieForm.id, this.categorieForm.nom).subscribe({
         next: (response) => {
-          this.showAlertMessage(response.message, 'success');
+          this.toastService.success(response.message || 'Catégorie modifiée avec succès');
           this.loadCategories();
           this.closeModal();
           this.loading = false;
         },
         error: (error) => {
           console.error('Erreur:', error);
-          this.showAlertMessage(
-            error.error?.message || 'Erreur lors de la modification',
-            'error'
-          );
+          this.toastService.error(error.error?.message || 'Erreur lors de la modification');
           this.loading = false;
         }
       });
     } else {
       this.categoriesService.create(this.categorieForm.nom).subscribe({
         next: (response) => {
-          this.showAlertMessage(response.message, 'success');
+          this.toastService.success(response.message || 'Catégorie créée avec succès');
           this.loadCategories();
           this.closeModal();
           this.loading = false;
         },
         error: (error) => {
           console.error('Erreur:', error);
-          this.showAlertMessage(
-            error.error?.message || 'Erreur lors de la création',
-            'error'
-          );
+          this.toastService.error(error.error?.message || 'Erreur lors de la création');
           this.loading = false;
         }
       });
@@ -120,13 +114,11 @@ export class CategoriesComponent implements OnInit {
 
   openDeleteModal(categorie: Categorie): void {
     this.selectedCategory = categorie;
-    const modal = document.getElementById('modal_delete') as HTMLDialogElement;
-    modal?.showModal();
+    this.showDeleteModal = true;
   }
 
   closeDeleteModal(): void {
-    const modal = document.getElementById('modal_delete') as HTMLDialogElement;
-    modal?.close();
+    this.showDeleteModal = false;
     this.selectedCategory = null;
   }
 
@@ -136,29 +128,28 @@ export class CategoriesComponent implements OnInit {
     this.loading = true;
     this.categoriesService.delete(this.selectedCategory.id).subscribe({
       next: (response) => {
-        this.showAlertMessage('Catégorie supprimée avec succès', 'success');
+        this.toastService.success('Catégorie supprimée avec succès');
         this.loadCategories();
         this.closeDeleteModal();
       },
       error: (error) => {
-        this.showAlertMessage(error.error?.message || 'Erreur lors de la suppression', 'error');
-      },
-      complete: () => {
+        this.toastService.error(error.error?.message || 'Erreur lors de la suppression');
         this.loading = false;
       }
     });
   }
 
-  showAlertMessage(message: string, type: 'success' | 'error' | 'info'): void {
-    this.alertMessage = message;
-    this.alertType = type;
-    this.showAlert = true;
-    setTimeout(() => {
-      this.showAlert = false;
-    }, 5000);
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.toastService.info('Recherche réinitialisée');
   }
 
-  closeAlert(): void {
-    this.showAlert = false;
+  get filteredCategories(): Categorie[] {
+    if (!this.searchTerm) return this.categories;
+    
+    const term = this.searchTerm.toLowerCase();
+    return this.categories.filter(cat => 
+      cat.nom.toLowerCase().includes(term)
+    );
   }
 }

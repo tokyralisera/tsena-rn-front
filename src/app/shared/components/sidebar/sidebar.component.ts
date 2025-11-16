@@ -16,6 +16,7 @@ import {
   faTruck,
   faUser,
   faUsers,
+  faRoad, // Nouveau : icône route
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthStateService } from '../../../auth/auth-state.service';
 import { AuthService } from '../../../auth/auth.service';
@@ -52,6 +53,7 @@ export class SidebarComponent implements OnInit {
   faSignOutAlt = faSignOutAlt;
   faChevronLeft = faChevronLeft;
   faSignOut = faSignOut;
+  faRoad = faRoad; // Icône pour le logo
 
   //!Ne pas mettre le / dans la variable route des menu items
 
@@ -86,7 +88,7 @@ export class SidebarComponent implements OnInit {
       route: 'approbations-offres',
       roles: ['ADMIN', 'SUPERADMIN'],
     },
-        {
+    {
       label: 'Approbations Demandes',
       icon: faCheckCircle,
       route: 'approbations-demandes',
@@ -98,13 +100,13 @@ export class SidebarComponent implements OnInit {
       route: 'category',
       roles: ['ADMIN', 'SUPERADMIN'],
     },
-      {
+    {
       label: 'Pays',
       icon: faLocation,
       route: 'pays',
       roles: ['ADMIN', 'SUPERADMIN'],
     },
-          {
+    {
       label: 'Villes',
       icon: faLocationDot,
       route: 'villes',
@@ -119,8 +121,8 @@ export class SidebarComponent implements OnInit {
     {
       label: 'Dashboard',
       icon: faChartLine,
-      route: '/dashboard',
-      roles: ['ADMIN', 'SUPERADMIN'],
+      route: 'dashboard',
+      roles: ['SUPERADMIN'],
     },
   ];
 

@@ -1,207 +1,218 @@
-:host {
-  display: block;
-  min-height: 100vh;
+// Importer les styles communs des pages admin
+@import '../../../shared/styles/admin-pages.scss';
+
+// ========================================
+// STYLES SPÉCIFIQUES AUX CATÉGORIES
+// ========================================
+
+// Icône catégorie avec lettre
+.category-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
 }
 
-// Animations personnalisées
-.card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.category-letter {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #d97706;
+  text-transform: uppercase;
+}
+
+// Badge compteur de produits
+.product-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  border: 2px solid #93c5fd;
+  
+  svg {
+    transition: transform 0.2s ease;
+  }
   
   &:hover {
-    transform: translateY(-4px);
+    background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+    transform: scale(1.05);
+    
+    svg {
+      transform: rotate(10deg) scale(1.1);
+    }
   }
 }
 
-// Boutons avec effet hover
-.btn {
-  transition: all 0.2s ease-in-out;
-  
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-  }
-  
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-}
-
-// Style pour les alertes
-.toast {
-  .alert {
-    animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(8px);
+// Animation pour la ligne du tableau au hover
+.table-row-hover {
+  &:hover {
+    .category-icon {
+      background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+      transform: scale(1.05) rotate(-5deg);
+    }
+    
+    .product-count-badge {
+      transform: translateX(2px) scale(1.05);
+    }
   }
 }
 
-@keyframes slideIn {
+// ========================================
+// ANIMATIONS SPÉCIFIQUES
+// ========================================
+
+// Animation de pulse pour les nouvelles catégories
+@keyframes categoryPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+  }
+}
+
+.category-icon.new {
+  animation: categoryPulse 2s infinite;
+}
+
+// Animation d'apparition des catégories
+@keyframes categorySlideIn {
   from {
-    transform: translateX(100%);
     opacity: 0;
+    transform: translateX(-30px);
   }
   to {
+    opacity: 1;
     transform: translateX(0);
-    opacity: 1;
   }
 }
 
-// Animation du modal
-.modal-box {
-  animation: modalFadeIn 0.3s ease-out;
+.table tbody tr {
+  animation: categorySlideIn 0.4s ease-out;
+  animation-fill-mode: both;
+  
+  @for $i from 1 through 15 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.05}s;
+    }
+  }
 }
 
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
+// ========================================
+// RESPONSIVE AMÉLIORÉ
+// ========================================
+
+@media (max-width: 640px) {
+  .category-icon {
+    width: 2rem;
+    height: 2rem;
+    
+    .category-letter {
+      font-size: 1rem;
+    }
   }
-  to {
-    opacity: 1;
+  
+  .product-count-badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+}
+
+// ========================================
+// ÉTATS SPÉCIAUX
+// ========================================
+
+// Catégorie vide (sans produits)
+tr.empty-category {
+  opacity: 0.6;
+  
+  .category-icon {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    
+    .category-letter {
+      color: #9ca3af;
+    }
+  }
+  
+  .product-count-badge {
+    background: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #6b7280;
+  }
+}
+
+// Catégorie populaire (beaucoup de produits)
+tr.popular-category {
+  .product-count-badge {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-color: #10b981;
+    color: white;
+    animation: pulse 2s infinite;
+  }
+}
+
+// ========================================
+// MICRO-INTERACTIONS
+// ========================================
+
+// Effet de rebond sur les icônes
+.category-icon {
+  &:active {
+    animation: bounce 0.5s ease;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
     transform: scale(1);
   }
-}
-
-// Style pour le tableau
-.table {
-  thead {
-    tr {
-      th {
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.05em;
-        padding: 1rem;
-      }
-    }
-  }
-  
-  tbody {
-    tr {
-      transition: background-color 0.2s ease;
-      
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.02);
-      }
-      
-      td {
-        padding: 1rem;
-        vertical-align: middle;
-      }
-    }
+  50% {
+    transform: scale(0.9);
   }
 }
 
-// Badge avec animation
-.badge {
-  transition: all 0.2s ease;
-  
-  &:hover {
-    transform: scale(1.05);
-  }
-}
-
-// Avatar avec effet
-.avatar {
-  .placeholder {
-    transition: all 0.3s ease;
-    
-    &:hover {
-      transform: rotate(5deg) scale(1.1);
-    }
-  }
-}
-
-// Stats card
-.stats {
-  transition: all 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-                0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  }
-}
-
-// Dropdown
-.dropdown {
-  &-content {
-    animation: dropdownFadeIn 0.2s ease-out;
-  }
-}
-
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// Loading spinner
-.loading {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-// Responsive tweaks
-@media (max-width: 768px) {
-  .stats {
-    width: 100%;
-  }
-  
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-// Focus states personnalisés
-input:focus,
-button:focus {
-  outline: 2px solid hsl(var(--p));
-  outline-offset: 2px;
-}
-
-// Amélioration du contraste
-.text-base-content\/60 {
-  color: hsl(var(--bc) / 0.6);
-}
-
-.text-base-content\/50 {
-  color: hsl(var(--bc) / 0.5);
-}
-
-// Gradient backgrounds
-.bg-gradient-to-br {
-  background-image: linear-gradient(
-    to bottom right,
-    var(--tw-gradient-stops)
+// Effet shimmer sur hover
+.category-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
   );
+  transition: left 0.5s ease;
 }
 
-// Smooth scroll
-html {
-  scroll-behavior: smooth;
+.table-row-hover:hover .category-icon::after {
+  left: 100%;
 }
 
-// Sélection de texte personnalisée
-::selection {
-  background-color: hsl(var(--p) / 0.3);
-  color: hsl(var(--pc));
-}
+// ========================================
+// DARK MODE SUPPORT (optionnel)
+// ========================================
 
-// Amélioration de la lisibilité
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@media (prefers-color-scheme: dark) {
+  .category-icon {
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  }
+  
+  .product-count-badge {
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  }
 }

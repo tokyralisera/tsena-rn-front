@@ -1,64 +1,49 @@
-// Styles personnalisés pour le composant Pays
+// Importer les styles communs
+@import '../../../shared/styles/admin-pages.scss';
 
-.modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
+// ========================================
+// STYLES SPÉCIFIQUES AU PAYS
+// ========================================
+
+// Icône pays avec style globe
+.country-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1e40af;
 }
 
-// Animation pour les lignes du tableau
-.table tbody tr {
+// Badge pour le code ISO
+.code-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.875rem;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  color: #374151;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 2px solid #d1d5db;
+  font-family: 'Courier New', monospace;
   transition: all 0.2s ease;
+  
+  &:hover {
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    transform: scale(1.05);
+  }
 }
 
-// Style pour les inputs en mode uppercase
+// Input en majuscules
 input.uppercase {
   text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-family: 'Courier New', monospace;
 }
-
-// Amélioration de l'espacement pour mobile
-@media (max-width: 640px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .card-body {
-    padding: 0.5rem;
-  }
-
-  .table {
-    font-size: 0.875rem;
-  }
-
-  .btn-sm {
-    padding: 0.25rem 0.5rem;
-  }
-}
-
-// Style pour le loading state
-.loading-overlay {
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-// Amélioration du focus pour l'accessibilité
-.btn:focus-visible,
-.input:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-// Réutilisation du même style que categories.component.scss
-@import '../categories/categories.component.scss';

@@ -1,108 +1,404 @@
-// Styles personnalisés pour le composant Ville
+// ========================================
+// VILLE COMPONENT STYLES
+// src/app/home/admin/villes/ville.component.scss
+// ========================================
 
-.modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
-}
+// Importer les styles communs des pages admin
+@import '../../../shared/styles/admin-pages.scss';
 
-// Animation pour les lignes du tableau
-.table tbody tr {
-  transition: all 0.2s ease;
-}
+// ========================================
+// STYLES SPÉCIFIQUES AUX VILLES
+// ========================================
 
-// Style pour les badges du pays
-.badge-outline {
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
-// Amélioration de l'espacement pour mobile
-@media (max-width: 640px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .card-body {
-    padding: 0.5rem;
-  }
-
-  .table {
-    font-size: 0.875rem;
-    
-    th, td {
-      padding: 0.5rem 0.25rem;
-    }
-  }
-
-  .btn-sm {
-    padding: 0.25rem 0.5rem;
-  }
-}
-
-// Style pour le loading state
-.loading-overlay {
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-// Amélioration du focus pour l'accessibilité
-.btn:focus-visible,
-.input:focus-visible,
-.select:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-// Style pour les filtres groupés
-.input-group {
+// Icône ville avec style map marker
+.city-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+  border-radius: 0.5rem;
   display: flex;
-  align-items: stretch;
-
-  .select,
-  .input {
-    border-radius: 0;
-    
-    &:first-child {
-      border-top-left-radius: 0.5rem;
-      border-bottom-left-radius: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  color: #5733eb;
+  transition: all 0.3s ease;
+  
+  svg {
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover {
+    svg {
+      transform: scale(1.1);
     }
   }
+}
 
-  .btn {
-    border-radius: 0;
+// Badge pour le drapeau du pays
+.country-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.625rem;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  border-radius: 0.375rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+    transform: scale(1.05);
+  }
+}
+
+// Badge pour le code postal
+.badge {
+  &.badge-ghost {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+}
+
+// ========================================
+// AMÉLIORATIONS SPÉCIFIQUES
+// ========================================
+
+// Animation pour la ligne du tableau au hover
+.table-row-hover {
+  &:hover {
+    .city-icon {
+      background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+      transform: scale(1.05);
+    }
     
-    &:last-child {
-      border-top-right-radius: 0.5rem;
-      border-bottom-right-radius: 0.5rem;
+    .country-flag {
+      transform: translateX(2px);
     }
   }
 }
 
 // Style pour l'affichage du pays dans le tableau
 .flex.items-center.gap-2 {
-  .badge {
+  .country-flag {
     flex-shrink: 0;
   }
   
-  span:not(.badge) {
+  span:not(.country-flag) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 }
 
-// Réutilisation du même style que categories.component.scss
-@import '../categories/categories.component.scss';
+// ========================================
+// FORMULAIRE SPÉCIFIQUE VILLES
+// ========================================
+
+// Ajustement pour le champ code postal optionnel
+.form-group-modern {
+  .optional-indicator {
+    font-style: italic;
+  }
+}
+
+// Select avec icône pays
+.select-modern {
+  option {
+    padding: 0.5rem;
+  }
+}
+
+// ========================================
+// RESPONSIVE AMÉLIORÉ
+// ========================================
+
+@media (max-width: 640px) {
+  // Ajustement pour mobile
+  .city-icon {
+    width: 2rem;
+    height: 2rem;
+    
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+  
+  .country-flag {
+    font-size: 0.625rem;
+    padding: 0.2rem 0.5rem;
+  }
+  
+  // Colonne pays sur mobile
+  .flex.items-center.gap-2 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+// ========================================
+// ÉTATS VIDES ET LOADING
+// ========================================
+
+// Amélioration de l'état vide
+.table tbody tr {
+  .flex.flex-col.items-center.gap-3 {
+    svg {
+      animation: float 3s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// Animation de chargement
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ========================================
+// INTERACTIONS AMÉLIORÉES
+// ========================================
+
+// Effet sur les badges au focus/hover
+.badge-ghost {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(87, 51, 235, 0.1);
+    border-color: rgba(87, 51, 235, 0.2);
+    color: #5733eb;
+  }
+}
+
+// Amélioration du filtre par pays
+.select-wrapper {
+  position: relative;
+  
+  &::after {
+    content: '🌍';
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 1.25rem;
+  }
+  
+  .select-filter {
+    padding-left: 3rem;
+  }
+}
+
+// ========================================
+// ACCESSIBILITÉ AMÉLIORÉE
+// ========================================
+
+// Focus visible pour les éléments interactifs
+.action-btn {
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+}
+
+// Contraste amélioré pour les textes
+.text-base-content\/60 {
+  @media (prefers-contrast: high) {
+    color: rgba(0, 0, 0, 0.8);
+  }
+}
+
+// ========================================
+// PRINT STYLES
+// ========================================
+
+@media print {
+  .page-container {
+    padding: 0;
+  }
+  
+  .actions-bar,
+  .action-buttons,
+  .add-btn {
+    display: none;
+  }
+  
+  .data-card {
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
+  }
+  
+  .table {
+    font-size: 0.75rem;
+  }
+}
+
+// ========================================
+// DARK MODE READY (optionnel)
+// ========================================
+
+@media (prefers-color-scheme: dark) {
+  // Prêt pour le dark mode si besoin
+  .city-icon {
+    // background: linear-gradient(135deg, #312e81 0%, #4c1d95 100%);
+  }
+}
+
+// ========================================
+// ANIMATIONS DE TRANSITION
+// ========================================
+
+// Transition douce pour les changements de page
+.data-card {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  
+  &.loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// Animation d'entrée pour les nouvelles lignes
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.table tbody tr {
+  animation: slideIn 0.3s ease-out;
+  animation-fill-mode: both;
+  
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.05}s;
+    }
+  }
+}
+
+// ========================================
+// MICRO-INTERACTIONS
+// ========================================
+
+// Effet de pulse sur les badges nouveaux
+.badge-ghost.new {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// Effet de shake sur les erreurs de validation
+.input-error {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+// ========================================
+// SCROLLBAR PERSONNALISÉE POUR LA TABLE
+// ========================================
+
+.overflow-x-auto {
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+    border-radius: 4px;
+    
+    &:hover {
+      background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+    }
+  }
+}
+
+// ========================================
+// TOOLTIPS (si besoin)
+// ========================================
+
+[title] {
+  position: relative;
+  cursor: help;
+  
+  &:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem 0.75rem;
+    background: #1f2937;
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 0.375rem;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    margin-bottom: 0.5rem;
+  }
+  
+  &:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1f2937;
+    z-index: 1000;
+    pointer-events: none;
+    margin-bottom: -6px;
+  }
+}
