@@ -161,13 +161,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtenir une valeur sûre pour offres.expiree
-   */
-  // getOffresExpiree(): number {
-  //   return this.offresStats?.offres?.expiree ?? 0;
-  // }
-
-  /**
    * Obtenir une valeur sûre pour publications.valide (offres)
    */
   getOffresValide(): number {

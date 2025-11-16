@@ -115,7 +115,7 @@ export class SidebarComponent implements OnInit {
     {
       label: 'Utilisateurs',
       icon: faUsers,
-      route: '/utilisateurs',
+      route: 'utilisateurs',
       roles: ['SUPERADMIN'],
     },
     {
