@@ -16,7 +16,8 @@ import {
   faTruck,
   faUser,
   faUsers,
-  faRoad, // Nouveau : icône route
+  faRoad,
+  faMessage, // Nouveau : icône route
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthStateService } from '../../../auth/auth-state.service';
 import { AuthService } from '../../../auth/auth.service';
@@ -74,6 +75,12 @@ export class SidebarComponent implements OnInit {
       label: 'Informations/Actualités',
       icon: faInfoCircle,
       route: 'infos',
+      roles: ['USER'],
+    },
+    {
+      label: 'Chat',
+      icon: faMessage,
+      route: 'chat',
       roles: ['USER'],
     },
     {

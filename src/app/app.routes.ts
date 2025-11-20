@@ -37,9 +37,13 @@ export const routes: Routes = [
         canActivate: [authGuard, roleGuard],
         data: { expectedRoles: ['USER'] },
         children: [{ path: 'profile', component: AccountComponent },
-          { path: 'offres', component: OffresUserComponent },
-          { path: 'demandes', component: DemandeUserComponent },
-          { path: 'infos', component: InfosComponent },
+        { path: 'offres', component: OffresUserComponent },
+        { path: 'demandes', component: DemandeUserComponent },
+        { path: 'infos', component: InfosComponent },
+        {
+          path: 'chat',
+          loadChildren: () => import('./home/user/chat/chat.routes').then(m => m.chatRoutes)
+        },
         ],
       },
       {
@@ -55,7 +59,7 @@ export const routes: Routes = [
           { path: 'approbations-offres', component: ApprobationOffreComponent },
           { path: 'approbations-demandes', component: ApprobationsDemandesComponent },
           { path: 'infos-creation', component: InfosCreationComponent },
-          
+
         ],
       },
       {
