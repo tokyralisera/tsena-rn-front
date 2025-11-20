@@ -73,16 +73,3 @@ export class NavbarChatBadgeComponent implements OnInit {
   }
 }
 
-// Intégration dans votre navbar existante :
-/*
-<div class="navbar bg-base-100">
-  <div class="flex-1">
-    <a class="btn btn-ghost text-xl">ROADMARKET</a>
-  </div>
-  <div class="flex-none gap-2">
-    <!-- Autres boutons -->
-    <app-navbar-chat-badge></app-navbar-chat-badge>
-    <!-- Profil, etc. -->
-  </div>
-</div>
-*/

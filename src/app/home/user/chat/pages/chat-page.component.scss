@@ -1,4 +1,8 @@
 :host {
   display: block;
-  height: 100%;
+  height: 100vh; 
+}
+
+.h-full {
+  height: 100% !important;
 }

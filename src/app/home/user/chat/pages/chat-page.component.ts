@@ -1,4 +1,3 @@
-// src/app/home/user/chat/pages/chat-page.component.ts
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -89,7 +88,9 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   }
 
   onConversationSelected(conversationId: number): void {
+    console.log('💬 Conversation sélectionnée ID:', conversationId);
     this.chatState.setActiveConversation(conversationId);
+
 
     // En mode mobile, afficher la fenêtre de chat
     if (window.innerWidth < 768) {

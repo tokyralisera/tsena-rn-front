@@ -35,7 +35,7 @@ export interface MenuItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [FontAwesomeModule, CommonModule, RouterModule],
+  imports: [FontAwesomeModule, CommonModule, RouterModule,],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })

@@ -39,7 +39,8 @@ export class WebsocketService {
             transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionDelay: 1000,
-            reconnectionAttempts: 5,
+            reconnectionAttempts: 10,
+            timeout: 20000,
         });
 
         this.setupSocketListeners();
@@ -196,6 +197,13 @@ export class WebsocketService {
         this.socket.on('disconnect', (reason: string) => {
             console.log('⚠️ WebSocket disconnected:', reason);
             this.connected$.next(false);
+
+            if (reason === 'io server disconnect') {
+                console.log('🔄 Reconnecting...');
+                setTimeout(() => {
+                    this.socket?.connect();
+                }, 1000);
+            }
         });
 
         this.socket.on('connect_error', (error: Error) => {
@@ -210,5 +218,6 @@ export class WebsocketService {
         this.socket.on('left_conversation', (data: any) => {
             console.log('👋 Left conversation:', data);
         });
+
     }
 }

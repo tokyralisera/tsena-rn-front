@@ -1,4 +1,4 @@
-<div class="h-full flex flex-col bg-base-100">
+<div class="flex flex-col h-full bg-base-100">
   @if (!activeConversation()) {
   <!-- Empty State -->
   <div class="flex-1 flex items-center justify-center">
@@ -18,7 +18,7 @@
   </div>
   } @else {
   <!-- Header -->
-  <div class="bg-gradient-to-r from-primary to-secondary p-4 text-primary-content shadow-lg">
+  <div class="flex-shrink-0 bg-gradient-to-r from-primary to-secondary p-4 text-primary-content shadow-lg">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <!-- Avatar -->
@@ -71,7 +71,7 @@
   </div>
 
   <!-- Messages Container -->
-  <div #messagesContainer class="flex-1 overflow-y-auto p-4 space-y-4 bg-base-200">
+  <div #messagesContainer class="flex-1 overflow-y-auto p-4 space-y-4 bg-base-200" style="min-height: 0;">
     @if (isLoadingMessages()) {
     <!-- Loading -->
     <div class="flex items-center justify-center h-full">
@@ -138,12 +138,21 @@
     }
   </div>
 
-  <!-- Input Area -->
-  <div class="p-4 bg-base-100 border-t border-base-300">
+  <!-- Input Area - TOUJOURS VISIBLE -->
+  <div class="flex-shrink-0 p-4 bg-base-100 border-t border-base-300">
     <div class="flex gap-2">
-      <input type="text" [(ngModel)]="messageInput" (keyup.enter)="sendMessage()" (input)="onTyping()"
-        placeholder="Tapez votre message..." class="input input-bordered flex-1" />
-      <button (click)="sendMessage()" [disabled]="!messageInput.trim()" class="btn btn-primary">
+      <input 
+        type="text" 
+        [(ngModel)]="messageInput" 
+        (keyup.enter)="sendMessage()" 
+        (input)="onTyping()"
+        placeholder="Tapez votre message..." 
+        class="input input-bordered flex-1"
+        [disabled]="isLoadingMessages()" />
+      <button 
+        (click)="sendMessage()" 
+        [disabled]="!messageInput.trim() || isLoadingMessages()" 
+        class="btn btn-primary">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path
             d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />

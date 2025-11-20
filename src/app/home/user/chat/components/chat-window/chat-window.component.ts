@@ -42,6 +42,12 @@ export class ChatWindowComponent implements OnInit, OnDestroy, AfterViewChecked 
                 this.shouldScrollToBottom = true;
             }
         });
+
+        // NOUVEAU : Log pour déboguer
+        effect(() => {
+            const activeConv = this.activeConversation();
+            console.log('🔍 Active conversation changed:', activeConv ? `ID: ${activeConv.id}` : 'null');
+        });
     }
 
     ngOnInit(): void { }
