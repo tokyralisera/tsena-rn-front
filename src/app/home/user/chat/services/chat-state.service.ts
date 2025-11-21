@@ -186,6 +186,19 @@ export class ChatStateService {
         }
     }
 
+    refreshOnReconnect(): void {
+        console.log('♻️ Refresh on reconnect');
+
+        // Recharger les conversations
+        this.loadConversations();
+
+        // Si conversation active, recharger les messages
+        const activeConv = this.activeConversation();
+        if (activeConv) {
+            this.loadMessages(activeConv.id);
+        }
+    }
+
     /**
      * Configuration des listeners WebSocket
      */

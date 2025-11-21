@@ -1,53 +1,67 @@
-<div class="h-screen flex flex-col bg-base-200">
-  <!-- Top Bar -->
-  <div class="bg-gradient-to-r from-primary to-secondary text-primary-content shadow-lg flex-shrink-0">
-    <div class="container mx-auto px-4 py-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <button 
-            class="btn btn-ghost btn-sm md:hidden"
-            [class.hidden]="!showChatWindow"
-            (click)="onBackToList()"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h1 class="text-2xl font-bold flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            Messagerie
-          </h1>
-        </div>
+<div class="h-screen flex flex-col bg-gray-50 overflow-hidden">
+  <!-- Header avec icône et titre comme les autres pages -->
+  <div class="bg-white border-b border-gray-200 flex-shrink-0">
+    <div class="max-w-full px-4 sm:px-6 lg:px-8">
+      <div class="py-4 sm:py-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <!-- Bouton retour mobile -->
+            <button 
+              class="btn btn-ghost btn-sm md:hidden"
+              [class.hidden]="!showChatWindow"
+              (click)="onBackToList()"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
 
-        <!-- Connection Status -->
-        <div class="flex items-center gap-2">
-          @if (isConnected) {
-            <div class="flex items-center gap-2 badge badge-success badge-sm">
-              <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-success-content"></span>
-              </span>
-              En ligne
+            <!-- Icône + Titre -->
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <div>
+                <h1 class="text-2xl font-bold text-gray-900">Messagerie</h1>
+                <p class="text-sm text-gray-500">Gérez vos conversations en temps réel</p>
+              </div>
             </div>
-          } @else {
-            <div class="badge badge-error badge-sm">
-              Hors ligne
-            </div>
-          }
+          </div>
+
+          <!-- Status de connexion -->
+          <div class="flex items-center gap-2">
+            @if (isConnected) {
+              <div class="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg border border-green-200">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span class="text-sm font-medium">En ligne</span>
+              </div>
+            } @else {
+              <div class="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-700 rounded-lg border border-red-200">
+                <span class="relative flex h-2 w-2">
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+                <span class="text-sm font-medium">Hors ligne</span>
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Main Content -->
-  <div class="flex-1 overflow-hidden" style="min-height: 0;">
-    <div class="h-full">
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-0 h-full">
-        <!-- Chat List -->
+  <!-- Main Content - hauteur fixe avec scroll interne -->
+  <div class="flex-1 overflow-hidden px-4 sm:px-6 lg:px-8 py-6">
+    <div class="max-w-7xl mx-auto h-full">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-full">
+      <div class="grid grid-cols-1 md:grid-cols-12 h-full">
+        <!-- Liste des conversations - plus large -->
         <div 
-          class="col-span-1 md:col-span-4 border-r border-base-300 h-full overflow-hidden"
+          class="col-span-1 md:col-span-5 lg:col-span-4 border-r border-gray-200 h-full overflow-hidden"
           [class.hidden]="showChatWindow"
           [class.block]="!showChatWindow"
         >
@@ -56,9 +70,9 @@
           ></app-chat-list>
         </div>
 
-        <!-- Chat Window -->
+        <!-- Fenêtre de chat -->
         <div 
-          class="col-span-1 md:col-span-8 h-full overflow-hidden"
+          class="col-span-1 md:col-span-7 lg:col-span-8 h-full overflow-hidden"
           [class.hidden]="!showChatWindow && !activeConversation()"
           [class.block]="showChatWindow || activeConversation()"
         >

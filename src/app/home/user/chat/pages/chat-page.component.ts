@@ -27,45 +27,45 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   showChatWindow = false;
 
   ngOnInit(): void {
-  console.log('🚀 ChatPage ngOnInit');
-  
-  const userStr = localStorage.getItem('user_data');
-  const token = localStorage.getItem('auth_token');
+    console.log('🚀 ChatPage ngOnInit');
 
-  console.log('👤 User:', userStr);
-  console.log('🔑 Token:', token ? 'présent' : 'absent');
+    const userStr = localStorage.getItem('user_data');
+    const token = localStorage.getItem('auth_token');
 
-  if (!userStr || !token) {
-    console.error('❌ Pas de user ou token');
-    return;
-  }
+    console.log('👤 User:', userStr);
+    console.log('🔑 Token:', token ? 'présent' : 'absent');
 
-  const user = JSON.parse(userStr);
-  console.log('✅ User parsed:', user);
-  
-  this.chatState.setCurrentUser({
-    id: user.id,
-    nomUtilisateur: user.nomUtilisateur,
-    prenomUtilisateur: user.prenomUtilisateur,
-  });
-
-  // Connecter au WebSocket
-  console.log('🔌 Tentative de connexion WebSocket...');
-  this.connectWebSocket(token);
-
-  // Charger les conversations
-  this.chatState.loadConversations();
-  this.chatState.loadUnreadCount();
-
-  this.route.queryParams.subscribe(params => {
-    const conversationId = params['conversationId'];
-    if (conversationId) {
-      setTimeout(() => {
-        this.onConversationSelected(Number(conversationId));
-      }, 500);
+    if (!userStr || !token) {
+      console.error('❌ Pas de user ou token');
+      return;
     }
-  });
-}
+
+    const user = JSON.parse(userStr);
+    console.log('✅ User parsed:', user);
+
+    this.chatState.setCurrentUser({
+      id: user.id,
+      nomUtilisateur: user.nomUtilisateur,
+      prenomUtilisateur: user.prenomUtilisateur,
+    });
+
+    // Connecter au WebSocket
+    console.log('🔌 Tentative de connexion WebSocket...');
+    this.connectWebSocket(token);
+
+    // Charger les conversations
+    this.chatState.loadConversations();
+    this.chatState.loadUnreadCount();
+
+    this.route.queryParams.subscribe(params => {
+      const conversationId = params['conversationId'];
+      if (conversationId) {
+        setTimeout(() => {
+          this.onConversationSelected(Number(conversationId));
+        }, 500);
+      }
+    });
+  }
   ngOnDestroy(): void {
     // Déconnecter du WebSocket
     this.websocketService.disconnect();
@@ -81,6 +81,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
       if (connected) {
         setTimeout(() => {
           this.chatState.initializeWebSocketListeners();
+          this.chatState.refreshOnReconnect();
         }, 500);
       }
     });

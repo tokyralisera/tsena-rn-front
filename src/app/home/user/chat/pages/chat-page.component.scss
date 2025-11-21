@@ -1,8 +1,55 @@
 :host {
   display: block;
-  height: 100vh; 
+  height: 100vh;
+  overflow: hidden; // Désactive le scroll global
+  background: #f9fafb;
 }
 
-.h-full {
-  height: 100% !important;
+// Animations
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive - Mobile first
+@media (max-width: 768px) {
+  // Sur mobile, la liste et le chat prennent tout l'écran
+  .md\:col-span-5,
+  .md\:col-span-7 {
+    width: 100% !important;
+  }
+  
+  // Masquer les éléments non essentiels sur mobile
+  .hidden\:sm\:block {
+    display: none;
+  }
+}
+
+// Tablettes
+@media (min-width: 768px) and (max-width: 1024px) {
+  // Ajuster les proportions pour tablettes
+  .md\:col-span-5 {
+    grid-column: span 5 / span 5;
+  }
+  
+  .md\:col-span-7 {
+    grid-column: span 7 / span 7;
+  }
+}
+
+// Desktop
+@media (min-width: 1024px) {
+  .lg\:col-span-4 {
+    grid-column: span 4 / span 4;
+  }
+  
+  .lg\:col-span-8 {
+    grid-column: span 8 / span 8;
+  }
 }

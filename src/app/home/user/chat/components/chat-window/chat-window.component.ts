@@ -75,6 +75,13 @@ export class ChatWindowComponent implements OnInit, OnDestroy, AfterViewChecked 
         this.shouldScrollToBottom = true;
     }
 
+    handleEnterKey(event: KeyboardEvent): void {
+        if (!event.shiftKey) {
+            event.preventDefault();
+            this.sendMessage();
+        }
+    }
+
     onTyping(): void {
         const conversation = this.activeConversation();
         if (!conversation) return;
