@@ -1,358 +1,392 @@
-<div class="min-h-screen p-4 md:p-6 lg:p-8">
+<div class="min-h-screen bg-gray-50 p-8">
+  <div class="max-w-7xl mx-auto">
 
-  <!-- Header -->
-  <div class="mb-6">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold text-base-content">Tableau de Bord</h1>
-        <p class="text-base-content/60 mt-1">Vue d'ensemble des statistiques RoadMarket</p>
-      </div>
-      <button class="btn btn-primary gap-2" (click)="refreshData()" [disabled]="isLoading">
-        @if (!isLoading) {
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        }
-        @if (isLoading) {
-        <span class="loading loading-spinner loading-sm"></span>
-        }
-        Actualiser
-      </button>
-    </div>
-  </div>
-
-  <!-- Loading State -->
-  @if (isLoading) {
-  <div class="flex flex-col items-center justify-center py-20">
-    <span class="loading loading-spinner loading-lg text-primary"></span>
-    <p class="mt-4 text-base-content/60">Chargement des statistiques...</p>
-  </div>
-  }
-
-  <!-- Error State -->
-  @if (hasError && !isLoading) {
-  <div class="flex justify-center py-20">
-    <div class="alert alert-error max-w-md">
-      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <div>
-        <h3 class="font-bold">Erreur de chargement</h3>
-        <div class="text-sm">{{ errorMessage }}</div>
-      </div>
-      <button class="btn btn-sm btn-ghost" (click)="refreshData()">Réessayer</button>
-    </div>
-  </div>
-  }
-
-  <!-- Dashboard Content -->
-  @if (!isLoading && !hasError) {
-  <div class="space-y-6">
-
-    <!-- Stat Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      @for (card of statCards; track card.title) {
-      <div class="stats bg-base-100 shadow-lg hover:shadow-xl transition-all duration-200 border-l-4"
-        [class.border-primary]="card.color === 'primary'" [class.border-info]="card.color === 'info'"
-        [class.border-success]="card.color === 'success'" [class.border-warning]="card.color === 'warning'">
-        <div class="stat">
-          <div class="stat-figure" [class.text-primary]="card.color === 'primary'"
-            [class.text-info]="card.color === 'info'" [class.text-success]="card.color === 'success'"
-            [class.text-warning]="card.color === 'warning'">
-            @if (card.icon === 'shopping-bag') {
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-50" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+    <!-- En-tête moderne -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            }
-            @if (card.icon === 'search') {
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-50" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            }
-            @if (card.icon === 'trending-up') {
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-50" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            }
-            @if (card.icon === 'check-circle') {
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 opacity-50" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            }
           </div>
-          <div class="stat-title text-base-content/70">{{ card.title }}</div>
-          <div class="stat-value text-base-content" [class.text-primary]="card.color === 'primary'"
-            [class.text-info]="card.color === 'info'" [class.text-success]="card.color === 'success'"
-            [class.text-warning]="card.color === 'warning'">
-            {{ card.value }}
+          <div>
+            <h1 class="text-3xl font-bold text-indigo-600">Tableau de Bord</h1>
+            <p class="text-gray-500 text-sm mt-1">Vue d'ensemble des statistiques RoadMarket</p>
           </div>
-          @if (card.trend !== undefined) {
-          <div class="stat-desc flex items-center gap-1 mt-1" [class.text-success]="card.trend >= 50"
-            [class.text-warning]="card.trend < 50 && card.trend >= 30" [class.text-error]="card.trend < 30">
-            @if (card.trend >= 50) {
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </div>
+        
+        <button class="btn bg-indigo-600 hover:bg-indigo-700 text-white border-0 shadow-sm gap-2" 
+                (click)="refreshData()" 
+                [disabled]="isLoading">
+          @if (!isLoading) {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            }
-            @if (card.trend < 50 && card.trend>= 30) {
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+          }
+          @if (isLoading) {
+            <span class="loading loading-spinner loading-sm"></span>
+          }
+          Actualiser
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="flex flex-col items-center justify-center py-20">
+        <span class="loading loading-spinner loading-lg text-indigo-600"></span>
+        <p class="mt-4 text-gray-600 font-medium">Chargement des statistiques...</p>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (hasError && !isLoading) {
+      <div class="flex justify-center py-20">
+        <div class="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md w-full">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              }
-              @if (card.trend < 30) { <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-                }
-                <span class="font-semibold">{{ card.trend.toFixed(1) }}%</span>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-bold text-red-900 mb-1">Erreur de chargement</h3>
+              <p class="text-red-700 text-sm mb-3">{{ errorMessage }}</p>
+              <button class="btn btn-sm bg-red-600 hover:bg-red-700 text-white border-0" (click)="refreshData()">
+                Réessayer
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+    }
+
+    <!-- Dashboard Content -->
+    @if (!isLoading && !hasError) {
+      <div class="space-y-6">
+
+        <!-- Stat Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          @for (card of statCards; track card.title) {
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200"
+                 [class.border-l-4]="true"
+                 [class.border-l-blue-500]="card.color === 'primary'"
+                 [class.border-l-purple-500]="card.color === 'info'"
+                 [class.border-l-green-500]="card.color === 'success'"
+                 [class.border-l-yellow-500]="card.color === 'warning'">
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <p class="text-gray-500 text-xs font-medium uppercase tracking-wide mb-2">{{ card.title }}</p>
+                  <p class="text-3xl font-bold text-gray-900"
+                     [class.text-blue-600]="card.color === 'primary'"
+                     [class.text-purple-600]="card.color === 'info'"
+                     [class.text-green-600]="card.color === 'success'"
+                     [class.text-yellow-600]="card.color === 'warning'">
+                    {{ card.value }}
+                  </p>
+                  @if (card.trend !== undefined) {
+                    <div class="flex items-center gap-1 mt-2 text-sm"
+                         [class.text-green-600]="card.trend >= 50"
+                         [class.text-yellow-600]="card.trend < 50 && card.trend >= 30"
+                         [class.text-red-600]="card.trend < 30">
+                      @if (card.trend >= 50) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        </svg>
+                      }
+                      @if (card.trend < 50 && card.trend >= 30) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                        </svg>
+                      }
+                      @if (card.trend < 30) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                      }
+                      <span class="font-semibold">{{ card.trend.toFixed(1) }}%</span>
+                    </div>
+                  }
+                </div>
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                     [class.bg-blue-100]="card.color === 'primary'"
+                     [class.bg-purple-100]="card.color === 'info'"
+                     [class.bg-green-100]="card.color === 'success'"
+                     [class.bg-yellow-100]="card.color === 'warning'">
+                  @if (card.icon === 'shopping-bag') {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
+                         [class.text-blue-600]="card.color === 'primary'"
+                         [class.text-purple-600]="card.color === 'info'"
+                         [class.text-green-600]="card.color === 'success'"
+                         [class.text-yellow-600]="card.color === 'warning'"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  }
+                  @if (card.icon === 'search') {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
+                         [class.text-blue-600]="card.color === 'primary'"
+                         [class.text-purple-600]="card.color === 'info'"
+                         [class.text-green-600]="card.color === 'success'"
+                         [class.text-yellow-600]="card.color === 'warning'"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  }
+                  @if (card.icon === 'trending-up') {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
+                         [class.text-blue-600]="card.color === 'primary'"
+                         [class.text-purple-600]="card.color === 'info'"
+                         [class.text-green-600]="card.color === 'success'"
+                         [class.text-yellow-600]="card.color === 'warning'"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                  }
+                  @if (card.icon === 'check-circle') {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
+                         [class.text-blue-600]="card.color === 'primary'"
+                         [class.text-purple-600]="card.color === 'info'"
+                         [class.text-green-600]="card.color === 'success'"
+                         [class.text-yellow-600]="card.color === 'warning'"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  }
+                </div>
+              </div>
+            </div>
           }
         </div>
-      </div>
-      }
-    </div>
 
-    <!-- Statistiques détaillées -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Statistiques détaillées -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-      <!-- Statistiques des Offres -->
-      <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
-          <h2 class="card-title text-lg mb-4">Statistiques des Offres</h2>
+          <!-- Statistiques des Offres -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="p-6">
+              <h2 class="text-xl font-bold text-gray-900 mb-6">Statistiques des Offres</h2>
 
-          <div class="space-y-4">
-            <!-- Statut des offres -->
-            <div>
-              <h3 class="font-semibold mb-2 text-sm">Statut des offres</h3>
-              <div class="space-y-2">
-                <div class="flex items-center justify-between text-sm">
-                  <span class="flex items-center gap-2">
-                    <div class="badge badge-success badge-sm"></div>
-                    Vendues
-                  </span>
-                  <span class="font-bold">{{ formatNumber(getOffresVendu()) }}</span>
+              <div class="space-y-5">
+                <!-- Statut des offres -->
+                <div>
+                  <h3 class="font-semibold text-gray-700 mb-3 text-sm">Statut des offres</h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="flex items-center gap-2 text-sm text-gray-600">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        Vendues
+                      </span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getOffresVendu()) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="flex items-center gap-2 text-sm text-gray-600">
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        Non vendues
+                      </span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getOffresNonVendu()) }}</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="flex items-center justify-between text-sm">
-                  <span class="flex items-center gap-2">
-                    <div class="badge badge-warning badge-sm"></div>
-                    Non vendues
-                  </span>
-                  <span class="font-bold">{{ formatNumber(getOffresNonVendu()) }}</span>
+
+                <div class="border-t border-gray-200 my-4"></div>
+
+                <!-- État des publications -->
+                <div>
+                  <h3 class="font-semibold text-gray-700 mb-3 text-sm">État des publications</h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-gray-600">Validées</span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getOffresValide()) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-gray-600">En attente</span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getOffresEnAttente()) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-gray-600">Rejetées</span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getOffresRejete()) }}</span>
+                    </div>
+                  </div>
                 </div>
-                <!-- <div class="flex items-center justify-between text-sm">
-                    <span class="flex items-center gap-2">
-                      <div class="badge badge-error badge-sm"></div>
-                      Expirées
-                    </span>
-                    <span class="font-bold">{{ formatNumber(getOffresExpiree()) }}</span>
-                  </div> -->
+
+                <div class="border-t border-gray-200 my-4"></div>
+
+                <!-- Taux de validation -->
+                <div>
+                  <div class="flex justify-between text-sm mb-2">
+                    <span class="font-semibold text-gray-700">Taux de validation</span>
+                    <span class="font-bold text-blue-600">{{ offreValidationRate.toFixed(1) }}%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" [style.width.%]="offreValidationRate"></div>
+                  </div>
+                </div>
+
+                <!-- Taux de vente -->
+                <div>
+                  <div class="flex justify-between text-sm mb-2">
+                    <span class="font-semibold text-gray-700">Taux de vente</span>
+                    <span class="font-bold text-green-600">{{ salesRate.toFixed(1) }}%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-green-600 h-2.5 rounded-full transition-all duration-500" [style.width.%]="salesRate"></div>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div class="divider my-2"></div>
-
-            <!-- État des publications -->
-            <div>
-              <h3 class="font-semibold mb-2 text-sm">État des publications</h3>
-              <div class="space-y-2">
-                <div class="flex items-center justify-between text-sm">
-                  <span>Validées</span>
-                  <span class="font-bold">{{ formatNumber(getOffresValide()) }}</span>
-                </div>
-                <div class="flex items-center justify-between text-sm">
-                  <span>En attente</span>
-                  <span class="font-bold">{{ formatNumber(getOffresEnAttente()) }}</span>
-                </div>
-                <div class="flex items-center justify-between text-sm">
-                  <span>Rejetées</span>
-                  <span class="font-bold">{{ formatNumber(getOffresRejete()) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="divider my-2"></div>
-
-            <!-- Taux de validation -->
-            <div>
-              <div class="flex justify-between text-sm mb-2">
-                <span class="font-semibold">Taux de validation</span>
-                <span class="font-bold">{{ offreValidationRate.toFixed(1) }}%</span>
-              </div>
-              <progress class="progress progress-primary w-full" [value]="offreValidationRate" max="100">
-              </progress>
-            </div>
-
-            <!-- Taux de vente -->
-            <div>
-              <div class="flex justify-between text-sm mb-2">
-                <span class="font-semibold">Taux de vente</span>
-                <span class="font-bold">{{ salesRate.toFixed(1) }}%</span>
-              </div>
-              <progress class="progress progress-success w-full" [value]="salesRate" max="100">
-              </progress>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Statistiques des Demandes -->
-      <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
-          <h2 class="card-title text-lg mb-4">Statistiques des Demandes</h2>
+          <!-- Statistiques des Demandes -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="p-6">
+              <h2 class="text-xl font-bold text-gray-900 mb-6">Statistiques des Demandes</h2>
 
-          <div class="space-y-4">
-            <!-- Statut des demandes -->
-            <div>
-              <h3 class="font-semibold mb-2 text-sm">Statut des demandes</h3>
-              <div class="space-y-2">
-                <div class="flex items-center justify-between text-sm">
-                  <span class="flex items-center gap-2">
-                    <div class="badge badge-success badge-sm"></div>
-                    Trouvées
-                  </span>
-                  <span class="font-bold">{{ formatNumber(getDemandesTrouvee()) }}</span>
+              <div class="space-y-5">
+                <!-- Statut des demandes -->
+                <div>
+                  <h3 class="font-semibold text-gray-700 mb-3 text-sm">Statut des demandes</h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="flex items-center gap-2 text-sm text-gray-600">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        Trouvées
+                      </span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getDemandesTrouvee()) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="flex items-center gap-2 text-sm text-gray-600">
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        Non trouvées
+                      </span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getDemandesNonTrouvee()) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span class="flex items-center gap-2 text-sm text-gray-600">
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        Expirées
+                      </span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getDemandesExpiree()) }}</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="flex items-center justify-between text-sm">
-                  <span class="flex items-center gap-2">
-                    <div class="badge badge-warning badge-sm"></div>
-                    Non trouvées
-                  </span>
-                  <span class="font-bold">{{ formatNumber(getDemandesNonTrouvee()) }}</span>
+
+                <div class="border-t border-gray-200 my-4"></div>
+
+                <!-- État des publications -->
+                <div>
+                  <h3 class="font-semibold text-gray-700 mb-3 text-sm">État des publications</h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-gray-600">Validées</span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getDemandesValide()) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-gray-600">En attente</span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getDemandesEnAttente()) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-gray-600">Rejetées</span>
+                      <span class="font-bold text-gray-900">{{ formatNumber(getDemandesRejete()) }}</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="flex items-center justify-between text-sm">
-                  <span class="flex items-center gap-2">
-                    <div class="badge badge-error badge-sm"></div>
-                    Expirées
-                  </span>
-                  <span class="font-bold">{{ formatNumber(getDemandesExpiree()) }}</span>
+
+                <div class="border-t border-gray-200 my-4"></div>
+
+                <!-- Taux de validation -->
+                <div>
+                  <div class="flex justify-between text-sm mb-2">
+                    <span class="font-semibold text-gray-700">Taux de validation</span>
+                    <span class="font-bold text-purple-600">{{ demandeValidationRate.toFixed(1) }}%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-purple-600 h-2.5 rounded-full transition-all duration-500" [style.width.%]="demandeValidationRate"></div>
+                  </div>
+                </div>
+
+                <!-- Taux de satisfaction -->
+                <div>
+                  <div class="flex justify-between text-sm mb-2">
+                    <span class="font-semibold text-gray-700">Demandes trouvées</span>
+                    <span class="font-bold text-yellow-600">{{ conversionRate.toFixed(1) }}%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-yellow-600 h-2.5 rounded-full transition-all duration-500" [style.width.%]="conversionRate"></div>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div class="divider my-2"></div>
-
-            <!-- État des publications -->
-            <div>
-              <h3 class="font-semibold mb-2 text-sm">État des publications</h3>
-              <div class="space-y-2">
-                <div class="flex items-center justify-between text-sm">
-                  <span>Validées</span>
-                  <span class="font-bold">{{ formatNumber(getDemandesValide()) }}</span>
-                </div>
-                <div class="flex items-center justify-between text-sm">
-                  <span>En attente</span>
-                  <span class="font-bold">{{ formatNumber(getDemandesEnAttente()) }}</span>
-                </div>
-                <div class="flex items-center justify-between text-sm">
-                  <span>Rejetées</span>
-                  <span class="font-bold">{{ formatNumber(getDemandesRejete()) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="divider my-2"></div>
-
-            <!-- Taux de validation -->
-            <div>
-              <div class="flex justify-between text-sm mb-2">
-                <span class="font-semibold">Taux de validation</span>
-                <span class="font-bold">{{ demandeValidationRate.toFixed(1) }}%</span>
-              </div>
-              <progress class="progress progress-info w-full" [value]="demandeValidationRate" max="100">
-              </progress>
-            </div>
-
-            <!-- Taux de satisfaction -->
-            <div>
-              <div class="flex justify-between text-sm mb-2">
-                <span class="font-semibold">Demandes trouvées</span>
-                <span class="font-bold">{{ conversionRate.toFixed(1) }}%</span>
-              </div>
-              <progress class="progress progress-warning w-full" [value]="conversionRate" max="100">
-              </progress>
             </div>
           </div>
-        </div>
-      </div>
 
-    </div>
-
-    <!-- Catégories populaires -->
-    @if (offresStats && offresStats.parCategorie && offresStats.parCategorie.length > 0) {
-    <div class="card bg-base-100 shadow-lg">
-      <div class="card-body">
-        <h2 class="card-title text-lg mb-4">Catégories Populaires</h2>
-        <div class="overflow-x-auto">
-          <table class="table table-zebra">
-            <thead>
-              <tr>
-                <th>Catégorie</th>
-                <th class="text-right">Nombre de publications</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (categorie of offresStats.parCategorie; track categorie.nom) {
-              <tr>
-                <td>{{ categorie.nom }}</td>
-                <td class="text-right font-bold">{{ formatNumber(categorie.count) }}</td>
-              </tr>
-              }
-            </tbody>
-          </table>
         </div>
+
+        <!-- Catégories populaires -->
+        @if (offresStats && offresStats.parCategorie && offresStats.parCategorie.length > 0) {
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="p-6">
+              <h2 class="text-xl font-bold text-gray-900 mb-6">Catégories Populaires</h2>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="border-b border-gray-200">
+                      <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Catégorie</th>
+                      <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700">Nombre de publications</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (categorie of offresStats.parCategorie; track categorie.nom) {
+                      <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td class="py-3 px-4 text-sm text-gray-900">{{ categorie.nom }}</td>
+                        <td class="text-right py-3 px-4 text-sm font-bold text-gray-900">{{ formatNumber(categorie.count) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Tendances mensuelles -->
+        @if (offresStats && offresStats.parMois && offresStats.parMois.length > 0) {
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="p-6">
+              <h2 class="text-xl font-bold text-gray-900 mb-6">Tendances Mensuelles</h2>
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="border-b border-gray-200">
+                      <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Mois</th>
+                      <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700">Offres</th>
+                      <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700">Demandes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (mois of offresStats.parMois; track mois.mois) {
+                      <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td class="py-3 px-4 text-sm text-gray-900">{{ mois.mois }}</td>
+                        <td class="text-right py-3 px-4 text-sm font-bold text-gray-900">{{ formatNumber(mois.count) }}</td>
+                        <td class="text-right py-3 px-4 text-sm font-bold text-gray-900">
+                          @if (demandesStats && demandesStats.parMois) {
+                            @for (demandeMois of demandesStats.parMois; track demandeMois.mois) {
+                              @if (demandeMois.mois === mois.mois) {
+                                {{ formatNumber(demandeMois.count) }}
+                              }
+                            }
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
       </div>
-    </div>
     }
-
-    <!-- Tendances mensuelles -->
-    @if (offresStats && offresStats.parMois && offresStats.parMois.length > 0) {
-    <div class="card bg-base-100 shadow-lg">
-      <div class="card-body">
-        <h2 class="card-title text-lg mb-4">Tendances Mensuelles</h2>
-        <div class="overflow-x-auto">
-          <table class="table table-zebra">
-            <thead>
-              <tr>
-                <th>Mois</th>
-                <th class="text-right">Offres</th>
-                <th class="text-right">Demandes</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (mois of offresStats.parMois; track mois.mois) {
-              <tr>
-                <td>{{ mois.mois }}</td>
-                <td class="text-right font-bold">{{ formatNumber(mois.count) }}</td>
-                <td class="text-right font-bold">
-                  @if (demandesStats && demandesStats.parMois) {
-                  @for (demandeMois of demandesStats.parMois; track demandeMois.mois) {
-                  @if (demandeMois.mois === mois.mois) {
-                  {{ formatNumber(demandeMois.count) }}
-                  }
-                  }
-                  }
-                </td>
-              </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    }
-
   </div>
-  }
 </div>

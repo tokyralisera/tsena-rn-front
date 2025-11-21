@@ -1,91 +1,15 @@
-// ===== Variables =====
-:host {
-  --primary-color: #5733eb;
-  --primary-hover: #4527d0;
-}
-
-// ===== Cards principales =====
-.card {
+// ===== Cards statistiques =====
+.bg-white {
   transition: all 0.3s ease;
   
   &:hover {
-    transform: translateY(-4px);
-  }
-}
-
-// Icons dans les cards
-.bg-blue-500 { background-color: #3b82f6; }
-.bg-green-500 { background-color: #10b981; }
-.bg-purple-500 { background-color: var(--primary-color); }
-.bg-teal-500 { background-color: #14b8a6; }
-.bg-yellow-500 { background-color: #f59e0b; }
-.bg-red-500 { background-color: #ef4444; }
-
-// ===== Bouton actualiser avec animation =====
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-// ===== Radial Progress (graphiques circulaires) =====
-.radial-progress {
-  --value: 0;
-  --size: 12rem;
-  --thickness: 1rem;
-  
-  position: relative;
-  width: var(--size);
-  height: var(--size);
-  border-radius: 50%;
-  display: inline-grid;
-  place-content: center;
-  background: 
-    radial-gradient(farthest-side, currentColor 98%, transparent) top/var(--thickness) var(--thickness) no-repeat,
-    conic-gradient(currentColor calc(var(--value) * 1%), transparent 0);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(99% - var(--thickness)), white calc(100% - var(--thickness)));
-  mask: radial-gradient(farthest-side, transparent calc(99% - var(--thickness)), white calc(100% - var(--thickness)));
-  
-  transition: --value 1s ease;
-}
-
-// ===== Onglets =====
-.tabs-boxed {
-  display: inline-flex;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  
-  .tab {
-    border-radius: 0.375rem;
-    padding: 0.5rem 1rem;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    
-    &:hover {
-      background-color: rgba(87, 51, 235, 0.1);
-    }
-    
-    &.tab-active {
-      background-color: var(--primary-color);
-      color: white;
-      
-      &:hover {
-        background-color: var(--primary-hover);
-      }
-    }
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 }
 
 // ===== Barres de progression =====
-.w-full.bg-base-300 {
+.bg-gray-200 {
   overflow: hidden;
   
   > div {
@@ -93,134 +17,30 @@
   }
 }
 
-// ===== Cartes de statut =====
-.bg-yellow-50 {
-  background-color: #fef3c7;
-}
-
-.bg-green-50 {
-  background-color: #d1fae5;
-}
-
-.bg-red-50 {
-  background-color: #fee2e2;
-}
-
-.border-yellow-200 {
-  border-color: #fde68a;
-}
-
-.border-green-200 {
-  border-color: #a7f3d0;
-}
-
-.border-red-200 {
-  border-color: #fecaca;
-}
-
-.text-yellow-600 {
-  color: #d97706;
-}
-
-.text-yellow-700 {
-  color: #b45309;
-}
-
-.text-green-600 {
-  color: #059669;
-}
-
-.text-green-700 {
-  color: #047857;
-}
-
-.text-red-600 {
-  color: #dc2626;
-}
-
-.text-red-700 {
-  color: #b91c1c;
-}
-
-// ===== États vides =====
-.text-center.py-8 {
-  color: #9ca3af;
-  font-style: italic;
-}
-
-// ===== Responsive =====
-@media (max-width: 1024px) {
-  .radial-progress {
-    --size: 10rem;
-    --thickness: 0.8rem;
-  }
-}
-
-@media (max-width: 768px) {
-  // En-tête responsive
-  .flex.items-center.justify-between {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
+// ===== Bouton actualiser =====
+.btn {
+  transition: all 0.2s ease;
   
-  // Cards en colonne sur mobile
-  .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
-    grid-template-columns: 1fr;
-  }
-  
-  // Radial progress plus petit sur mobile
-  .radial-progress {
-    --size: 8rem;
-    --thickness: 0.6rem;
-    
-    .text-4xl {
-      font-size: 1.875rem;
-    }
-  }
-  
-  // Onglets pleine largeur
-  .tabs-boxed {
-    width: 100%;
-    
-    .tab {
-      flex: 1;
-      justify-content: center;
-    }
-  }
-  
-  // Cards de statut empilées
-  .grid-cols-1.md\\:grid-cols-3 {
-    grid-template-columns: 1fr;
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
   }
 }
 
-@media (max-width: 640px) {
-  // Titre plus petit
-  .text-3xl {
-    font-size: 1.5rem;
-  }
-  
-  // Valeurs des cards
-  .card-body {
-    .text-3xl {
-      font-size: 1.875rem;
-    }
-  }
-  
-  // Boutons d'action
-  .flex.gap-2 {
-    width: 100%;
-    
-    button {
-      flex: 1;
-    }
+// ===== Tableaux =====
+table {
+  tbody tr {
+    transition: background-color 0.2s ease;
   }
 }
 
 // ===== Animation d'entrée =====
-.card {
+.grid > div {
   animation: fadeInUp 0.5s ease;
+  
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
 }
 
 @keyframes fadeInUp {
@@ -234,44 +54,70 @@
   }
 }
 
-// Délais d'animation pour les cards
-.grid > .card {
-  &:nth-child(1) { animation-delay: 0.1s; }
-  &:nth-child(2) { animation-delay: 0.2s; }
-  &:nth-child(3) { animation-delay: 0.3s; }
-  &:nth-child(4) { animation-delay: 0.4s; }
-}
-
-// ===== Loading state =====
+// ===== Loading spinner =====
 .loading-spinner {
   animation: spin 1s linear infinite;
 }
 
-// ===== Print styles =====
-@media print {
-  .btn,
-  .tabs-boxed {
-    display: none;
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-  
-  .card {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-  
-  body {
-    background: white;
+  to {
+    transform: rotate(360deg);
   }
 }
 
-// ===== Accessibilité =====
-button:focus-visible,
-.tab:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
+// ===== Responsive =====
+@media (max-width: 1024px) {
+  // Cards en 2 colonnes sur tablette
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  // Header responsive
+  .flex.items-center.justify-between {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .btn {
+      width: 100%;
+    }
+  }
+  
+  // Cards en colonne sur mobile
+  .grid-cols-4,
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  // Texte plus petit
+  .text-3xl {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  // Titre encore plus petit
+  .text-3xl {
+    font-size: 1.5rem;
+  }
+  
+  // Valeurs des cards
+  div > .text-3xl {
+    font-size: 1.875rem;
+  }
 }
 
 // ===== Smooth scroll =====
 html {
   scroll-behavior: smooth;
+}
+
+// ===== Accessibilité =====
+button:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
 }

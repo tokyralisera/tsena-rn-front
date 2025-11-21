@@ -1,87 +1,58 @@
-// ===== Ajustements des couleurs principales =====
-:host {
-  --primary-color: #5733eb;
-  --primary-hover: #4527d0;
+// ===== Avatars colorés =====
+.bg-blue-500 { 
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+.bg-green-500 { 
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.bg-yellow-500 { 
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+.bg-red-500 { 
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+.bg-purple-500 { 
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+}
+.bg-pink-500 { 
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+.bg-indigo-500 { 
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+.bg-teal-500 { 
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
 }
 
-// Couleur primaire de votre app (le violet)
-.btn-primary,
-.badge-primary {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
+// ===== Bouton Nouvelle publication =====
+.btn {
+  transition: all 0.2s ease;
   
-  &:hover {
-    background-color: var(--primary-hover) !important;
-  }
-}
-
-.text-primary {
-  color: var(--primary-color) !important;
-}
-
-// ===== En-tête avec bouton Ajouter =====
-.flex.items-center.justify-between {
-  gap: 1rem;
-}
-
-// Bouton Ajouter responsive
-.btn.btn-primary {
-  &.gap-2 {
-    transition: all 0.2s ease;
-    
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(87, 51, 235, 0.3);
-    }
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
   }
 }
 
 // ===== Cards de publication =====
-.card {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-  transition: box-shadow 0.3s ease;
-  
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  }
+.bg-white {
+  transition: all 0.3s ease;
 }
 
 // ===== Menu trois points =====
 .relative {
-  .btn-circle {
+  button {
     transition: background-color 0.2s ease;
-    
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
   }
 
   // Dropdown menu
-  .absolute.right-0 {
+  .absolute {
     animation: slideDown 0.2s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-
-    .menu {
-      padding: 0.5rem 0;
-
-      li {
-        button {
-          padding: 0.75rem 1rem;
-          transition: background-color 0.2s ease;
-          border-radius: 0;
-
-          &:hover {
-            background-color: rgba(87, 51, 235, 0.1);
-          }
-
-          &.text-error:hover {
-            background-color: rgba(239, 68, 68, 0.1);
-          }
-
-          svg {
-            flex-shrink: 0;
-          }
-        }
+    
+    button {
+      transition: all 0.2s ease;
+      
+      &:hover {
+        transform: translateX(2px);
       }
     }
   }
@@ -98,20 +69,8 @@
   }
 }
 
-// ===== Avatars colorés =====
-.bg-blue-500 { background-color: #1877f2 !important; }
-.bg-green-500 { background-color: #42b72a !important; }
-.bg-yellow-500 { background-color: #f7b928 !important; }
-.bg-red-500 { background-color: #f02849 !important; }
-.bg-purple-500 { background-color: #5733eb !important; }
-.bg-pink-500 { background-color: #e91e63 !important; }
-.bg-indigo-500 { background-color: #3f51b5 !important; }
-.bg-teal-500 { background-color: #009688 !important; }
-
 // ===== Grille d'images =====
 .grid {
-  gap: 2px;
-  
   img {
     width: 100%;
     object-fit: cover;
@@ -120,66 +79,17 @@
   }
 }
 
-.grid-cols-2 img {
-  height: 250px;
-}
-
-.grid-cols-2:has(.col-span-2) {
-  .col-span-2 img {
-    height: 320px;
-  }
-  
-  img:not(.col-span-2 img) {
-    height: 190px;
-  }
-}
-
-.h-48 {
-  height: 190px !important;
-}
-
 // ===== Overlay "Voir plus" =====
 .bg-black\/70 {
   transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.85) !important;
-  }
-}
-
-// ===== Bouton Like =====
-.hover\:bg-base-200 {
-  transition: background-color 0.2s ease;
-}
-
-// ===== Modal Galerie =====
-.fixed.inset-0.z-50 {
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease;
-}
-
-.btn-circle.btn-ghost {
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.2) !important;
-  }
-}
-
-.max-h-\[90vh\] {
-  animation: zoomIn 0.3s ease;
-}
-
-.w-16.h-16 {
-  transition: all 0.2s ease;
-  
-  &.ring-2 {
-    transform: scale(1.05);
-  }
 }
 
 // ===== Modal Formulaire =====
-.modal-box {
+.fixed {
+  animation: fadeIn 0.3s ease;
+}
+
+.bg-white.rounded-2xl {
   animation: slideUp 0.3s ease;
 }
 
@@ -201,28 +111,9 @@
     transition: all 0.2s ease;
     
     &:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(87, 51, 235, 0.1);
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
-
-    &.input-error,
-    &.textarea-error {
-      border-color: #f87171;
-      
-      &:focus {
-        box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.1);
-      }
-    }
-  }
-
-  .label-text {
-    font-weight: 500;
-    color: #374151;
-  }
-
-  .label-text-alt.text-error {
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
   }
 }
 
@@ -231,20 +122,7 @@
   transition: all 0.2s ease;
   
   &:hover {
-    border-color: var(--primary-color);
-  }
-
-  &::file-selector-button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: var(--primary-hover);
-    }
+    border-color: #6366f1;
   }
 }
 
@@ -252,7 +130,6 @@
 .grid.grid-cols-3 {
   .relative.group {
     overflow: hidden;
-    border-radius: 0.5rem;
     
     img {
       transition: transform 0.3s ease;
@@ -262,43 +139,36 @@
       transform: scale(1.05);
     }
 
-    .btn-circle.btn-xs {
-      transition: opacity 0.2s ease;
+    button {
+      transition: all 0.2s ease;
     }
   }
 }
 
-// ===== Modal Suppression =====
-.alert-warning {
-  background-color: #fef3c7;
-  border-color: #fbbf24;
-  color: #92400e;
-
-  svg {
-    color: #f59e0b;
-  }
+// ===== Modal Galerie =====
+img {
+  animation: zoomIn 0.3s ease;
 }
 
-.btn-error {
-  background-color: #ef4444;
-  border-color: #ef4444;
-
+.w-16.h-16 {
+  transition: all 0.2s ease;
+  
   &:hover {
-    background-color: #dc2626;
+    transform: scale(1.05);
   }
 }
 
 // ===== Pagination =====
 .join .btn {
   transition: all 0.2s ease;
-}
-
-.btn-active {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
   
-  &:hover {
-    background-color: var(--primary-hover) !important;
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
@@ -334,24 +204,7 @@
   }
 }
 
-// ===== États vide et erreur =====
-.alert-error {
-  background-color: #fee;
-  border-color: #fcc;
-  color: #c41e3a;
-
-  svg {
-    color: #ef4444;
-  }
-}
-
-.empty-state {
-  .btn.btn-primary {
-    margin-top: 1rem;
-  }
-}
-
-// ===== Line clamp pour contenu tronqué =====
+// ===== Line clamp =====
 .line-clamp-4 {
   display: -webkit-box;
   -webkit-line-clamp: 4;
@@ -359,15 +212,24 @@
   overflow: hidden;
 }
 
+// ===== Rotation du chevron =====
+svg.rotate-180 {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
 // ===== Responsive =====
 @media (max-width: 768px) {
-  // Supprimer le border-radius sur mobile
-  .card {
-    border-radius: 0 !important;
-    margin-left: -1rem;
-    margin-right: -1rem;
+  // Header responsive
+  .flex.items-center.justify-between {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .btn {
+      width: 100%;
+    }
   }
-  
+
   // Ajuster les hauteurs d'images sur mobile
   .grid-cols-2 img {
     height: 200px;
@@ -387,55 +249,27 @@
     height: 150px !important;
   }
   
-  // Titre plus petit sur mobile
-  .text-3xl {
-    font-size: 1.5rem !important;
+  // Miniatures plus petites dans le modal
+  .w-16.h-16 {
+    width: 3rem !important;
+    height: 3rem !important;
   }
 
-  // Bouton Ajouter plus compact sur mobile
-  .btn.btn-primary {
-    padding: 0.5rem 0.75rem;
-    
-    svg {
-      width: 1.25rem;
-      height: 1.25rem;
-    }
-  }
-
-  // Modal formulaire plein écran sur mobile
-  .modal-box {
+  // Modal formulaire plein écran
+  .max-w-2xl {
     max-width: 100vw;
     min-height: 100vh;
     border-radius: 0;
-    margin: 0;
   }
 
-  // Dropdown menu ajusté
-  .relative .absolute.right-0 {
-    right: -0.5rem;
-  }
-}
-
-@media (max-width: 640px) {
-  // Header responsive
-  .flex.items-center.justify-between {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-
-    .btn.btn-primary {
-      width: 100%;
-    }
-  }
-
-  // Aperçu images en 2 colonnes sur petit écran
+  // Aperçu images en 2 colonnes
   .grid.grid-cols-3 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 480px) {
-  // Images encore plus petites sur très petits écrans
+  // Images encore plus petites
   .grid-cols-2 img {
     height: 150px;
   }
@@ -453,52 +287,14 @@
   .h-48 {
     height: 120px !important;
   }
-  
-  // Miniatures plus petites dans le modal
-  .w-16.h-16 {
-    width: 3rem !important;
-    height: 3rem !important;
-  }
-
-  // Padding réduit dans les modals
-  .modal-box {
-    padding: 1rem;
-  }
 }
 
-// ===== Utilitaires =====
-// Smooth scroll
+// ===== Smooth scroll =====
 html {
   scroll-behavior: smooth;
 }
 
-// Désactiver le scroll quand modal ouvert
+// ===== Désactiver le scroll quand modal ouvert =====
 body.modal-open {
   overflow: hidden;
-}
-
-// Transition sur les images
-img {
-  transition: opacity 0.2s ease;
-}
-
-// ===== Z-index management =====
-.modal {
-  z-index: 1000;
-}
-
-.fixed.inset-0.z-50 {
-  z-index: 1100;
-}
-
-.relative .absolute.right-0 {
-  z-index: 50;
-}
-
-// ===== Focus visible pour accessibilité =====
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
 }

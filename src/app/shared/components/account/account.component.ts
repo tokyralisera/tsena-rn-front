@@ -8,6 +8,7 @@ import { Utilisateur } from '../../interfaces/utilisateur.interface';
 import { UsersService } from '../../services/users.service';
 import { AuthStateService } from '../../../auth/auth-state.service';
 import { ToastService } from '../../services/toast.service';
+import { ToastComponent } from '../../components/toast/toast.component';
 
 interface SexeOption {
   label: string;
@@ -22,7 +23,7 @@ interface LangueOption {
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, ToastComponent],
   templateUrl: './account.component.html',
   styleUrl: './account.component.scss',
 })
@@ -47,7 +48,7 @@ export class AccountComponent implements OnInit {
     private fb: FormBuilder,
     private usersService: UsersService,
     private authStateService: AuthStateService,
-    private toastService : ToastService
+    private toastService: ToastService
   ) {
     this.accountForm = this.fb.group({
       nomUtilisateur: [
@@ -66,7 +67,7 @@ export class AccountComponent implements OnInit {
           Validators.maxLength(50),
         ],
       ],
-      genre: ['', Validators.required],
+      sexe: ['', Validators.required], // CORRIGÉ: 'sexe' au lieu de 'genre'
       langue: ['', Validators.required],
       NIF: ['', [Validators.required, Validators.pattern(/^[0-9]{9,13}$/)]],
       STAT: [''],
@@ -87,7 +88,7 @@ export class AccountComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        this.toastService.error('Erreur lors du chargement du profil')
+        this.toastService.error('Erreur lors du chargement du profil');
       },
     });
   }
@@ -98,7 +99,7 @@ export class AccountComponent implements OnInit {
     this.accountForm.patchValue({
       nomUtilisateur: user.nomUtilisateur,
       prenomUtilisateur: user.prenomUtilisateur,
-      sexe: user.sexe,
+      sexe: user.sexe, // CORRIGÉ
       langue: user.langue,
       NIF: user.NIF,
       STAT: user.STAT || '',
@@ -108,7 +109,7 @@ export class AccountComponent implements OnInit {
   toggleEdit(): void {
     this.isEditing = !this.isEditing;
     if (!this.isEditing) {
-      this.populateForm(this.currentUser!);
+      this.populateForm(this.currentUser);
     }
   }
 
@@ -129,19 +130,19 @@ export class AccountComponent implements OnInit {
             if (this.currentUser) {
               this.authStateService.setCurrentUser(this.currentUser);
               this.isEditing = false;
-              this.toastService.success('Profil mis a jour avec succes');
+              this.toastService.success('Profil mis à jour avec succès');
             }
           }
         },
         error: (error) => {
           this.isLoading = false;
           this.toastService.error(
-            error.error?.message || 'Erreur lors de la mise a jour'
+            error.error?.message || 'Erreur lors de la mise à jour'
           );
         },
       });
     } else {
-      this.markFromGroupTouched();
+      this.markFormGroupTouched();
       this.toastService.warning(
         'Veuillez corriger les erreurs dans le formulaire'
       );
@@ -153,13 +154,12 @@ export class AccountComponent implements OnInit {
     if (this.currentUser) {
       this.populateForm(this.currentUser);
     }
+    this.accountForm.markAsUntouched();
   }
 
-  private markFromGroupTouched() {
+  private markFormGroupTouched() {
     Object.keys(this.accountForm.controls).forEach((key) => {
       this.accountForm.get(key)?.markAsTouched();
     });
   }
-
-  
 }

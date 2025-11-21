@@ -1,74 +1,42 @@
-// ===== Ajustements des couleurs principales =====
-:host {
-  --primary-color: #5733eb;
-  --primary-hover: #4527d0;
+// ===== Avatars colorés =====
+.bg-blue-500 { 
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
 }
-
-// Couleur primaire de votre app (le violet)
-.btn-primary,
-.badge-primary {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  
-  &:hover {
-    background-color: var(--primary-hover) !important;
-  }
+.bg-green-500 { 
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
-
-.text-primary {
-  color: var(--primary-color) !important;
+.bg-yellow-500 { 
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+.bg-red-500 { 
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+.bg-purple-500 { 
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+}
+.bg-pink-500 { 
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+.bg-indigo-500 { 
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+.bg-teal-500 { 
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
 }
 
 // ===== Cards de publication =====
-.card {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-  transition: box-shadow 0.3s ease;
-  
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  }
+.bg-white {
+  transition: all 0.3s ease;
 }
-
-// ===== Avatars colorés =====
-.bg-blue-500 { background-color: #1877f2 !important; }
-.bg-green-500 { background-color: #42b72a !important; }
-.bg-yellow-500 { background-color: #f7b928 !important; }
-.bg-red-500 { background-color: #f02849 !important; }
-.bg-purple-500 { background-color: #5733eb !important; }
-.bg-pink-500 { background-color: #e91e63 !important; }
-.bg-indigo-500 { background-color: #3f51b5 !important; }
-.bg-teal-500 { background-color: #009688 !important; }
 
 // ===== Grille d'images =====
 .grid {
-  gap: 2px;
-  
   img {
     width: 100%;
     object-fit: cover;
     display: block;
+    transition: opacity 0.2s ease;
   }
-}
-
-// Hauteurs spécifiques pour les grilles d'images
-.grid-cols-2 img {
-  height: 250px;
-}
-
-// Grille avec 3 images (première plus grande)
-.grid-cols-2:has(.col-span-2) {
-  .col-span-2 img {
-    height: 320px;
-  }
-  
-  img:not(.col-span-2 img) {
-    height: 190px;
-  }
-}
-
-// Grille avec 4+ images
-.h-48 {
-  height: 190px !important;
 }
 
 // ===== Overlay "Voir plus" =====
@@ -76,31 +44,28 @@
   transition: background-color 0.2s ease;
   
   &:hover {
-    background-color: rgba(0, 0, 0, 0.85) !important;
+    background-color: rgba(0, 0, 0, 0.85);
   }
 }
 
-// ===== Bouton Like =====
-.hover\:bg-base-200 {
-  transition: background-color 0.2s ease;
+// ===== Bouton Like avec animation =====
+button {
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    svg {
+      transform: scale(1.1);
+    }
+  }
 }
 
 // ===== Modal Galerie =====
 .fixed.inset-0.z-50 {
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease;
-}
-
-.btn-circle.btn-ghost {
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.2) !important;
-  }
+  animation: fadeIn 0.3s ease;
 }
 
 // Image dans le modal
-.max-h-\[90vh\] {
+img {
   animation: zoomIn 0.3s ease;
 }
 
@@ -108,7 +73,7 @@
 .w-16.h-16 {
   transition: all 0.2s ease;
   
-  &.ring-2 {
+  &:hover {
     transform: scale(1.05);
   }
 }
@@ -116,14 +81,14 @@
 // ===== Pagination =====
 .join .btn {
   transition: all 0.2s ease;
-}
-
-.btn-active {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
   
-  &:hover {
-    background-color: var(--primary-hover) !important;
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
@@ -159,15 +124,32 @@
   }
 }
 
+// ===== Line clamp pour le contenu tronqué =====
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ===== Rotation du chevron =====
+svg.rotate-180 {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+// ===== Effet hover sur les stats cards =====
+.shadow-sm {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+}
+
 // ===== Responsive =====
 @media (max-width: 768px) {
-  // Supprimer le border-radius sur mobile pour un style plus app-like
-  .card {
-    border-radius: 0 !important;
-    margin-left: -1rem;
-    margin-right: -1rem;
-  }
-  
   // Ajuster les hauteurs d'images sur mobile
   .grid-cols-2 img {
     height: 200px;
@@ -187,9 +169,15 @@
     height: 150px !important;
   }
   
-  // Titre plus petit sur mobile
-  .text-3xl {
-    font-size: 1.5rem !important;
+  // Miniatures plus petites dans le modal
+  .w-16.h-16 {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
+
+  // Cards statistiques en colonne
+  .grid-cols-3 {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -212,34 +200,15 @@
   .h-48 {
     height: 120px !important;
   }
-  
-  // Miniatures plus petites dans le modal
-  .w-16.h-16 {
-    width: 3rem !important;
-    height: 3rem !important;
-  }
 }
 
-// ===== Utilitaires =====
-// Smooth scroll
+// ===== Smooth scroll =====
 html {
   scroll-behavior: smooth;
 }
 
+// ===== Utilitaires =====
 // Désactiver le scroll quand le modal est ouvert
 body.modal-open {
-  overflow: hidden;
-}
-
-// Transition sur les images
-img {
-  transition: opacity 0.2s ease;
-}
-
-// Line clamp pour le contenu tronqué
-.line-clamp-4 {
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
   overflow: hidden;
 }
