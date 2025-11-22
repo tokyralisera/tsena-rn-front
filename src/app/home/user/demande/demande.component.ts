@@ -1,20 +1,34 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../../environment/environment';
+import { ToastService } from '../../../shared/services/toast.service';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { ChatService } from '../chat/services/chat.service';
+import { AuthStateService } from '../../../auth/auth-state.service';
+import { CategorieService, Categorie } from '../../../shared/services/categorie.service';
+import { VilleService, Ville } from '../../../shared/services/ville.service';
+import { PaysService, Pays } from '../../../shared/services/pays.service';
 import { DemandeService, Publication, StatutDemande, UniteMesure } from '../../../shared/services/publication-demande.service';
-import { Categorie, CategorieService } from '../../../shared/services/categorie.service';
-import { Ville, VilleService } from '../../../shared/services/ville.service';
 
+interface ImagePreview {
+  file: File;
+  url: string;
+}
 
 @Component({
   selector: 'app-demande',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ToastComponent],
   templateUrl: './demande.component.html',
   styleUrls: ['./demande.component.scss'],
 })
 export class DemandeUserComponent implements OnInit {
- // Données
+  private chatService = inject(ChatService);
+  private authStateService = inject(AuthStateService);
+
+  // Données
   demandes: Publication[] = [];
   mesDemandes: Publication[] = [];
   categories: Categorie[] = [];
@@ -23,7 +37,8 @@ export class DemandeUserComponent implements OnInit {
   // Pagination
   currentPage = 1;
   totalPages = 1;
-  limit = 9;
+  totalItems = 0;
+  itemsPerPage = 10;
 
   // États
   loading = false;
@@ -32,20 +47,40 @@ export class DemandeUserComponent implements OnInit {
   showMesDemandesModal = false;
   showCreateModal = false;
   showEditModal = false;
+  showDeleteModal = false;
+  showImagePreviewModal = false;
+
+  // Sélections
   selectedDemande: Publication | null = null;
+  selectedImageIndex: number = 0;
+  currentImageGallery: any[] = [];
 
-  // Formulaires
-  createForm!: FormGroup;
-  editForm!: FormGroup;
+  // Filtres et recherche
+  searchTerm: string = '';
+  selectedCategorieFilter: number | null = null;
+  selectedVilleFilter: number | null = null;
+  selectedDemandeStatutFilter: string = '';
+  budgetMin: number | null = null;
+  budgetMax: number | null = null;
+  showFilters: boolean = false;
+  sortBy: 'createdAt' | 'updatedAt' | 'titre' | 'deadline' = 'createdAt';
+  sortOrder: 'asc' | 'desc' = 'desc';
 
-  // Enums pour le template
+  // Formulaire
+  demandeForm: FormGroup;
+  imagePreviews: ImagePreview[] = [];
+  maxImages = 5;
+
+  // Enums
   StatutDemande = StatutDemande;
   UniteMesure = UniteMesure;
-  uniteMesures = Object.values(UniteMesure);
+  uniteMesureOptions = Object.values(UniteMesure);
 
-  // Images
-  selectedImages: File[] = [];
-  imagePreviewUrls: string[] = [];
+  // ID utilisateur connecté
+  currentUserId: number | null = null;
+
+  // Madagascar
+  madagascarPaysId: number | null = null;
 
   minDate: string = new Date().toISOString().split('T')[0];
 
@@ -53,400 +88,632 @@ export class DemandeUserComponent implements OnInit {
     private demandeService: DemandeService,
     private categorieService: CategorieService,
     private villeService: VilleService,
-    private fb: FormBuilder
-  ) {}
-
-  ngOnInit(): void {
-    this.initForms();
-    this.loadDemandes();
-    this.loadCategories();
-    this.loadVilles();
-  }
-
-  initForms(): void {
-    this.createForm = this.fb.group({
+    private paysService: PaysService,
+    private toastService: ToastService,
+    private fb: FormBuilder,
+    private http: HttpClient
+  ) {
+    this.demandeForm = this.fb.group({
       titre: ['', [Validators.required, Validators.minLength(5)]],
       description: ['', [Validators.required, Validators.minLength(20)]],
-      villeId: ['', Validators.required],
+      villeId: [null, Validators.required],
       deadline: [''],
-      budgetMin: ['', [Validators.min(0)]],
-      budgetMax: ['', [Validators.min(0)]],
-      produits: this.fb.array([this.createProduitGroup()]),
-    });
-
-    this.editForm = this.fb.group({
-      titre: [''],
-      description: [''],
-      villeId: [''],
-      deadline: [''],
-      budgetMin: [''],
-      budgetMax: [''],
+      budgetMin: [null, [Validators.min(0)]],
+      budgetMax: [null, [Validators.min(0)]],
       produits: this.fb.array([]),
     });
   }
 
-  createProduitGroup(): FormGroup {
-    return this.fb.group({
-      nom: ['', Validators.required],
-      quantite: ['', [Validators.min(1)]],
-      uniteMesure: [''],
-      categorieId: ['', Validators.required],
+  ngOnInit(): void {
+    this.loadDemandes();
+    this.loadCategories();
+    this.loadCurrentUser();
+    this.loadMadagascarAndVilles();
+  }
+
+  // ==========================================
+  // CHARGEMENT DE MADAGASCAR ET SES VILLES
+  // ==========================================
+
+  loadMadagascarAndVilles(): void {
+    this.loadingVilles = true;
+
+    this.paysService.getAll(1, 1000).subscribe({
+      next: (response: any) => {
+        const madagascar = response.data.find((p: Pays) =>
+          p.code === 'MG' || p.nom.toLowerCase().includes('madagascar')
+        );
+
+        if (madagascar) {
+          this.madagascarPaysId = madagascar.id;
+          console.log('✅ Madagascar trouvé, ID:', this.madagascarPaysId);
+
+          this.villeService.getAll(madagascar.id).subscribe({
+            next: (villesResponse: any) => {
+              this.villes = villesResponse.data || villesResponse;
+              this.loadingVilles = false;
+              console.log(`✅ ${this.villes.length} villes chargées`);
+
+              if (this.villes.length === 0) {
+                this.toastService.warning('Aucune ville trouvée pour Madagascar');
+              }
+            },
+            error: (error: any) => {
+              console.error('❌ Erreur chargement villes:', error);
+              this.loadingVilles = false;
+              this.toastService.error('Erreur lors du chargement des villes');
+            },
+          });
+        } else {
+          this.loadingVilles = false;
+          this.toastService.error('Pays Madagascar non trouvé');
+        }
+      },
+      error: (error: any) => {
+        console.error('❌ Erreur chargement pays:', error);
+        this.loadingVilles = false;
+        this.toastService.error('Erreur lors du chargement des données');
+      },
     });
   }
 
-  get produitsFormArray(): FormArray {
-    return this.createForm.get('produits') as FormArray;
+  // ==========================================
+  // GESTION DU CHAT
+  // ==========================================
+
+  loadCurrentUser(): void {
+    this.authStateService.currentUser.subscribe(user => {
+      if (user) {
+        this.currentUserId = user.id;
+      }
+    });
   }
 
-  get editProduitsFormArray(): FormArray {
-    return this.editForm.get('produits') as FormArray;
+  isMyDemande(publication: Publication): boolean {
+    return this.currentUserId === publication.auteur.id;
   }
 
-  addProduit(): void {
-    this.produitsFormArray.push(this.createProduitGroup());
-  }
-
-  removeProduit(index: number): void {
-    if (this.produitsFormArray.length > 1) {
-      this.produitsFormArray.removeAt(index);
+  contactAuthor(publication: Publication, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
     }
+
+    if (this.isMyDemande(publication)) {
+      this.toastService.warning('Vous ne pouvez pas contacter votre propre demande');
+      return;
+    }
+
+    if (publication.statut !== 'VALIDE') {
+      this.toastService.warning('Cette demande n\'est pas encore validée');
+      return;
+    }
+
+    if (publication.demande.statutDemande === 'TROUVEE' || publication.demande.statutDemande === 'EXPIREE') {
+      this.toastService.info('Cette demande n\'est plus disponible');
+      return;
+    }
+
+    console.log('📞 Initiation de la conversation pour la demande:', publication.id);
+
+    this.loading = true;
+
+    this.chatService
+      .initiateConversationWithContext(
+        publication.id,
+        publication.titre,
+        'DEMANDE'
+      )
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Conversation créée:', response);
+          this.toastService.success('Conversation démarrée avec l\'auteur');
+          this.chatService.navigateToConversation(response.conversation.id);
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erreur lors de la création de la conversation:', error);
+
+          if (error.status === 409) {
+            this.toastService.info('Une conversation existe déjà pour cette demande');
+            if (error.error?.conversationId) {
+              this.chatService.navigateToConversation(error.error.conversationId);
+            }
+          } else if (error.status === 401) {
+            this.toastService.error('Vous devez être connecté pour contacter l\'auteur');
+          } else {
+            this.toastService.error('Erreur lors de la création de la conversation');
+          }
+
+          this.loading = false;
+        },
+      });
   }
 
-  // Chargement des données
+  // ==========================================
+  // CHARGEMENT DES DONNÉES
+  // ==========================================
+
   loadDemandes(): void {
     this.loading = true;
-    this.demandeService.getAllDemandes(this.currentPage, this.limit).subscribe({
-      next: (response) => {
+
+    const filters: any = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      sortBy: this.sortBy,
+      sortOrder: this.sortOrder,
+    };
+
+    if (this.searchTerm && this.searchTerm.trim()) {
+      filters.search = this.searchTerm.trim();
+    }
+    if (this.selectedCategorieFilter) {
+      filters.categorieId = this.selectedCategorieFilter;
+    }
+    if (this.selectedVilleFilter) {
+      filters.villeId = this.selectedVilleFilter;
+    }
+    if (this.selectedDemandeStatutFilter) {
+      filters.demandeStatut = this.selectedDemandeStatutFilter;
+    }
+    if (this.budgetMin !== null && this.budgetMin !== undefined) {
+      filters.budgetMin = this.budgetMin;
+    }
+    if (this.budgetMax !== null && this.budgetMax !== undefined) {
+      filters.budgetMax = this.budgetMax;
+    }
+
+    this.demandeService.searchDemandes(filters).subscribe({
+      next: (response: any) => {
         this.demandes = response.data;
+        this.totalItems = response.meta.total;
         this.totalPages = response.meta.totalPages;
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Erreur chargement demandes:', error);
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des demandes', error);
         this.loading = false;
+        this.toastService.error('Erreur lors du chargement des demandes');
       },
     });
   }
 
   loadMesDemandes(): void {
-    this.demandeService.getMyDemandes(1, 50).subscribe({
-      next: (response) => {
-        this.mesDemandes = response.data;
+    console.log('🔍 Chargement de MES demandes...');
+
+    this.loading = true;
+
+    this.demandeService.getMyDemandes(1, 100).subscribe({
+      next: (response: any) => {
+        console.log('✅ Mes demandes:', response.data);
+        this.mesDemandes = response.data || [];
+        this.loading = false;
+
+        if (this.mesDemandes.length === 0) {
+          console.log('⚠️ Aucune demande trouvée');
+        }
       },
-      error: (error) => {
-        console.error('Erreur chargement mes demandes:', error);
+      error: (error: any) => {
+        console.error('❌ Erreur:', error);
+        this.loading = false;
+
+        if (error.status === 401) {
+          this.toastService.error('Session expirée, veuillez vous reconnecter');
+        } else {
+          this.toastService.error('Erreur lors du chargement de vos demandes');
+        }
       },
     });
   }
 
   loadCategories(): void {
-    this.loadingCategories = true;
     this.categorieService.getAll().subscribe({
-      next: (categories) => {
+      next: (categories: Categorie[]) => {
         this.categories = categories;
-        this.loadingCategories = false;
       },
-      error: (error) => {
-        console.error('Erreur chargement catégories:', error);
-        this.loadingCategories = false;
-      },
-    });
-  }
-
-  loadVilles(): void {
-    this.loadingVilles = true;
-    this.villeService.getAll().subscribe({
-      next: (response) => {
-        this.villes = response.data;
-        this.loadingVilles = false;
-      },
-      error: (error) => {
-        console.error('Erreur chargement villes:', error);
-        this.loadingVilles = false;
+      error: (error: any) => {
+        console.error('Erreur', error);
+        this.toastService.error('Erreur lors du chargement des catégories');
       },
     });
   }
 
-  // Gestion des images
-  onImagesSelected(event: any): void {
-    const files = event.target.files;
-    if (files.length > 5) {
-      alert('Maximum 5 images autorisées');
-      event.target.value = '';
+  // ==========================================
+  // RECHERCHE ET FILTRES
+  // ==========================================
+
+  onSearch(): void {
+    this.currentPage = 1;
+    this.loadDemandes();
+  }
+
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.selectedCategorieFilter = null;
+    this.selectedVilleFilter = null;
+    this.selectedDemandeStatutFilter = '';
+    this.budgetMin = null;
+    this.budgetMax = null;
+    this.sortBy = 'createdAt';
+    this.sortOrder = 'desc';
+    this.currentPage = 1;
+    this.loadDemandes();
+  }
+
+  changeSortOrder(): void {
+    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    this.loadDemandes();
+  }
+
+  // ==========================================
+  // GESTION DU FORMARRAY DES PRODUITS
+  // ==========================================
+
+  get produits(): FormArray {
+    return this.demandeForm.get('produits') as FormArray;
+  }
+
+  createProduitForm(): FormGroup {
+    return this.fb.group({
+      nom: ['', Validators.required],
+      categorieId: [null, Validators.required],
+      quantite: [null, [Validators.min(0.01)]],
+      uniteMesure: [UniteMesure.PIECE],
+    });
+  }
+
+  addProduit(): void {
+    this.produits.push(this.createProduitForm());
+  }
+
+  removeProduit(index: number): void {
+    this.produits.removeAt(index);
+  }
+
+  // ==========================================
+  // GESTION DES IMAGES
+  // ==========================================
+
+  onFileSelected(event: any): void {
+    const files: FileList = event.target.files;
+
+    if (this.imagePreviews.length + files.length > this.maxImages) {
+      this.toastService.warning(`Maximum ${this.maxImages} images autorisées`);
       return;
     }
 
-    this.selectedImages = Array.from(files);
-    this.imagePreviewUrls = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
 
-    this.selectedImages.forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        this.toastService.warning('Seules les images sont autorisées');
+        continue;
+      }
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.imagePreviewUrls.push(e.target.result);
+        this.imagePreviews.push({
+          file: file,
+          url: e.target.result,
+        });
       };
       reader.readAsDataURL(file);
-    });
+    }
   }
 
   removeImage(index: number): void {
-    this.selectedImages.splice(index, 1);
-    this.imagePreviewUrls.splice(index, 1);
+    this.imagePreviews.splice(index, 1);
   }
 
-  // Actions CRUD
-  openCreateModal(): void {
-    this.showCreateModal = true;
-    this.createForm.reset();
-    this.selectedImages = [];
-    this.imagePreviewUrls = [];
-    // Réinitialiser le tableau de produits avec un seul produit vide
-    while (this.produitsFormArray.length > 0) {
-      this.produitsFormArray.removeAt(0);
+  openImagePreview(images: any[], startIndex: number): void {
+    this.currentImageGallery = images;
+    this.selectedImageIndex = startIndex;
+    this.showImagePreviewModal = true;
+  }
+
+  previousImage(): void {
+    if (this.selectedImageIndex > 0) {
+      this.selectedImageIndex--;
+    } else {
+      this.selectedImageIndex = this.currentImageGallery.length - 1;
     }
-    this.produitsFormArray.push(this.createProduitGroup());
   }
 
-  closeCreateModal(): void {
-    this.showCreateModal = false;
+  nextImage(): void {
+    if (this.selectedImageIndex < this.currentImageGallery.length - 1) {
+      this.selectedImageIndex++;
+    } else {
+      this.selectedImageIndex = 0;
+    }
   }
 
-  createDemande(): void {
-    if (this.createForm.invalid) {
-      this.markFormGroupTouched(this.createForm);
-      alert('Veuillez remplir tous les champs obligatoires');
+  closeImagePreview(): void {
+    this.showImagePreviewModal = false;
+    this.currentImageGallery = [];
+    this.selectedImageIndex = 0;
+  }
+
+  // ==========================================
+  // GESTION DES MODALS
+  // ==========================================
+
+  openCreateModal(): void {
+    if (this.villes.length === 0) {
+      this.toastService.warning('Chargement des villes en cours...');
       return;
     }
-
-    const formValue = this.createForm.value;
-
-    // Validation budget
-    if (formValue.budgetMin && formValue.budgetMax) {
-      if (parseFloat(formValue.budgetMax) < parseFloat(formValue.budgetMin)) {
-        alert('Le budget maximum doit être supérieur au budget minimum');
-        return;
-      }
-    }
-
-    const dto = {
-      titre: formValue.titre,
-      description: formValue.description,
-      villeId: parseInt(formValue.villeId),
-      deadline: formValue.deadline || undefined,
-      budgetMin: formValue.budgetMin ? parseFloat(formValue.budgetMin) : undefined,
-      budgetMax: formValue.budgetMax ? parseFloat(formValue.budgetMax) : undefined,
-      images: this.selectedImages.length > 0 ? this.selectedImages : undefined,
-      produits: formValue.produits.map((p: any) => ({
-        nom: p.nom,
-        quantite: p.quantite ? parseInt(p.quantite) : undefined,
-        uniteMesure: p.uniteMesure || undefined,
-        categorieId: parseInt(p.categorieId),
-      })),
-    };
-
-    this.loading = true;
-    this.demandeService.createDemande(dto).subscribe({
-      next: (response) => {
-        alert('Demande créée avec succès ! Elle est en attente de validation.');
-        this.closeCreateModal();
-        this.loadDemandes();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Erreur création:', error);
-        alert(error.error?.message || 'Erreur lors de la création de la demande');
-        this.loading = false;
-      },
-    });
+    this.resetForm();
+    this.addProduit();
+    this.showCreateModal = true;
   }
 
-  openMesDemandesModal(): void {
-    this.showMesDemandesModal = true;
+  openMyDemandesModal(): void {
     this.loadMesDemandes();
+    this.showMesDemandesModal = true;
   }
 
-  closeMesDemandesModal(): void {
+  openEditModal(publication: Publication): void {
+    console.log('✏️ Ouverture du modal d\'édition pour:', publication);
+
+    this.selectedDemande = publication;
+    this.resetForm();
+
+    this.demandeForm.patchValue({
+      titre: publication.titre,
+      description: publication.description,
+      villeId: publication.ville.id,
+      deadline: publication.demande.deadline ? new Date(publication.demande.deadline).toISOString().split('T')[0] : '',
+      budgetMin: publication.demande.budgetMin,
+      budgetMax: publication.demande.budgetMax,
+    });
+
+    publication.demande.produits.forEach((produit: any) => {
+      const produitForm = this.createProduitForm();
+      produitForm.patchValue({
+        nom: produit.nom,
+        categorieId: produit.categorie.id,
+        quantite: produit.quantite,
+        uniteMesure: produit.uniteMesure || UniteMesure.PIECE,
+      });
+      this.produits.push(produitForm);
+    });
+
+    this.showEditModal = true;
     this.showMesDemandesModal = false;
   }
 
-  openEditModal(demande: Publication): void {
-    this.selectedDemande = demande;
-    this.showEditModal = true;
-
-    // Pré-remplir le formulaire d'édition
-    this.editForm.patchValue({
-      titre: demande.titre,
-      description: demande.description,
-      villeId: demande.ville.id,
-      deadline: demande.demande.deadline ? new Date(demande.demande.deadline).toISOString().split('T')[0] : '',
-      budgetMin: demande.demande.budgetMin,
-      budgetMax: demande.demande.budgetMax,
-    });
-
-    // Pré-remplir les produits
-    const produitsArray = this.editForm.get('produits') as FormArray;
-    while (produitsArray.length > 0) {
-      produitsArray.removeAt(0);
-    }
-
-    demande.demande.produits.forEach((produit) => {
-      produitsArray.push(
-        this.fb.group({
-          nom: [produit.nom, Validators.required],
-          quantite: [produit.quantite || '', [Validators.min(1)]],
-          uniteMesure: [produit.uniteMesure || ''],
-          categorieId: [produit.categorie.id, Validators.required],
-        })
-      );
-    });
+  openDeleteModal(publication: Publication): void {
+    this.selectedDemande = publication;
+    this.showDeleteModal = true;
   }
 
-  closeEditModal(): void {
+  closeAllModals(): void {
+    this.showCreateModal = false;
     this.showEditModal = false;
+    this.showDeleteModal = false;
+    this.showMesDemandesModal = false;
     this.selectedDemande = null;
+    this.resetForm();
   }
 
-  updateDemande(): void {
-    if (!this.selectedDemande || this.editForm.invalid) {
-      alert('Veuillez remplir tous les champs obligatoires');
+  resetForm(): void {
+    this.demandeForm.reset();
+    this.produits.clear();
+    this.imagePreviews = [];
+  }
+
+  // ==========================================
+  // SOUMISSION DU FORMULAIRE
+  // ==========================================
+
+  onSubmit(): void {
+    console.log('🔍 Vérification du formulaire:');
+    console.log('  - Formulaire valide:', this.demandeForm.valid);
+    console.log('  - Erreurs du formulaire:', this.demandeForm.errors);
+    console.log('  - Titre valide:', this.demandeForm.get('titre')?.valid, 'Valeur:', this.demandeForm.get('titre')?.value);
+    console.log('  - Description valide:', this.demandeForm.get('description')?.valid, 'Valeur:', this.demandeForm.get('description')?.value, 'Longueur:', this.demandeForm.get('description')?.value?.length);
+    console.log('  - VilleId valide:', this.demandeForm.get('villeId')?.valid, 'Valeur:', this.demandeForm.get('villeId')?.value);
+    console.log('  - Produits count:', this.produits.length);
+    
+    if (this.demandeForm.invalid) {
+      this.demandeForm.markAllAsTouched();
+      
+      // Messages d'erreur spécifiques
+      const errors = [];
+      if (this.demandeForm.get('titre')?.invalid) {
+        errors.push('Le titre doit contenir au moins 5 caractères');
+      }
+      if (this.demandeForm.get('description')?.invalid) {
+        const desc = this.demandeForm.get('description')?.value || '';
+        errors.push(`La description doit contenir au moins 20 caractères (actuellement: ${desc.length})`);
+      }
+      if (this.demandeForm.get('villeId')?.invalid) {
+        errors.push('Veuillez sélectionner une ville');
+      }
+      
+      this.toastService.warning(errors.length > 0 ? errors.join('\n') : 'Veuillez remplir tous les champs requis');
       return;
     }
 
-    const formValue = this.editForm.value;
+    if (this.produits.length === 0) {
+      this.toastService.warning('Ajoutez au moins un produit');
+      return;
+    }
 
-    const dto = {
-      titre: formValue.titre || undefined,
-      description: formValue.description || undefined,
-      villeId: formValue.villeId ? parseInt(formValue.villeId) : undefined,
-      deadline: formValue.deadline || undefined,
-      budgetMin: formValue.budgetMin ? parseFloat(formValue.budgetMin) : undefined,
-      budgetMax: formValue.budgetMax ? parseFloat(formValue.budgetMax) : undefined,
-      images: this.selectedImages.length > 0 ? this.selectedImages : undefined,
-      produits: formValue.produits.map((p: any) => ({
+    // Validation des produits
+    let produitsInvalid = false;
+    this.produits.controls.forEach((control, index) => {
+      if (control.invalid) {
+        produitsInvalid = true;
+        console.log(`Produit ${index + 1} invalide:`, control.errors);
+      }
+    });
+
+    if (produitsInvalid) {
+      this.toastService.warning('Veuillez remplir tous les champs des produits');
+      return;
+    }
+
+    // Validation budget
+    const budgetMin = this.demandeForm.value.budgetMin;
+    const budgetMax = this.demandeForm.value.budgetMax;
+    if (budgetMin && budgetMax && budgetMax < budgetMin) {
+      this.toastService.warning('Le budget maximum doit être supérieur au budget minimum');
+      return;
+    }
+
+    const dto: any = {
+      titre: this.demandeForm.value.titre,
+      description: this.demandeForm.value.description,
+      villeId: parseInt(this.demandeForm.value.villeId),
+      deadline: this.demandeForm.value.deadline || undefined,
+      budgetMin: budgetMin ? parseFloat(budgetMin) : undefined,
+      budgetMax: budgetMax ? parseFloat(budgetMax) : undefined,
+      produits: this.demandeForm.value.produits.map((p: any) => ({
         nom: p.nom,
         quantite: p.quantite ? parseInt(p.quantite) : undefined,
         uniteMesure: p.uniteMesure || undefined,
         categorieId: parseInt(p.categorieId),
       })),
+      images: this.imagePreviews.length > 0 ? this.imagePreviews.map(img => img.file) : undefined,
     };
 
     this.loading = true;
-    this.demandeService.updateDemande(this.selectedDemande.id, dto).subscribe({
+
+    const request = this.showEditModal && this.selectedDemande
+      ? this.demandeService.updateDemande(this.selectedDemande.id, dto)
+      : this.demandeService.createDemande(dto);
+
+    request.subscribe({
       next: () => {
-        alert('Demande mise à jour avec succès ! Elle repasse en attente de validation.');
-        this.closeEditModal();
-        this.loadMesDemandes();
+        if (this.showEditModal) {
+          this.toastService.success('Demande modifiée avec succès');
+        } else {
+          this.toastService.info('Votre demande a été soumise et est en attente de validation par un administrateur');
+        }
+        this.closeAllModals();
         this.loadDemandes();
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Erreur mise à jour:', error);
-        alert('Erreur lors de la mise à jour de la demande');
+      error: (error: any) => {
+        console.error('❌ Erreur API:', error);
         this.loading = false;
+
+        if (error.status === 400) {
+          const errorMsg = error.error?.message || 'Données invalides. Veuillez vérifier vos informations';
+          this.toastService.error(errorMsg);
+        } else if (error.status === 401) {
+          this.toastService.error('Session expirée. Veuillez vous reconnecter');
+        } else {
+          this.toastService.error('Erreur lors de la soumission de la demande');
+        }
       },
     });
   }
 
-  updateDemandeStatut(id: number, statut: StatutDemande): void {
-    const message = statut === StatutDemande.TROUVEE 
-      ? 'Marquer cette demande comme TROUVÉE ?' 
-      : 'Marquer cette demande comme NON TROUVÉE ?';
+  // ==========================================
+  // MARQUER COMME TROUVÉE
+  // ==========================================
 
-    if (confirm(message)) {
-      this.demandeService.updateDemandeStatut(id, statut).subscribe({
-        next: () => {
-          alert('Statut mis à jour avec succès !');
+  markAsTrouvee(publication: Publication): void {
+    console.log('🏷️ Marquage comme trouvée pour:', publication.id);
+
+    this.loading = true;
+    this.demandeService.updateDemandeStatut(publication.id, StatutDemande.TROUVEE).subscribe({
+      next: () => {
+        console.log('✅ Demande marquée comme trouvée');
+        this.toastService.success('Demande marquée comme trouvée');
+        this.closeAllModals();
+        this.loading = false;
+
+        setTimeout(() => {
           this.loadMesDemandes();
-        },
-        error: (error) => {
-          console.error('Erreur:', error);
-          alert('Erreur lors de la mise à jour du statut');
-        },
-      });
-    }
+        }, 300);
+      },
+      error: (error: any) => {
+        console.error('❌ Erreur:', error);
+        this.loading = false;
+        this.toastService.error('Erreur lors de la mise à jour');
+      },
+    });
   }
 
-  deleteDemande(id: number): void {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.')) {
-      this.demandeService.deleteDemande(id).subscribe({
-        next: () => {
-          alert('Demande supprimée avec succès !');
-          this.loadMesDemandes();
-          this.loadDemandes();
-        },
-        error: (error) => {
-          console.error('Erreur:', error);
-          alert('Erreur lors de la suppression');
-        },
-      });
-    }
+  // ==========================================
+  // SUPPRESSION
+  // ==========================================
+
+  confirmDelete(): void {
+    if (!this.selectedDemande) return;
+
+    this.loading = true;
+    this.demandeService.deleteDemande(this.selectedDemande.id).subscribe({
+      next: () => {
+        this.toastService.success('Demande supprimée avec succès');
+        this.closeAllModals();
+        this.loadDemandes();
+        this.loadMesDemandes();
+      },
+      error: (error: any) => {
+        console.error('Erreur', error);
+        this.loading = false;
+        this.toastService.error('Erreur lors de la suppression');
+      },
+    });
   }
 
-  // Pagination
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.loadDemandes();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  // ==========================================
+  // HELPERS / UTILITAIRES
+  // ==========================================
+
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('fr-MG', {
+      style: 'currency',
+      currency: 'MGA',
+      minimumFractionDigits: 0,
+    }).format(price);
   }
 
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.loadDemandes();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  // Helpers
-  getStatutBadgeClass(statut: StatutDemande): string {
-    switch (statut) {
-      case StatutDemande.TROUVEE:
-        return 'badge-success';
-      case StatutDemande.EXPIREE:
-        return 'badge-error';
-      default:
-        return 'badge-warning';
-    }
-  }
-
-  getStatutPublicationBadgeClass(statut: string): string {
-    switch (statut) {
-      case 'VALIDE':
-        return 'badge-success';
-      case 'REJETE':
-        return 'badge-error';
-      default:
-        return 'badge-warning';
-    }
-  }
-
-  getStatutLabel(statut: StatutDemande): string {
-    switch (statut) {
-      case StatutDemande.TROUVEE:
-        return 'Trouvée';
-      case StatutDemande.EXPIREE:
-        return 'Expirée';
-      default:
-        return 'Non trouvée';
-    }
-  }
-
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'long',
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('fr-FR', {
       year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   }
 
   formatBudget(min?: number, max?: number): string {
     if (!min && !max) return 'Budget non spécifié';
-    if (min && max) return `${min.toLocaleString()} - ${max.toLocaleString()} Ar`;
-    if (min) return `À partir de ${min.toLocaleString()} Ar`;
-    if (max) return `Jusqu'à ${max.toLocaleString()} Ar`;
+    if (min && max) return `${this.formatPrice(min)} - ${this.formatPrice(max)}`;
+    if (min) return `À partir de ${this.formatPrice(min)}`;
+    if (max) return `Jusqu'à ${this.formatPrice(max)}`;
     return '';
+  }
+
+  getAuteurFullName(publication: Publication): string {
+    return `${publication.auteur.prenomUtilisateur} ${publication.auteur.nomUtilisateur}`;
+  }
+
+  getStatutBadgeClass(statut: string): string {
+    switch (statut) {
+      case 'EN_ATTENTE':
+        return 'badge-warning';
+      case 'VALIDE':
+        return 'badge-success';
+      case 'REJETE':
+        return 'badge-error';
+      default:
+        return 'badge-ghost';
+    }
+  }
+
+  getDemandeStatutBadgeClass(statut: string): string {
+    switch (statut) {
+      case 'TROUVEE':
+        return 'badge-success';
+      case 'EXPIREE':
+        return 'badge-error';
+      default:
+        return 'badge-warning';
+    }
   }
 
   isDeadlinePassed(deadline?: string): boolean {
@@ -460,14 +727,10 @@ export class DemandeUserComponent implements OnInit {
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   }
 
-  private markFormGroupTouched(formGroup: FormGroup | FormArray): void {
-    Object.keys(formGroup.controls).forEach((key) => {
-      const control = formGroup.get(key);
-      control?.markAsTouched();
-
-      if (control instanceof FormGroup || control instanceof FormArray) {
-        this.markFormGroupTouched(control);
-      }
-    });
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.loadDemandes();
+    }
   }
 }

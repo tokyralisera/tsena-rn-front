@@ -1,7 +1,61 @@
-.partner-card {
-  transition: all 0.2s ease-in-out;
+:host {
+  display: contents;
 }
 
-.partner-card:hover {
-  transform: translateY(-2px);
+aside {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+.card {
+  backdrop-filter: blur(10px);
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// Animation pour le chargement
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+section > div > .card {
+  animation: fadeInUp 0.4s ease-out backwards;
+  
+  @for $i from 1 through 5 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+// Accessibilité
+.card:focus-visible {
+  outline: 2px solid hsl(var(--p));
+  outline-offset: 2px;
 }

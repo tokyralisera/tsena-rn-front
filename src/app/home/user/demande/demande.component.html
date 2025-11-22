@@ -1,23 +1,22 @@
-<div class="container mx-auto px-4 py-8">
-  <!-- Header avec titre et boutons -->
-  <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-    <h1 class="text-3xl font-bold text-base-content">Les Demandes</h1>
+<!-- Toast Component -->
+<app-toast></app-toast>
 
-    <div class="flex gap-4">
-      <!-- Bouton Mes Demandes -->
-      <button 
-        (click)="openMesDemandesModal()" 
-        class="btn btn-outline btn-primary gap-2">
+<div class="page-container">
+  <!-- En-tête moderne -->
+  <div class="page-header-modern">
+    <div class="header-left">
+      <h1 class="page-title-modern">Les Demandes</h1>
+      <p class="page-subtitle">Découvrez les demandes de produits agricoles</p>
+    </div>
+    <div class="header-actions-modern">
+      <button class="btn-secondary-modern" (click)="openMyDemandesModal()">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
         Mes Demandes
       </button>
-
-      <!-- Bouton Créer une Demande -->
-      <button 
-        (click)="openCreateModal()" 
-        class="btn btn-primary gap-2">
+      <button class="btn-primary-modern" (click)="openCreateModal()">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -26,658 +25,732 @@
     </div>
   </div>
 
-  <!-- Loading state -->
-  <div *ngIf="loading" class="flex justify-center items-center h-64">
-    <span class="loading loading-spinner loading-lg text-primary"></span>
-  </div>
-
-  <!-- Liste des demandes -->
-  <div *ngIf="!loading && demandes.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Card de demande (style offres) -->
-    <div *ngFor="let demande of demandes" class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <!-- Header: Avatar + Nom + Date + Statuts -->
-        <div class="flex items-start justify-between mb-4">
-          <div class="flex items-center gap-3">
-            <div class="avatar placeholder">
-              <div class="bg-primary text-primary-content rounded-full w-12">
-                <span class="text-lg font-bold">
-                  {{ demande.auteur.nomUtilisateur.charAt(0) }}{{ demande.auteur.prenomUtilisateur.charAt(0) }}
-                </span>
-              </div>
-            </div>
-            <div>
-              <h3 class="font-bold text-base">{{ demande.auteur.nomUtilisateur }} {{ demande.auteur.prenomUtilisateur }}</h3>
-              <p class="text-xs text-base-content/70">{{ formatDate(demande.createdAt) }}</p>
-            </div>
-          </div>
-
-          <!-- Badges statuts -->
-          <div class="flex flex-col gap-1 items-end">
-            <span [class]="'badge ' + getStatutBadgeClass(demande.demande.statutDemande)">
-              {{ getStatutLabel(demande.demande.statutDemande) }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Titre -->
-        <h2 class="card-title text-lg mb-2">{{ demande.titre }}</h2>
-
-        <!-- Description -->
-        <p class="text-sm text-base-content/80 mb-3">{{ demande.description }}</p>
-
-        <!-- Téléphone -->
-        <div class="flex items-center gap-2 text-sm mb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+  <!-- Layout avec sidebar et contenu -->
+  <div class="content-layout">
+    <!-- Sidebar des filtres -->
+    <aside class="filters-sidebar" [class.open]="showFilters">
+      <!-- Header du panneau -->
+      <div class="filters-header">
+        <div class="filters-title-section">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
-          <span>{{ demande.auteur.telephone }}</span>
+          <h3>Filtres</h3>
+          <span class="filter-count" *ngIf="(selectedCategorieFilter ? 1 : 0) + (selectedVilleFilter ? 1 : 0) + (selectedDemandeStatutFilter ? 1 : 0) + (budgetMin ? 1 : 0) + (budgetMax ? 1 : 0) > 0">
+            {{ (selectedCategorieFilter ? 1 : 0) + (selectedVilleFilter ? 1 : 0) + (selectedDemandeStatutFilter ? 1 : 0) + (budgetMin ? 1 : 0) + (budgetMax ? 1 : 0) }}
+          </span>
         </div>
-
-        <!-- Localisation -->
-        <div class="flex items-center gap-2 text-sm text-base-content/70 mb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        <button class="btn-close-filters" (click)="showFilters = false">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <span>{{ demande.ville.nom }}, {{ demande.ville.pays.nom }}</span>
+        </button>
+      </div>
+
+      <!-- Contenu des filtres -->
+      <div class="filters-content">
+        <!-- Recherche dans le sidebar -->
+        <div class="filter-group">
+          <label class="filter-label-sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Recherche
+          </label>
+          <div class="search-input-sidebar">
+            <input 
+              type="text" 
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+              placeholder="Rechercher..." 
+              class="input-sidebar"
+            />
+            <button 
+              *ngIf="searchTerm" 
+              class="clear-btn-sidebar"
+              (click)="searchTerm = ''; onSearch()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <!-- Type de publication -->
-        <div class="flex items-center gap-2 mb-3">
-          <span class="badge badge-outline badge-primary">DEMANDE</span>
+        <!-- Catégorie -->
+        <div class="filter-group">
+          <label class="filter-label-sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            Catégorie
+          </label>
+          <select 
+            [(ngModel)]="selectedCategorieFilter" 
+            (change)="onSearch()"
+            class="select-sidebar">
+            <option [ngValue]="null">Toutes les catégories</option>
+            <option *ngFor="let cat of categories" [ngValue]="cat.id">
+              {{ cat.nom }}
+            </option>
+          </select>
         </div>
 
-        <!-- Budget et Deadline -->
-        <div class="grid grid-cols-2 gap-2 mb-3">
-          <div class="flex items-center gap-2 text-sm">
+        <!-- Ville -->
+        <div class="filter-group">
+          <label class="filter-label-sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Ville
+          </label>
+          <select 
+            [(ngModel)]="selectedVilleFilter" 
+            (change)="onSearch()"
+            class="select-sidebar"
+            [disabled]="loadingVilles">
+            <option [ngValue]="null">Toutes les villes</option>
+            <option *ngFor="let ville of villes" [ngValue]="ville.id">
+              {{ ville.nom }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Statut Demande -->
+        <div class="filter-group">
+          <label class="filter-label-sidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Statut
+          </label>
+          <select 
+            [(ngModel)]="selectedDemandeStatutFilter" 
+            (change)="onSearch()"
+            class="select-sidebar">
+            <option value="">Toutes les demandes</option>
+            <option value="NON_TROUVEE">Non trouvées</option>
+            <option value="TROUVEE">Trouvées</option>
+            <option value="EXPIREE">Expirées</option>
+          </select>
+        </div>
+
+        <!-- Budget -->
+        <div class="filter-group">
+          <label class="filter-label-sidebar">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span class="font-semibold text-primary text-xs">{{ formatBudget(demande.demande.budgetMin, demande.demande.budgetMax) }}</span>
+            Budget (Ar)
+          </label>
+          <div class="budget-inputs">
+            <input 
+              type="number" 
+              [(ngModel)]="budgetMin"
+              (change)="onSearch()"
+              placeholder="Budget minimum"
+              class="input input-bordered input-sm w-full"
+            />
+            <input 
+              type="number" 
+              [(ngModel)]="budgetMax"
+              (change)="onSearch()"
+              placeholder="Budget maximum"
+              class="input input-bordered input-sm w-full"
+            />
           </div>
+        </div>
 
-          <div *ngIf="demande.demande.deadline" class="flex items-center gap-2 text-sm">
+        <!-- Tri -->
+        <div class="filter-group">
+          <label class="filter-label-sidebar">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
             </svg>
-            <span class="text-xs" [class.text-error]="isDeadlinePassed(demande.demande.deadline)" [class.text-warning]="!isDeadlinePassed(demande.demande.deadline)">
-              {{ formatDate(demande.demande.deadline) }}
+            Trier par
+          </label>
+          <select 
+            [(ngModel)]="sortBy" 
+            (change)="onSearch()"
+            class="select-sidebar">
+            <option value="createdAt">Date de création</option>
+            <option value="updatedAt">Dernière modification</option>
+            <option value="titre">Titre (A-Z)</option>
+            <option value="deadline">Date limite</option>
+          </select>
+          <button 
+            class="btn-sort-order"
+            (click)="changeSortOrder()"
+            title="Inverser l'ordre">
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              class="h-4 w-4" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+              [class.rotate-180]="sortOrder === 'desc'">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+            </svg>
+            {{ sortOrder === 'asc' ? 'Croissant' : 'Décroissant' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer du panneau -->
+      <div class="filters-footer">
+        <button 
+          class="btn-reset-filters" 
+          (click)="resetFilters()"
+          *ngIf="searchTerm || selectedCategorieFilter || selectedVilleFilter || selectedDemandeStatutFilter || budgetMin || budgetMax || sortBy !== 'createdAt' || sortOrder !== 'desc'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Réinitialiser
+        </button>
+      </div>
+    </aside>
+
+    <!-- Overlay pour mobile -->
+    <div class="filters-overlay" [class.active]="showFilters" (click)="showFilters = false"></div>
+
+    <!-- Contenu principal -->
+    <main class="main-content">
+      <!-- Barre d'actions et résultats -->
+      <div class="results-bar">
+        <button class="btn-toggle-filters" (click)="showFilters = !showFilters">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Filtres
+          <span class="filter-badge-mobile" *ngIf="(selectedCategorieFilter ? 1 : 0) + (selectedVilleFilter ? 1 : 0) + (selectedDemandeStatutFilter ? 1 : 0) + (budgetMin ? 1 : 0) + (budgetMax ? 1 : 0) > 0">
+            {{ (selectedCategorieFilter ? 1 : 0) + (selectedVilleFilter ? 1 : 0) + (selectedDemandeStatutFilter ? 1 : 0) + (budgetMin ? 1 : 0) + (budgetMax ? 1 : 0) }}
+          </span>
+        </button>
+        
+        <div class="results-info">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <strong>{{ totalItems }}</strong> demande{{ totalItems > 1 ? 's' : '' }}
+        </div>
+      </div>
+
+      <!-- Liste des demandes -->
+      <div class="offres-list" *ngIf="!loading && demandes.length > 0">
+        <div class="offre-card-modern" *ngFor="let demande of demandes">
+          
+          <!-- Header avec auteur et badge -->
+          <div class="card-header-modern">
+            <div class="author-section">
+              <div class="author-avatar-modern">
+                {{ getAuteurFullName(demande).charAt(0) }}
+              </div>
+              <div class="author-details">
+                <h3 class="author-name-modern">{{ getAuteurFullName(demande) }}</h3>
+                <p class="publish-info">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {{ formatDate(demande.createdAt) }}
+                </p>
+              </div>
+            </div>
+            <span class="status-badge" [ngClass]="getDemandeStatutBadgeClass(demande.demande.statutDemande)">
+              {{ demande.demande.statutDemande }}
             </span>
           </div>
-        </div>
 
-        <!-- Photos -->
-        <div *ngIf="demande.images && demande.images.length > 0" class="mb-3">
-          <div class="grid grid-cols-2 gap-2">
+          <!-- Image principale -->
+          <div class="main-image-container" *ngIf="demande.images && demande.images.length > 0">
             <img 
-              *ngFor="let image of demande.images.slice(0, 2)" 
-              [src]="image.url" 
-              [alt]="demande.titre" 
-              class="w-full h-32 object-cover rounded-lg" />
+              [src]="demande.images[0].url" 
+              [alt]="demande.titre"
+              class="main-image"
+              (click)="openImagePreview(demande.images, 0)"
+            />
+            <div class="image-count-badge" *ngIf="demande.images.length > 1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {{ demande.images.length }} photos
+            </div>
           </div>
-          <p *ngIf="demande.images.length > 2" class="text-xs text-center mt-1 text-base-content/70">
-            +{{ demande.images.length - 2 }} photo(s)
+
+          <!-- Placeholder si pas d'image -->
+          <div *ngIf="!demande.images || demande.images.length === 0" 
+               class="main-image-container-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" class="placeholder-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+
+          <!-- Contenu -->
+          <div class="card-content-modern">
+            <!-- Titre et description -->
+            <div class="content-text">
+              <h2 class="offre-title-modern">{{ demande.titre }}</h2>
+              <p class="offre-description-modern">{{ demande.description }}</p>
+            </div>
+
+            <!-- Informations pratiques -->
+            <div class="info-grid">
+              <div class="info-item">
+                <svg xmlns="http://www.w3.org/2000/svg" class="info-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>{{ demande.ville.nom }}, {{ demande.ville.pays.nom }}</span>
+              </div>
+              <div class="info-item">
+                <svg xmlns="http://www.w3.org/2000/svg" class="info-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                <span>{{ demande.auteur.telephone }}</span>
+              </div>
+            </div>
+
+            <!-- Budget et Deadline -->
+            <div class="demande-specifics">
+              <div class="budget-info">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <span class="label-small">Budget</span>
+                  <span class="value-big">{{ formatBudget(demande.demande.budgetMin, demande.demande.budgetMax) }}</span>
+                </div>
+              </div>
+              
+              <div class="deadline-info" *ngIf="demande.demande.deadline">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <div>
+                  <span class="label-small">Deadline</span>
+                  <span class="value-big" [class.text-error]="isDeadlinePassed(demande.demande.deadline)">
+                    {{ formatDate(demande.demande.deadline) }}
+                    <span *ngIf="!isDeadlinePassed(demande.demande.deadline)" class="days-remaining">
+                      ({{ getDaysUntilDeadline(demande.demande.deadline) }} jours)
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Liste des produits -->
+            <div class="products-modern">
+              <h4 class="products-title-modern">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                Produits recherchés
+              </h4>
+              
+              <div class="products-list-modern">
+                <div class="product-item-modern" *ngFor="let produit of demande.demande.produits">
+                  <div class="product-info-row">
+                    <div class="product-name-section">
+                      <span class="product-name">{{ produit.nom }}</span>
+                      <span class="product-category">
+                        {{ produit.categorie.nom }}
+                      </span>
+                    </div>
+                    <div class="product-quantity" *ngIf="produit.quantite">
+                      {{ produit.quantite }} {{ produit.uniteMesure }}
+                    </div>
+                    <div class="product-quantity" *ngIf="!produit.quantite">
+                      Quantité non spécifiée
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card-actions-modern">
+              @if (isMyDemande(demande)) {
+                <div class="my-offer-notice">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Votre demande
+                </div>
+              } @else if (demande.demande.statutDemande === 'TROUVEE' || demande.demande.statutDemande === 'EXPIREE') {
+                <button class="btn-sold" disabled>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {{ demande.demande.statutDemande === 'TROUVEE' ? 'Demande satisfaite' : 'Demande expirée' }}
+                </button>
+              } @else {
+                <button class="btn-contact" (click)="contactAuthor(demande, $event)" [disabled]="loading">
+                  @if (loading) {
+                    <span class="loading loading-spinner loading-sm"></span>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  }
+                  Je peux fournir !
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- État vide -->
+      <div *ngIf="!loading && demandes.length === 0" class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" class="empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="empty-text">Aucune demande ne correspond à vos critères</p>
+        <button class="btn-reset-empty" (click)="resetFilters()">Réinitialiser les filtres</button>
+      </div>
+
+      <!-- Loader -->
+      <div *ngIf="loading" class="loader-container">
+        <span class="loading loading-spinner loading-lg"></span>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Mes Demandes -->
+<input type="checkbox" [checked]="showMesDemandesModal" class="modal-toggle" id="modal-mes-demandes" />
+<div class="modal" [class.modal-open]="showMesDemandesModal">
+  <div class="modal-box max-w-4xl max-h-[80vh] overflow-y-auto">
+    <h3 class="font-bold text-lg mb-4">Mes Demandes</h3>
+
+    <div *ngIf="loading" class="flex justify-center py-8">
+      <span class="loading loading-spinner loading-lg"></span>
+    </div>
+
+    <div *ngIf="!loading && mesDemandes.length === 0" class="text-center py-8">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <p class="text-gray-500 mb-4">Vous n'avez aucune demande pour le moment</p>
+      <button class="btn btn-primary" (click)="openCreateModal()">Créer ma première demande</button>
+    </div>
+
+    <div class="my-offers-list" *ngIf="!loading && mesDemandes.length > 0">
+      <div *ngFor="let demande of mesDemandes" class="my-offer-item">
+        <div class="flex-1">
+          <h4 class="font-semibold text-base">{{ demande.titre }}</h4>
+          <p class="text-sm text-gray-600 mt-1">{{ formatDate(demande.createdAt) }}</p>
+          <div class="flex gap-2 mt-2 flex-wrap">
+            <span class="badge badge-sm" [ngClass]="getStatutBadgeClass(demande.statut)">{{ demande.statut }}</span>
+            <span class="badge badge-sm" [ngClass]="getDemandeStatutBadgeClass(demande.demande.statutDemande)">{{ demande.demande.statutDemande }}</span>
+          </div>
+          <p *ngIf="demande.demande.deadline" class="text-xs text-gray-500 mt-1">
+            Deadline: {{ formatDate(demande.demande.deadline) }}
           </p>
         </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <button class="btn btn-sm btn-ghost" (click)="openEditModal(demande)" title="Modifier">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span class="hidden sm:inline">Modifier</span>
+          </button>
+          <button class="btn btn-sm btn-error" (click)="openDeleteModal(demande)" title="Supprimer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span class="hidden sm:inline">Supprimer</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-        <!-- Placeholder si pas d'image -->
-        <div *ngIf="!demande.images || demande.images.length === 0" 
-             class="w-full h-32 bg-base-200 flex items-center justify-center rounded-lg mb-3">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-base-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
+    <div class="modal-action">
+      <button class="btn" (click)="closeAllModals()">Fermer</button>
+    </div>
+  </div>
+  <label class="modal-backdrop" for="modal-mes-demandes" (click)="closeAllModals()"></label>
+</div>
+
+<!-- Modal Créer/Modifier Demande -->
+<input type="checkbox" [checked]="showCreateModal || showEditModal" class="modal-toggle" />
+<div class="modal" [class.modal-open]="showCreateModal || showEditModal">
+  <div class="modal-box max-w-5xl max-h-[90vh] overflow-y-auto">
+    <h3 class="font-bold text-lg mb-4">
+      {{ showEditModal ? 'Modifier la Demande' : 'Créer une Demande' }}
+    </h3>
+
+    <form [formGroup]="demandeForm" (ngSubmit)="onSubmit()">
+      <!-- Titre -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Titre <span class="text-error">*</span></span>
+        </label>
+        <input type="text" placeholder="Ex: Recherche de riz de qualité" 
+          class="input input-bordered"
+          [class.input-error]="demandeForm.get('titre')?.invalid && demandeForm.get('titre')?.touched"
+          formControlName="titre" />
+        <label class="label" *ngIf="demandeForm.get('titre')?.invalid && demandeForm.get('titre')?.touched">
+          <span class="label-text-alt text-error">Le titre doit contenir au moins 5 caractères</span>
+        </label>
+      </div>
+
+      <!-- Description -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Description <span class="text-error">*</span></span>
+        </label>
+        <textarea placeholder="Décrivez votre demande en détails (minimum 20 caractères)..." 
+          class="textarea textarea-bordered h-24"
+          [class.textarea-error]="demandeForm.get('description')?.invalid && demandeForm.get('description')?.touched"
+          formControlName="description"></textarea>
+        <label class="label" *ngIf="demandeForm.get('description')?.invalid && demandeForm.get('description')?.touched">
+          <span class="label-text-alt text-error">
+            La description doit contenir au moins 20 caractères 
+            ({{ demandeForm.get('description')?.value?.length || 0 }}/20)
+          </span>
+        </label>
+      </div>
+
+      <!-- Ville (Madagascar uniquement) -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Ville <span class="text-error">*</span></span>
+        </label>
+        <select class="select select-bordered" 
+          [class.select-error]="demandeForm.get('villeId')?.invalid && demandeForm.get('villeId')?.touched"
+          formControlName="villeId" 
+          [disabled]="loadingVilles || villes.length === 0">
+          <option [ngValue]="null">
+            {{ loadingVilles ? 'Chargement des villes...' : villes.length === 0 ? 'Aucune ville disponible' : 'Sélectionner une ville' }}
+          </option>
+          <option *ngFor="let v of villes" [ngValue]="v.id">{{ v.nom }}</option>
+        </select>
+        <label class="label">
+          <span class="label-text-alt" *ngIf="!loadingVilles && villes.length > 0">📍 Madagascar</span>
+          <span class="label-text-alt text-error" *ngIf="demandeForm.get('villeId')?.invalid && demandeForm.get('villeId')?.touched">
+            Veuillez sélectionner une ville
+          </span>
+        </label>
+      </div>
+
+      <!-- Budget et Deadline -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Budget Min (Ar)</span>
+          </label>
+          <input type="number" placeholder="Ex: 50000" class="input input-bordered"
+            formControlName="budgetMin" />
         </div>
 
-        <!-- Produits demandés (tableau) -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Budget Max (Ar)</span>
+          </label>
+          <input type="number" placeholder="Ex: 100000" class="input input-bordered"
+            formControlName="budgetMax" />
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Date limite</span>
+          </label>
+          <input type="date" class="input input-bordered" formControlName="deadline" [min]="minDate" />
+        </div>
+      </div>
+
+      <!-- Photos (optionnel) -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Photos (optionnel, max {{ maxImages }})</span>
+        </label>
+        <input type="file" accept="image/*" multiple class="file-input file-input-bordered"
+          (change)="onFileSelected($event)" [disabled]="imagePreviews.length >= maxImages" />
+
+        <div class="image-previews" *ngIf="imagePreviews.length > 0">
+          <div *ngFor="let preview of imagePreviews; let i = index" class="image-preview-item">
+            <img [src]="preview.url" [alt]="'Image ' + (i+1)" />
+            <button type="button" class="btn-remove-image" (click)="removeImage(i)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Produits -->
+      <div class="products-form-section mb-4">
+        <div class="flex justify-between items-center mb-3">
+          <label class="label-text font-semibold">Produits recherchés <span class="text-error">*</span></label>
+          <button type="button" class="btn btn-sm btn-circle btn-primary" (click)="addProduit()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        </div>
+
         <div class="overflow-x-auto">
-          <table class="table table-xs table-zebra">
+          <table class="table table-compact w-full">
             <thead>
               <tr>
-                <th>Produit</th>
+                <th>Nom du produit</th>
                 <th>Catégorie</th>
                 <th>Quantité</th>
+                <th>Unité</th>
+                <th></th>
               </tr>
             </thead>
-            <tbody>
-              <tr *ngFor="let produit of demande.demande.produits">
-                <td class="font-medium">{{ produit.nom }}</td>
-                <td>{{ produit.categorie.nom }}</td>
+            <tbody formArrayName="produits">
+              <tr *ngFor="let produit of produits.controls; let i = index" [formGroupName]="i">
                 <td>
-                  <span *ngIf="produit.quantite" class="text-primary font-semibold">
-                    {{ produit.quantite }} {{ produit.uniteMesure }}
-                  </span>
-                  <span *ngIf="!produit.quantite" class="text-base-content/50">-</span>
+                  <input type="text" placeholder="Nom" class="input input-sm input-bordered w-full"
+                    formControlName="nom" />
+                </td>
+                <td>
+                  <select class="select select-sm select-bordered" formControlName="categorieId">
+                    <option [ngValue]="null">Catégorie</option>
+                    <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.nom }}</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="number" step="0.01" class="input input-sm input-bordered w-20"
+                    formControlName="quantite" placeholder="Qté" />
+                </td>
+                <td>
+                  <select class="select select-sm select-bordered" formControlName="uniteMesure">
+                    <option *ngFor="let unite of uniteMesureOptions" [value]="unite">{{ unite }}</option>
+                  </select>
+                </td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-ghost btn-circle text-error" (click)="removeProduit(i)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-
-        <!-- Action: Répondre à la demande -->
-        <div class="card-actions justify-end mt-4">
-          <button class="btn btn-primary btn-sm gap-2 w-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            Répondre à la demande
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- État vide -->
-  <div *ngIf="!loading && demandes.length === 0" class="text-center py-16">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mx-auto text-base-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-    </svg>
-    <h3 class="text-xl font-semibold text-base-content mb-2">Aucune demande pour le moment</h3>
-    <p class="text-base-content/70 mb-4">Soyez le premier à publier une demande !</p>
-    <button (click)="openCreateModal()" class="btn btn-primary">
-      Créer une Demande
-    </button>
-  </div>
-
-  <!-- Pagination -->
-  <div *ngIf="!loading && demandes.length > 0" class="flex justify-center mt-8">
-    <div class="join">
-      <button 
-        (click)="previousPage()" 
-        [disabled]="currentPage === 1" 
-        class="join-item btn">
-        «
-      </button>
-      <button class="join-item btn">Page {{ currentPage }} / {{ totalPages }}</button>
-      <button 
-        (click)="nextPage()" 
-        [disabled]="currentPage === totalPages" 
-        class="join-item btn">
-        »
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================ -->
-<!-- MODAL: MES DEMANDES -->
-<!-- ============================================ -->
-<dialog [class.modal-open]="showMesDemandesModal" class="modal">
-  <div class="modal-box max-w-5xl">
-    <h3 class="font-bold text-lg mb-4">Mes Demandes</h3>
-
-    <!-- Liste de mes demandes -->
-    <div *ngIf="mesDemandes.length > 0" class="space-y-4 max-h-[60vh] overflow-y-auto">
-      <div *ngFor="let demande of mesDemandes" class="card bg-base-200 shadow-md">
-        <div class="card-body p-4">
-          <div class="flex justify-between items-start">
-            <div class="flex-1">
-              <h4 class="font-bold text-base">{{ demande.titre }}</h4>
-              <p class="text-sm text-base-content/70 mt-1">{{ formatDate(demande.createdAt) }}</p>
-              
-              <!-- Badges statuts -->
-              <div class="flex gap-2 mt-2">
-                <span [class]="'badge ' + getStatutPublicationBadgeClass(demande.statut)">
-                  {{ demande.statut }}
-                </span>
-                <span [class]="'badge ' + getStatutBadgeClass(demande.demande.statutDemande)">
-                  {{ getStatutLabel(demande.demande.statutDemande) }}
-                </span>
-              </div>
-
-              <!-- Deadline -->
-              <p *ngIf="demande.demande.deadline" class="text-sm mt-2">
-                <span class="font-semibold">Deadline:</span> 
-                {{ formatDate(demande.demande.deadline) }}
-                <span *ngIf="!isDeadlinePassed(demande.demande.deadline)" class="text-warning ml-2">
-                  ({{ getDaysUntilDeadline(demande.demande.deadline) }} jours)
-                </span>
-              </p>
-            </div>
-
-            <!-- Actions -->
-            <div class="dropdown dropdown-end">
-              <label tabindex="0" class="btn btn-ghost btn-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                </svg>
-              </label>
-              <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                <li><a (click)="openEditModal(demande)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Modifier
-                </a></li>
-                <li *ngIf="demande.statut === 'VALIDE' && demande.demande.statutDemande === 'NON_TROUVEE'">
-                  <a (click)="updateDemandeStatut(demande.id, StatutDemande.TROUVEE)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Marquer comme trouvée
-                  </a>
-                </li>
-                <li><a (click)="deleteDemande(demande.id)" class="text-error">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Supprimer
-                </a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- État vide -->
-    <div *ngIf="mesDemandes.length === 0" class="text-center py-8">
-      <p class="text-base-content/70">Vous n'avez pas encore créé de demande</p>
-    </div>
-
-    <div class="modal-action">
-      <button (click)="closeMesDemandesModal()" class="btn">Fermer</button>
-    </div>
-  </div>
-  <form method="dialog" class="modal-backdrop" (click)="closeMesDemandesModal()">
-    <button>close</button>
-  </form>
-</dialog>
-
-<!-- ============================================ -->
-<!-- MODAL: CRÉER UNE DEMANDE -->
-<!-- ============================================ -->
-<dialog [class.modal-open]="showCreateModal" class="modal">
-  <div class="modal-box max-w-4xl max-h-[90vh] overflow-y-auto">
-    <h3 class="font-bold text-lg mb-4">Créer une Demande</h3>
-
-    <form [formGroup]="createForm" (ngSubmit)="createDemande()" class="space-y-4">
-      <!-- Titre -->
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Titre <span class="text-error">*</span></span>
-        </label>
-        <input 
-          type="text" 
-          formControlName="titre" 
-          placeholder="Ex: Recherche de riz de qualité" 
-          class="input input-bordered w-full" 
-          [class.input-error]="createForm.get('titre')?.invalid && createForm.get('titre')?.touched" />
-        <label *ngIf="createForm.get('titre')?.invalid && createForm.get('titre')?.touched" class="label">
-          <span class="label-text-alt text-error">Titre requis (min 5 caractères)</span>
-        </label>
       </div>
 
-      <!-- Description -->
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Description <span class="text-error">*</span></span>
-        </label>
-        <textarea 
-          formControlName="description" 
-          placeholder="Décrivez votre demande en détails..." 
-          class="textarea textarea-bordered h-24" 
-          [class.textarea-error]="createForm.get('description')?.invalid && createForm.get('description')?.touched"></textarea>
-        <label *ngIf="createForm.get('description')?.invalid && createForm.get('description')?.touched" class="label">
-          <span class="label-text-alt text-error">Description requise (min 20 caractères)</span>
-        </label>
-      </div>
-
-      <!-- Ville -->
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Ville <span class="text-error">*</span></span>
-        </label>
-        <select 
-          formControlName="villeId" 
-          class="select select-bordered w-full"
-          [class.select-error]="createForm.get('villeId')?.invalid && createForm.get('villeId')?.touched">
-          <option value="" disabled selected>Sélectionner une ville</option>
-          <option *ngFor="let ville of villes" [value]="ville.id">
-            {{ ville.nom }}, {{ ville.pays.nom }}
-          </option>
-        </select>
-        <label *ngIf="createForm.get('villeId')?.invalid && createForm.get('villeId')?.touched" class="label">
-          <span class="label-text-alt text-error">Ville requise</span>
-        </label>
-      </div>
-
-      <!-- Budget et Deadline -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Budget Min (Ar)</span>
-          </label>
-          <input 
-            type="number" 
-            formControlName="budgetMin" 
-            placeholder="5000" 
-            class="input input-bordered" />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Budget Max (Ar)</span>
-          </label>
-          <input 
-            type="number" 
-            formControlName="budgetMax" 
-            placeholder="10000" 
-            class="input input-bordered" />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Deadline</span>
-          </label>
-          <input 
-            type="date" 
-            formControlName="deadline" 
-            class="input input-bordered" 
-            [min]="minDate" />
-        </div>
-      </div>
-
-      <!-- Photos (optionnel) -->
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Photos (optionnel, max 5)</span>
-        </label>
-        <input 
-          type="file" 
-          accept="image/*" 
-          multiple 
-          (change)="onImagesSelected($event)" 
-          class="file-input file-input-bordered w-full" />
-        
-        <!-- Preview images -->
-        <div *ngIf="imagePreviewUrls.length > 0" class="grid grid-cols-5 gap-2 mt-2">
-          <div *ngFor="let url of imagePreviewUrls; let i = index" class="relative">
-            <img [src]="url" class="w-full h-20 object-cover rounded" />
-            <button 
-              type="button" 
-              (click)="removeImage(i)" 
-              class="btn btn-error btn-xs btn-circle absolute -top-2 -right-2">
-              ✕
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Produits -->
-      <div class="border border-base-300 rounded-lg p-4">
-        <div class="flex justify-between items-center mb-4">
-          <label class="label">
-            <span class="label-text font-bold">Produits recherchés <span class="text-error">*</span></span>
-          </label>
-          <button type="button" (click)="addProduit()" class="btn btn-sm btn-primary gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Ajouter un produit
-          </button>
-        </div>
-
-        <div formArrayName="produits" class="space-y-4">
-          <div *ngFor="let produit of produitsFormArray.controls; let i = index" [formGroupName]="i" 
-               class="grid grid-cols-12 gap-2 items-start bg-base-200 p-3 rounded">
-            
-            <!-- Nom du produit -->
-            <div class="col-span-12 md:col-span-3 form-control">
-              <input 
-                type="text" 
-                formControlName="nom" 
-                placeholder="Nom du produit" 
-                class="input input-bordered input-sm w-full" />
-            </div>
-
-            <!-- Catégorie -->
-            <div class="col-span-12 md:col-span-3 form-control">
-              <select formControlName="categorieId" class="select select-bordered select-sm w-full">
-                <option value="" disabled selected>Catégorie</option>
-                <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.nom }}</option>
-              </select>
-            </div>
-
-            <!-- Quantité -->
-            <div class="col-span-12 md:col-span-2 form-control">
-              <input 
-                type="number" 
-                formControlName="quantite" 
-                placeholder="Quantité" 
-                class="input input-bordered input-sm w-full" />
-            </div>
-
-            <!-- Unité -->
-            <div class="col-span-12 md:col-span-3 form-control">
-              <select formControlName="uniteMesure" class="select select-bordered select-sm w-full">
-                <option value="">Unité</option>
-                <option *ngFor="let unite of uniteMesures" [value]="unite">{{ unite }}</option>
-              </select>
-            </div>
-
-            <!-- Bouton supprimer -->
-            <div class="col-span-12 md:col-span-1 flex items-center">
-              <button 
-                type="button" 
-                (click)="removeProduit(i)" 
-                [disabled]="produitsFormArray.length === 1"
-                class="btn btn-error btn-sm btn-square">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
+      <!-- Marquer comme trouvée -->
+      <div *ngIf="showEditModal && selectedDemande?.statut === 'VALIDE' && selectedDemande?.demande?.statutDemande === 'NON_TROUVEE'" class="mb-4">
+        <button type="button" class="btn btn-success btn-block" (click)="markAsTrouvee(selectedDemande!)">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Marquer comme Trouvée
+        </button>
       </div>
 
       <!-- Actions -->
       <div class="modal-action">
-        <button type="button" (click)="closeCreateModal()" class="btn btn-ghost">Annuler</button>
-        <button type="submit" [disabled]="loading" class="btn btn-primary">
-          <span *ngIf="!loading">Soumettre ma Demande</span>
-          <span *ngIf="loading" class="loading loading-spinner"></span>
+        <button type="button" class="btn btn-ghost" (click)="closeAllModals()" [disabled]="loading">
+          Annuler
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          <span class="loading loading-spinner" *ngIf="loading"></span>
+          {{ showEditModal ? 'Modifier' : 'Soumettre ma Demande' }}
         </button>
       </div>
     </form>
   </div>
-  <form method="dialog" class="modal-backdrop" (click)="closeCreateModal()">
-    <button>close</button>
-  </form>
-</dialog>
+  <div class="modal-backdrop" (click)="closeAllModals()"></div>
+</div>
 
-<!-- ============================================ -->
-<!-- MODAL: MODIFIER UNE DEMANDE -->
-<!-- ============================================ -->
-<dialog [class.modal-open]="showEditModal" class="modal">
-  <div class="modal-box max-w-4xl max-h-[90vh] overflow-y-auto">
-    <h3 class="font-bold text-lg mb-4">Modifier la Demande</h3>
+<!-- Modal Confirmation Suppression -->
+<input type="checkbox" [checked]="showDeleteModal" class="modal-toggle" />
+<div class="modal" [class.modal-open]="showDeleteModal">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4">Confirmer la suppression</h3>
+    <p class="py-4">
+      Êtes-vous sûr de vouloir supprimer la demande
+      <span class="font-bold">{{ selectedDemande?.titre }}</span> ?
+      Cette action est irréversible.
+    </p>
+    <div class="modal-action">
+      <button class="btn btn-ghost" (click)="closeAllModals()" [disabled]="loading">
+        Annuler
+      </button>
+      <button class="btn btn-error" (click)="confirmDelete()" [disabled]="loading">
+        <span class="loading loading-spinner" *ngIf="loading"></span>
+        Supprimer
+      </button>
+    </div>
+  </div>
+  <div class="modal-backdrop" (click)="closeAllModals()"></div>
+</div>
 
-    <form [formGroup]="editForm" (ngSubmit)="updateDemande()" class="space-y-4">
-      <div class="alert alert-info">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+<!-- Modal Prévisualisation des Images -->
+<input type="checkbox" [checked]="showImagePreviewModal" class="modal-toggle" id="modal-image-preview" />
+<div class="modal" [class.modal-open]="showImagePreviewModal">
+  <div class="modal-box max-w-5xl max-h-[90vh] p-0 relative">
+    <button 
+      class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 z-10 bg-base-100"
+      (click)="closeImagePreview()">
+      ✕
+    </button>
+
+    <div class="relative">
+      <img 
+        *ngIf="currentImageGallery[selectedImageIndex]"
+        [src]="currentImageGallery[selectedImageIndex].url" 
+        [alt]="'Image ' + (selectedImageIndex + 1)"
+        class="w-full h-auto max-h-[70vh] object-contain bg-base-200"
+      />
+
+      <button 
+        *ngIf="currentImageGallery.length > 1"
+        class="btn btn-circle btn-ghost absolute left-4 top-1/2 -translate-y-1/2 bg-base-100/80 hover:bg-base-100"
+        (click)="previousImage()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
-        <span>Après modification, votre demande repassera en attente de validation.</span>
+      </button>
+
+      <button 
+        *ngIf="currentImageGallery.length > 1"
+        class="btn btn-circle btn-ghost absolute right-4 top-1/2 -translate-y-1/2 bg-base-100/80 hover:bg-base-100"
+        (click)="nextImage()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      <div 
+        *ngIf="currentImageGallery.length > 1"
+        class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-base-100/80 px-4 py-2 rounded-full">
+        <span class="text-sm font-semibold">
+          {{ selectedImageIndex + 1 }} / {{ currentImageGallery.length }}
+        </span>
       </div>
+    </div>
 
-      <!-- Titre -->
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Titre</span>
-        </label>
-        <input 
-          type="text" 
-          formControlName="titre" 
-          placeholder="Ex: Recherche de riz de qualité" 
-          class="input input-bordered w-full" />
-      </div>
-
-      <!-- Description -->
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Description</span>
-        </label>
-        <textarea 
-          formControlName="description" 
-          placeholder="Décrivez votre demande en détails..." 
-          class="textarea textarea-bordered h-24"></textarea>
-      </div>
-
-      <!-- Ville -->
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Ville</span>
-        </label>
-        <select formControlName="villeId" class="select select-bordered w-full">
-          <option value="" disabled>Sélectionner une ville</option>
-          <option *ngFor="let ville of villes" [value]="ville.id">
-            {{ ville.nom }}, {{ ville.pays.nom }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Budget et Deadline -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Budget Min (Ar)</span>
-          </label>
-          <input 
-            type="number" 
-            formControlName="budgetMin" 
-            placeholder="5000" 
-            class="input input-bordered" />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Budget Max (Ar)</span>
-          </label>
-          <input 
-            type="number" 
-            formControlName="budgetMax" 
-            placeholder="10000" 
-            class="input input-bordered" />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Deadline</span>
-          </label>
-          <input 
-            type="date" 
-            formControlName="deadline" 
-            class="input input-bordered" 
-            [min]="minDate" />
-        </div>
-      </div>
-
-      <!-- Photos (optionnel) -->
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Nouvelles photos (optionnel, max 5)</span>
-        </label>
-        <input 
-          type="file" 
-          accept="image/*" 
-          multiple 
-          (change)="onImagesSelected($event)" 
-          class="file-input file-input-bordered w-full" />
-        
-        <!-- Preview images -->
-        <div *ngIf="imagePreviewUrls.length > 0" class="grid grid-cols-5 gap-2 mt-2">
-          <div *ngFor="let url of imagePreviewUrls; let i = index" class="relative">
-            <img [src]="url" class="w-full h-20 object-cover rounded" />
-            <button 
-              type="button" 
-              (click)="removeImage(i)" 
-              class="btn btn-error btn-xs btn-circle absolute -top-2 -right-2">
-              ✕
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Produits -->
-      <div class="border border-base-300 rounded-lg p-4">
-        <div class="flex justify-between items-center mb-4">
-          <label class="label">
-            <span class="label-text font-bold">Produits recherchés</span>
-          </label>
-          <button type="button" (click)="addProduit()" class="btn btn-sm btn-primary gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Ajouter un produit
-          </button>
-        </div>
-
-        <div formArrayName="produits" class="space-y-4">
-          <div *ngFor="let produit of editProduitsFormArray.controls; let i = index" [formGroupName]="i" 
-               class="grid grid-cols-12 gap-2 items-start bg-base-200 p-3 rounded">
-            
-            <!-- Nom du produit -->
-            <div class="col-span-12 md:col-span-3 form-control">
-              <input 
-                type="text" 
-                formControlName="nom" 
-                placeholder="Nom du produit" 
-                class="input input-bordered input-sm w-full" />
-            </div>
-
-            <!-- Catégorie -->
-            <div class="col-span-12 md:col-span-3 form-control">
-              <select formControlName="categorieId" class="select select-bordered select-sm w-full">
-                <option value="" disabled>Catégorie</option>
-                <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.nom }}</option>
-              </select>
-            </div>
-
-            <!-- Quantité -->
-            <div class="col-span-12 md:col-span-2 form-control">
-              <input 
-                type="number" 
-                formControlName="quantite" 
-                placeholder="Quantité" 
-                class="input input-bordered input-sm w-full" />
-            </div>
-
-            <!-- Unité -->
-            <div class="col-span-12 md:col-span-3 form-control">
-              <select formControlName="uniteMesure" class="select select-bordered select-sm w-full">
-                <option value="">Unité</option>
-                <option *ngFor="let unite of uniteMesures" [value]="unite">{{ unite }}</option>
-              </select>
-            </div>
-
-            <!-- Bouton supprimer -->
-            <div class="col-span-12 md:col-span-1 flex items-center">
-              <button 
-                type="button" 
-                (click)="removeProduit(i)" 
-                [disabled]="editProduitsFormArray.length === 1"
-                class="btn btn-error btn-sm btn-square">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-action">
-        <button type="button" (click)="closeEditModal()" class="btn btn-ghost">Annuler</button>
-        <button type="submit" [disabled]="loading" class="btn btn-primary">
-          <span *ngIf="!loading">Mettre à jour</span>
-          <span *ngIf="loading" class="loading loading-spinner"></span>
-        </button>
-      </div>
-    </form>
+    <div 
+      *ngIf="currentImageGallery.length > 1" 
+      class="flex gap-2 p-4 overflow-x-auto bg-base-100">
+      <img 
+        *ngFor="let image of currentImageGallery; let i = index"
+        [src]="image.url"
+        [alt]="'Miniature ' + (i + 1)"
+        class="w-20 h-20 object-cover rounded cursor-pointer transition-all"
+        [class.ring-2]="i === selectedImageIndex"
+        [class.ring-primary]="i === selectedImageIndex"
+        [class.opacity-50]="i !== selectedImageIndex"
+        (click)="selectedImageIndex = i"
+      />
+    </div>
   </div>
-  <form method="dialog" class="modal-backdrop" (click)="closeEditModal()">
-    <button>close</button>
-  </form>
-</dialog>
+  <label class="modal-backdrop" (click)="closeImagePreview()"></label>
+</div>

@@ -1,6 +1,6 @@
 .sidebar-container {
   width: 16rem; // 256px
-  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #F8F9FB 100%);
   border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
@@ -15,8 +15,22 @@
 // Logo / Brand Section
 .sidebar-brand {
   padding: 1.5rem 1rem;
-  background: linear-gradient(135deg, #5733eb 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #2EAD56 0%, #30C4C9 100%);
   color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(90, 104, 224, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+  }
 }
 
 .brand-content {
@@ -24,17 +38,20 @@
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
+  position: relative;
+  z-index: 1;
 }
 
 .brand-icon {
   width: 2.5rem;
   height: 2.5rem;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .brand-text {
@@ -47,19 +64,22 @@
   letter-spacing: 0.05em;
   margin: 0;
   line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .brand-tagline {
   font-size: 0.75rem;
-  opacity: 0.9;
+  opacity: 0.95;
   margin: 0;
   font-weight: 400;
 }
 
 .brand-divider {
   height: 2px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
   border-radius: 2px;
+  position: relative;
+  z-index: 1;
 }
 
 // User Info Card
@@ -67,23 +87,31 @@
   margin: 1rem;
   padding: 0.75rem;
   background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(46, 173, 86, 0.1);
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(46, 173, 86, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(46, 173, 86, 0.15);
+    border-color: rgba(46, 173, 86, 0.2);
+    transform: translateY(-2px);
+  }
 }
 
 .user-avatar {
   width: 2.5rem;
   height: 2.5rem;
-  background: linear-gradient(135deg, #5733eb 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #2EAD56 0%, #30C4C9 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(46, 173, 86, 0.25);
 }
 
 .avatar-text {
@@ -111,12 +139,13 @@
   display: inline-block;
   font-size: 0.625rem;
   padding: 0.125rem 0.5rem;
-  background: #dbeafe;
-  color: #1e40af;
+  background: linear-gradient(135deg, rgba(90, 104, 224, 0.1) 0%, rgba(48, 196, 201, 0.1) 100%);
+  color: #5A68E0;
   border-radius: 9999px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  border: 1px solid rgba(90, 104, 224, 0.2);
 }
 
 // Navigation
@@ -138,8 +167,8 @@
   align-items: center;
   padding: 0.75rem 1rem;
   color: #4b5563;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
+  border-radius: 0.75rem;
+  transition: all 0.25s ease;
   cursor: pointer;
   text-decoration: none;
   background: transparent;
@@ -155,33 +184,49 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 3px;
-    background: #5733eb;
+    width: 4px;
+    background: linear-gradient(180deg, #2EAD56 0%, #30C4C9 100%);
     transform: scaleY(0);
-    transition: transform 0.2s ease;
+    transition: transform 0.25s ease;
+    border-radius: 0 4px 4px 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(46, 173, 86, 0.05) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   &:hover {
-    background: #f3f4f6;
-    color: #1f2937;
+    background: linear-gradient(90deg, rgba(46, 173, 86, 0.08) 0%, rgba(48, 196, 201, 0.04) 100%);
+    color: #2EAD56;
+    transform: translateX(2px);
+
+    &::after {
+      opacity: 1;
+    }
 
     .nav-icon {
-      color: #5733eb;
-      transform: translateX(2px);
+      color: #2EAD56;
+      transform: scale(1.1);
     }
   }
 
   &.active {
-    background: linear-gradient(90deg, #ede9fe 0%, transparent 100%);
-    color: #5733eb;
+    background: linear-gradient(90deg, rgba(46, 173, 86, 0.12) 0%, rgba(48, 196, 201, 0.08) 100%);
+    color: #2EAD56;
     font-weight: 600;
+    box-shadow: inset 0 1px 3px rgba(46, 173, 86, 0.1);
 
     &::before {
       transform: scaleY(1);
     }
 
     .nav-icon {
-      color: #5733eb;
+      color: #2EAD56;
     }
   }
 }
@@ -191,12 +236,14 @@
   height: 1.25rem;
   margin-right: 0.75rem;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .nav-label {
   white-space: nowrap;
   font-size: 0.875rem;
+  position: relative;
+  z-index: 1;
 }
 
 .nav-button {
@@ -208,18 +255,19 @@
 .sidebar-footer {
   border-top: 1px solid #e5e7eb;
   padding: 0.75rem;
-  background: white;
+  background: linear-gradient(180deg, #ffffff 0%, #F8F9FB 100%);
 }
 
 .logout-button {
   color: #dc2626;
 
   &:hover {
-    background: #fef2f2;
+    background: linear-gradient(90deg, rgba(220, 38, 38, 0.08) 0%, rgba(220, 38, 38, 0.04) 100%);
     color: #b91c1c;
 
     .nav-icon {
       color: #b91c1c;
+      transform: scale(1.1);
     }
   }
 }
@@ -234,12 +282,18 @@
 }
 
 .sidebar-container::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: linear-gradient(180deg, #2EAD56 0%, #30C4C9 100%);
   border-radius: 3px;
 
   &:hover {
-    background: #9ca3af;
+    background: #2EAD56;
   }
+}
+
+// Scrollbar Firefox
+.sidebar-container {
+  scrollbar-width: thin;
+  scrollbar-color: #2EAD56 transparent;
 }
 
 // Responsive
@@ -247,5 +301,55 @@
   .sidebar-container {
     width: 100%;
     position: relative;
+  }
+}
+
+// Animation subtile pour les items
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.nav-item {
+  animation: slideInLeft 0.3s ease-out backwards;
+  
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.04}s;
+    }
+  }
+}
+
+// Effet de brillance sur le header
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.sidebar-brand {
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    animation: shimmer 8s infinite;
   }
 }

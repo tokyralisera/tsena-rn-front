@@ -153,7 +153,7 @@ export class DemandeService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<PaginatedResponse<Publication>>(`${this.apiUrl}/my-demandes`, { params });
+    return this.http.get<PaginatedResponse<Publication>>(`${this.apiUrl}/me`, { params });
   }
 
   /**

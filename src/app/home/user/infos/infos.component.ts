@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { InfoPublication, InfoPublicationResponse, InfoPublicationService } from '../../../shared/services/info-pub.service';
+import { ToastComponent } from "../../../shared/components/toast/toast.component";
 
 
 // Interface étendue pour ajouter des propriétés UI
@@ -12,7 +13,7 @@ interface InfoPublicationUI extends InfoPublication {
 @Component({
   selector: 'app-infos',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ToastComponent],
   templateUrl: './infos.component.html',
   styleUrls: ['./infos.component.scss'],
 })
