@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -21,8 +21,12 @@ import {
 import { Pays, PaysService } from '../../../shared/services/pays.service';
 import { Ville, VilleService } from '../../../shared/services/ville.service';
 
+import { AuthStateService } from '../../../auth/auth-state.service';
+
 import { environment } from '../../../../environment/environment';
 import { ToastService } from '../../../shared/services/toast.service';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
+import { ChatService } from '../chat/services/chat.service';
 
 export enum UniteMesure {
   PIECE = 'PIECE',
@@ -41,18 +45,21 @@ interface ImagePreview {
 @Component({
   selector: 'app-offres-user',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ToastComponent],
   templateUrl: './offre.component.html',
   styleUrl: './offre.component.scss',
 })
 export class OffresUserComponent implements OnInit {
+  private chatService = inject(ChatService);
+  private authStateService = inject(AuthStateService);
+
   publications: Publication[] = [];
   myPublications: Publication[] = [];
   categories: Categorie[] = [];
-  pays: Pays[] = [];
   villes: Ville[] = [];
 
   loading = false;
+  loadingVilles = false;
   currentPage = 1;
   totalPages = 1;
   totalItems = 0;
@@ -62,14 +69,25 @@ export class OffresUserComponent implements OnInit {
   showCreateModal = false;
   showEditModal = false;
   showDeleteModal = false;
+  showImagePreviewModal = false;
 
   selectedPublication: Publication | null = null;
   offreForm: FormGroup;
   imagePreviews: ImagePreview[] = [];
   maxImages = 5;
 
+  // Preview des images
+  selectedImageIndex: number = 0;
+  currentImageGallery: any[] = [];
+
   uniteMesureOptions = Object.values(UniteMesure);
   PublicationStatut = PublicationStatut;
+
+  // ID de l'utilisateur connecté
+  currentUserId: number | null = null;
+
+  // ID pays Madagascar (à récupérer dynamiquement)
+  madagascarPaysId: number | null = null;
 
   constructor(
     private publicationService: PublicationOffreService,
@@ -81,9 +99,8 @@ export class OffresUserComponent implements OnInit {
     private http: HttpClient
   ) {
     this.offreForm = this.fb.group({
-      titre: ['', [Validators.required, Validators.minLength(5)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
-      paysId: [null, Validators.required],
+      titre: ['', [Validators.required, Validators.minLength(3)]],
+      description: ['', [Validators.required, Validators.minLength(5)]],
       villeId: [null, Validators.required],
       produits: this.fb.array([]),
     });
@@ -92,16 +109,146 @@ export class OffresUserComponent implements OnInit {
   ngOnInit(): void {
     this.loadPublications();
     this.loadCategories();
-    this.loadPays();
+    this.loadCurrentUser();
+    this.loadMadagascarAndVilles();
+  }
+
+  // ==========================================
+  // CHARGEMENT DE MADAGASCAR ET SES VILLES
+  // ==========================================
+
+  /**
+   * Charge Madagascar et ses villes
+   */
+  loadMadagascarAndVilles(): void {
+    this.loadingVilles = true;
+
+    // Chercher Madagascar par son code
+    this.paysService.getAll(1, 1000).subscribe({
+      next: (response: any) => {
+        const madagascar = response.data.find((p: Pays) =>
+          p.code === 'MG' || p.nom.toLowerCase().includes('madagascar')
+        );
+
+        if (madagascar) {
+          this.madagascarPaysId = madagascar.id;
+          console.log('✅ Madagascar trouvé, ID:', this.madagascarPaysId);
+
+          // Charger toutes les villes de Madagascar
+          this.villeService.getAll(madagascar.id).subscribe({
+            next: (villesResponse: any) => {
+              this.villes = villesResponse.data || villesResponse;
+              this.loadingVilles = false;
+              console.log(`✅ ${this.villes.length} villes chargées`);
+
+              if (this.villes.length === 0) {
+                this.toastService.warning('Aucune ville trouvée pour Madagascar');
+              }
+            },
+            error: (error: any) => {
+              console.error('❌ Erreur chargement villes:', error);
+              this.loadingVilles = false;
+              this.toastService.error('Erreur lors du chargement des villes');
+            },
+          });
+        } else {
+          this.loadingVilles = false;
+          this.toastService.error('Pays Madagascar non trouvé');
+        }
+      },
+      error: (error: any) => {
+        console.error('❌ Erreur chargement pays:', error);
+        this.loadingVilles = false;
+        this.toastService.error('Erreur lors du chargement des données');
+      },
+    });
+  }
+
+  // ==========================================
+  // GESTION DU CHAT
+  // ==========================================
+
+  /**
+   * Récupérer l'utilisateur connecté
+   */
+  loadCurrentUser(): void {
+    this.authStateService.currentUser.subscribe(user => {
+      if (user) {
+        this.currentUserId = user.id;
+      }
+    });
+  }
+
+  /**
+   * Vérifier si l'offre appartient à l'utilisateur connecté
+   */
+  isMyOffer(publication: Publication): boolean {
+    return this.currentUserId === publication.auteur.id;
+  }
+
+  /**
+   * Initier une conversation pour une offre
+   */
+  contactSeller(publication: Publication, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (this.isMyOffer(publication)) {
+      this.toastService.warning('Vous ne pouvez pas contacter votre propre offre');
+      return;
+    }
+
+    if (publication.statut !== 'VALIDE') {
+      this.toastService.warning('Cette offre n\'est pas encore validée');
+      return;
+    }
+
+    if (publication.offre.statut === 'VENDU') {
+      this.toastService.info('Cette offre a déjà été vendue');
+      return;
+    }
+
+    console.log('📞 Initiation de la conversation pour l\'offre:', publication.id);
+
+    this.loading = true;
+
+    this.chatService
+      .initiateConversationWithContext(
+        publication.id,
+        publication.titre,
+        'OFFRE'
+      )
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Conversation créée:', response);
+          this.toastService.success('Conversation démarrée avec le vendeur');
+          this.chatService.navigateToConversation(response.conversation.id);
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Erreur lors de la création de la conversation:', error);
+
+          if (error.status === 409) {
+            this.toastService.info('Une conversation existe déjà pour cette offre');
+            if (error.error?.conversationId) {
+              this.chatService.navigateToConversation(error.error.conversationId);
+            }
+          } else if (error.status === 401) {
+            this.toastService.error('Vous devez être connecté pour contacter le vendeur');
+          } else {
+            this.toastService.error('Erreur lors de la création de la conversation');
+          }
+
+          this.loading = false;
+        },
+      });
   }
 
   // ==========================================
   // CHARGEMENT DES DONNÉES
   // ==========================================
 
-  /**
-   * Charge les publications publiques (VALIDÉES)
-   */
   loadPublications(): void {
     this.loading = true;
     this.http
@@ -117,6 +264,16 @@ export class OffresUserComponent implements OnInit {
           this.totalItems = response.meta.total;
           this.totalPages = response.meta.totalPages;
           this.loading = false;
+          // Ajout du console.log pour debug structure produits/categorie
+          if (this.publications && this.publications.length > 0) {
+            this.publications.forEach(pub => {
+              if (pub.offre && pub.offre.produits) {
+                pub.offre.produits.forEach((prod, idx) => {
+                  console.log(`Publication[${pub.id}] Produit[${idx}]`, prod);
+                });
+              }
+            });
+          }
         },
         error: (error: any) => {
           console.error('Erreur lors du chargement des offres', error);
@@ -126,15 +283,11 @@ export class OffresUserComponent implements OnInit {
       });
   }
 
-  /**
-   * Charge MES publications (tous statuts)
-   */
   loadMyPublications(): void {
     console.log('🔍 Chargement de MES offres...');
-    
+
     this.loading = true;
-    
-    // ✅ Ajoute les paramètres page et limit
+
     this.http
       .get<any>(`${environment.apiUrl}/publications/offres/me`, {
         params: {
@@ -144,30 +297,20 @@ export class OffresUserComponent implements OnInit {
       })
       .subscribe({
         next: (response: any) => {
-          console.log('✅ Réponse complète:', response);
-          console.log('📦 Mes publications:', response.data);
-          console.log('📊 Nombre de publications:', response.data?.length);
-          
+          console.log('✅ Mes publications:', response.data);
           this.myPublications = response.data || [];
           this.loading = false;
-          
+
           if (this.myPublications.length === 0) {
-            console.log('⚠️ Aucune publication trouvée pour cet utilisateur');
+            console.log('⚠️ Aucune publication trouvée');
           }
         },
         error: (error: any) => {
-          console.error('❌ Erreur complète:', error);
-          console.error('📡 Status:', error.status);
-          console.error('💬 Message:', error.message);
-          console.error('🔥 Erreur backend:', error.error);
-          
+          console.error('❌ Erreur:', error);
           this.loading = false;
-          
+
           if (error.status === 401) {
             this.toastService.error('Session expirée, veuillez vous reconnecter');
-          } else if (error.status === 400) {
-            console.error('🚨 Erreur 400 - Paramètres invalides');
-            this.toastService.error('Erreur de requête');
           } else {
             this.toastService.error('Erreur lors du chargement de vos offres');
           }
@@ -175,9 +318,6 @@ export class OffresUserComponent implements OnInit {
       });
   }
 
-  /**
-   * Charge les catégories
-   */
   loadCategories(): void {
     this.categorieService.getAll().subscribe({
       next: (categories: Categorie[]) => {
@@ -191,48 +331,19 @@ export class OffresUserComponent implements OnInit {
   }
 
   /**
-   * Charge les pays
-   */
-  loadPays(): void {
-    this.paysService.getAll(1, 1000).subscribe({
-      next: (response: any) => {
-        this.pays = response.data;
-      },
-      error: (error: any) => {
-        console.error('Erreur', error);
-        this.toastService.error('Erreur lors du chargement des pays');
-      },
-    });
-  }
-
-  /**
-   * Charge les villes quand un pays est sélectionné
-   */
-  onPaysChange(paysId: number): void {
-    console.log('🔍 Pays sélectionné:', paysId);
-    
-    this.offreForm.patchValue({ villeId: null });
-    this.villes = [];
-    
-    if (paysId) {
-      console.log('📡 Appel API pour charger les villes du pays:', paysId);
-      
-      this.villeService.getAll(paysId).subscribe({
-        next: (response: any) => {
-          console.log('✅ Réponse API villes:', response);
-          console.log('📦 Villes reçues:', response.data);
-          this.villes = response.data;
-          
-          if (this.villes.length === 0) {
-            this.toastService.warning('Aucune ville trouvée pour ce pays');
-          }
-        },
-        error: (error: any) => {
-          console.error('❌ Erreur lors du chargement des villes:', error);
-          this.toastService.error('Erreur lors du chargement des villes');
-        },
-      });
+ * Retourne le libellé de la catégorie d'un produit, même si c'est un id
+ */
+  getCategorieLibelle(produit: Produit): string {
+    // Si produit.categorie est un id (number)
+    if (typeof produit.categorie === 'number') {
+      const cat = this.categories.find(c => c.id === (produit.categorie as unknown as number));
+      return cat ? (cat as any).libelle || '' : '';
     }
+    // Si produit.categorie est un objet avec nom
+    if (produit.categorie && typeof produit.categorie === 'object') {
+      return (produit.categorie as any).nom || (produit.categorie as any).libelle || '';
+    }
+    return '';
   }
 
   // ==========================================
@@ -308,13 +419,45 @@ export class OffresUserComponent implements OnInit {
     this.imagePreviews.splice(index, 1);
   }
 
+  openImagePreview(images: any[], startIndex: number): void {
+    this.currentImageGallery = images;
+    this.selectedImageIndex = startIndex;
+    this.showImagePreviewModal = true;
+  }
+
+  previousImage(): void {
+    if (this.selectedImageIndex > 0) {
+      this.selectedImageIndex--;
+    } else {
+      this.selectedImageIndex = this.currentImageGallery.length - 1;
+    }
+  }
+
+  nextImage(): void {
+    if (this.selectedImageIndex < this.currentImageGallery.length - 1) {
+      this.selectedImageIndex++;
+    } else {
+      this.selectedImageIndex = 0;
+    }
+  }
+
+  closeImagePreview(): void {
+    this.showImagePreviewModal = false;
+    this.currentImageGallery = [];
+    this.selectedImageIndex = 0;
+  }
+
   // ==========================================
   // GESTION DES MODALS
   // ==========================================
 
   openCreateModal(): void {
+    if (this.villes.length === 0) {
+      this.toastService.warning('Chargement des villes en cours...');
+      return;
+    }
     this.resetForm();
-    this.addProduit(); // Ajouter au moins un produit par défaut
+    this.addProduit();
     this.showCreateModal = true;
   }
 
@@ -325,40 +468,16 @@ export class OffresUserComponent implements OnInit {
 
   openEditModal(publication: Publication): void {
     console.log('✏️ Ouverture du modal d\'édition pour:', publication);
-    
+
     this.selectedPublication = publication;
     this.resetForm();
 
-    // Pré-remplir le formulaire
     this.offreForm.patchValue({
       titre: publication.titre,
       description: publication.description,
-      paysId: publication.ville.pays.id,
-      // ⚠️ Ne pas encore définir villeId, on attend le chargement des villes
+      villeId: publication.ville.id,
     });
 
-    // Charger les villes du pays, puis définir la ville
-    console.log('📡 Chargement des villes pour le pays:', publication.ville.pays.id);
-    
-    this.villeService.getAll(publication.ville.pays.id).subscribe({
-      next: (response: any) => {
-        console.log('✅ Villes chargées:', response.data);
-        this.villes = response.data;
-        
-        // ✅ Maintenant on peut définir la ville
-        this.offreForm.patchValue({
-          villeId: publication.ville.id
-        });
-        
-        console.log('🏙️ Ville sélectionnée:', publication.ville.id);
-      },
-      error: (error: any) => {
-        console.error('❌ Erreur chargement villes:', error);
-        this.toastService.error('Erreur lors du chargement des villes');
-      }
-    });
-
-    // Ajouter les produits
     publication.offre.produits.forEach((produit: Produit) => {
       const produitForm = this.createProduitForm();
       produitForm.patchValue({
@@ -393,7 +512,6 @@ export class OffresUserComponent implements OnInit {
     this.offreForm.reset();
     this.produits.clear();
     this.imagePreviews = [];
-    this.villes = [];
   }
 
   // ==========================================
@@ -401,6 +519,14 @@ export class OffresUserComponent implements OnInit {
   // ==========================================
 
   onSubmit(): void {
+    console.log('🔍 Vérification du formulaire:');
+    console.log('  - Formulaire valide:', this.offreForm.valid);
+    console.log('  - Erreurs du formulaire:', this.offreForm.errors);
+    console.log('  - Titre valide:', this.offreForm.get('titre')?.valid, 'Valeur:', this.offreForm.get('titre')?.value);
+    console.log('  - Description valide:', this.offreForm.get('description')?.valid, 'Valeur:', this.offreForm.get('description')?.value);
+    console.log('  - VilleId valide:', this.offreForm.get('villeId')?.valid, 'Valeur:', this.offreForm.get('villeId')?.value);
+    console.log('  - Produits count:', this.produits.length);
+    
     if (this.offreForm.invalid) {
       this.offreForm.markAllAsTouched();
       this.toastService.warning('Veuillez remplir tous les champs requis');
@@ -420,37 +546,65 @@ export class OffresUserComponent implements OnInit {
     const formData = new FormData();
     formData.append('titre', this.offreForm.value.titre);
     formData.append('description', this.offreForm.value.description);
-    formData.append('villeId', this.offreForm.value.villeId);
-    formData.append('produits', JSON.stringify(this.offreForm.value.produits));
+    formData.append('villeId', this.offreForm.value.villeId.toString());
+    
+    // Envoyer produits comme array, pas stringifié
+    this.offreForm.value.produits.forEach((produit: any, index: number) => {
+      formData.append(`produits[${index}][libelle]`, produit.libelle);
+      formData.append(`produits[${index}][categorieId]`, produit.categorieId.toString());
+      formData.append(`produits[${index}][quantite]`, produit.quantite.toString());
+      formData.append(`produits[${index}][uniteMesure]`, produit.uniteMesure);
+      formData.append(`produits[${index}][prixUnitaire]`, produit.prixUnitaire.toString());
+    });
 
     this.imagePreviews.forEach((preview) => {
       formData.append('files', preview.file);
     });
+
+    // Debug : afficher ce qui est envoyé
+    console.log('📤 Données envoyées à l\'API:');
+    console.log('  - titre:', this.offreForm.value.titre);
+    console.log('  - description:', this.offreForm.value.description);
+    console.log('  - villeId:', this.offreForm.value.villeId);
+    console.log('  - produits:', this.offreForm.value.produits);
+    console.log('  - images:', this.imagePreviews.length);
+    console.log('  - formData keys:', Array.from((formData as any).keys()));
 
     this.loading = true;
 
     const request =
       this.showEditModal && this.selectedPublication
         ? this.http.put(
-            `${environment.apiUrl}/publications/offres/${this.selectedPublication.id}`,
-            formData
-          )
+          `${environment.apiUrl}/publications/offres/${this.selectedPublication.id}`,
+          formData
+        )
         : this.http.post(`${environment.apiUrl}/publications/offres`, formData);
 
     request.subscribe({
       next: () => {
-        this.toastService.success(
-          this.showEditModal
-            ? 'Offre modifiée avec succès'
-            : 'Offre créée avec succès'
-        );
+        if (this.showEditModal) {
+          this.toastService.success('Offre modifiée avec succès');
+        } else {
+          this.toastService.info('Votre offre a été soumise et est en attente de validation par un administrateur');
+        }
         this.closeAllModals();
         this.loadPublications();
+        this.loading = false;
       },
       error: (error: any) => {
-        console.error('Erreur', error);
+        console.error('❌ Erreur API:', error);
+        console.error('  - Status:', error.status);
+        console.error('  - Message:', error.error?.message);
+        console.error('  - Response complète:', error.error);
         this.loading = false;
-        this.toastService.error('Erreur lors de la soumission');
+
+        if (error.status === 400) {
+          this.toastService.error('Données invalides. Veuillez vérifier vos informations');
+        } else if (error.status === 401) {
+          this.toastService.error('Session expirée. Veuillez vous reconnecter');
+        } else {
+          this.toastService.error('Erreur lors de la soumission de l\'offre');
+        }
       },
     });
   }
@@ -461,7 +615,7 @@ export class OffresUserComponent implements OnInit {
 
   markAsSold(publication: Publication): void {
     console.log('🏷️ Marquage comme vendu pour:', publication.id);
-    
+
     this.loading = true;
     this.http
       .patch(
@@ -474,10 +628,9 @@ export class OffresUserComponent implements OnInit {
         next: () => {
           console.log('✅ Offre marquée comme vendue');
           this.toastService.success('Offre marquée comme vendue');
-          this.closeAllModals(); // Ferme tous les modals
+          this.closeAllModals();
           this.loading = false;
-          
-          // Recharge les données après un court délai
+
           setTimeout(() => {
             this.loadMyPublications();
           }, 300);
@@ -558,9 +711,6 @@ export class OffresUserComponent implements OnInit {
     return statut === 'VENDU' ? 'badge-error' : 'badge-success';
   }
 
-  /**
-   * Calcule le total d'une offre à partir de ses produits
-   */
   calculatePublicationTotal(produits: Produit[]): number {
     return produits.reduce((sum, p) => sum + (p.prixUnitaire * p.quantite), 0);
   }

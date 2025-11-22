@@ -1,3 +1,6 @@
+<!-- Toast Component -->
+<app-toast></app-toast>
+
 <div class="page-container">
   <!-- En-tête -->
   <div class="page-header">
@@ -5,7 +8,8 @@
     <div class="header-actions">
       <button class="btn btn-outline btn-primary" (click)="openMyOffersModal()">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
         Mes Offres
       </button>
@@ -18,101 +22,137 @@
     </div>
   </div>
 
-  <!-- Liste des offres publiques -->
-  <div class="offres-grid" *ngIf="!loading && publications.length > 0">
-    <div class="offre-card" *ngFor="let publication of publications">
-      <!-- Auteur -->
-      <div class="card-header">
-        <div class="author-avatar">{{ getAuteurFullName(publication).charAt(0) }}</div>
-        <div class="author-info">
-          <h3 class="author-name">{{ getAuteurFullName(publication) }}</h3>
-          <p class="publish-date">{{ formatDate(publication.createdAt) }}</p>
+  <!-- Liste des offres publiques - NOUVELLE MISE EN PAGE -->
+  <div class="offres-list" *ngIf="!loading && publications.length > 0">
+    <div class="offre-card-modern" *ngFor="let publication of publications">
+      
+      <!-- Header avec auteur et badge -->
+      <div class="card-header-modern">
+        <div class="author-section">
+          <div class="author-avatar-modern">
+            {{ getAuteurFullName(publication).charAt(0) }}
+          </div>
+          <div class="author-details">
+            <h3 class="author-name-modern">{{ getAuteurFullName(publication) }}</h3>
+            <p class="publish-info">
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ formatDate(publication.createdAt) }}
+            </p>
+          </div>
         </div>
-        <div class="badges-container">
-          <span class="badge" [ngClass]="getOffreStatutBadgeClass(publication.offre.statut)">
-            {{ publication.offre.statut }}
-          </span>
+        <span class="status-badge" [ngClass]="getOffreStatutBadgeClass(publication.offre.statut)">
+          {{ publication.offre.statut }}
+        </span>
+      </div>
+
+      <!-- Image principale -->
+      <div class="main-image-container" *ngIf="publication.images.length > 0">
+        <img 
+          [src]="publication.images[0].url" 
+          [alt]="publication.titre"
+          class="main-image"
+          (click)="openImagePreview(publication.images, 0)"
+        />
+        <div class="image-count-badge" *ngIf="publication.images.length > 1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          {{ publication.images.length }} photos
         </div>
       </div>
 
       <!-- Contenu -->
-      <div class="card-body">
-        <h2 class="offre-title">{{ publication.titre }}</h2>
-        <p class="offre-description">{{ publication.description }}</p>
-
-        <!-- Contact -->
-        <div class="contact-info">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-          </svg>
-          {{ publication.auteur.telephone }}
+      <div class="card-content-modern">
+        <!-- Titre et description -->
+        <div class="content-text">
+          <h2 class="offre-title-modern">{{ publication.titre }}</h2>
+          <p class="offre-description-modern">{{ publication.description }}</p>
         </div>
 
-        <!-- Localisation -->
-        <div class="location-badges">
-          <span class="badge badge-outline">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <!-- Informations pratiques -->
+        <div class="info-grid">
+          <div class="info-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="info-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            {{ publication.ville.nom }}
-          </span>
-          <span class="badge badge-outline">{{ publication.ville.pays.nom }} ({{ publication.ville.pays.code }})</span>
-          <span class="badge badge-primary">{{ publication.type }}</span>
-        </div>
-
-        <!-- Photos -->
-        <div class="photos-grid" *ngIf="publication.images.length > 0">
-          <img 
-            *ngFor="let image of publication.images" 
-            [src]="image.url" 
-            [alt]="publication.titre"
-            class="offre-photo"
-          />
-        </div>
-
-        <!-- Tableau des produits -->
-        <div class="products-section">
-          <h4 class="section-title">Produits</h4>
-          <div class="table-wrapper">
-            <table class="products-table">
-              <thead>
-                <tr>
-                  <th>Libellé</th>
-                  <th>Catégorie</th>
-                  <th class="text-right">Quantité</th>
-                  <th class="text-right">Prix Unit.</th>
-                  <th class="text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let produit of publication.offre.produits">
-                  <td>{{ produit.libelle }}</td>
-                  <td><span class="badge badge-ghost" [title]="produit.categorie.libelle">{{ produit.categorie.libelle }}</span></td>
-                  <td class="text-right">{{ produit.quantite }} {{ produit.uniteMesure }}</td>
-                  <td class="text-right">{{ formatPrice(produit.prixUnitaire) }}</td>
-                  <td class="text-right font-semibold">{{ formatPrice(produit.prixUnitaire * produit.quantite) }}</td>
-                </tr>
-                <tr class="total-row">
-                  <td colspan="4" class="text-right font-bold">Total :</td>
-                  <td class="text-right font-bold">
-                    {{ formatPrice(calculatePublicationTotal(publication.offre.produits)) }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <span>{{ publication.ville.nom }}, {{ publication.ville.pays.nom }}</span>
+          </div>
+          <div class="info-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="info-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+            <span>{{ publication.auteur.telephone }}</span>
           </div>
         </div>
-      </div>
 
-      <!-- Actions -->
-      <div class="card-footer">
-        <button class="btn btn-primary btn-block">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-          L'offre m'intéresse !
-        </button>
+        <!-- Liste des produits avec design moderne -->
+        <div class="products-modern">
+          <h4 class="products-title-modern">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              Détails des produits
+          </h4>
+            
+          <div class="products-list-modern">
+            <div class="product-item-modern" *ngFor="let produit of publication.offre.produits">
+              <div class="product-info-row">
+                <div class="product-name-section">
+                  <span class="product-name">{{ produit.libelle }}</span>
+                  <span class="product-category" style="margin-left:0.5rem; background:#e0e7ff; color:#4338ca; border-radius:0.375rem; padding:0.25rem 0.625rem; font-size:0.75rem; font-weight:500; width:fit-content;">
+                    {{ getCategorieLibelle(produit) }}
+                  </span>
+                </div>
+                <div class="product-quantity">
+                  {{ produit.quantite }} {{ produit.uniteMesure }}
+                </div>
+              </div>
+              <div class="product-price-row">
+                <span class="unit-price">{{ formatPrice(produit.prixUnitaire) }} / unité</span>
+                <span class="total-price">{{ formatPrice(produit.prixUnitaire * produit.quantite) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prix total -->
+          <div class="total-price-modern">
+            <span>Total de l'offre</span>
+            <span class="total-amount">{{ formatPrice(calculatePublicationTotal(publication.offre.produits)) }}</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card-actions-modern">
+          @if (isMyOffer(publication)) {
+            <div class="my-offer-notice">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Votre offre
+            </div>
+          } @else if (publication.offre.statut === 'VENDU') {
+            <button class="btn-sold" disabled>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Offre vendue
+            </button>
+          } @else {
+            <button class="btn-contact" (click)="contactSeller(publication, $event)" [disabled]="loading">
+              @if (loading) {
+                <span class="loading loading-spinner loading-sm"></span>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              }
+              L'offre m'intéresse !
+            </button>
+          }
+        </div>
       </div>
     </div>
   </div>
@@ -120,7 +160,8 @@
   <!-- État vide -->
   <div *ngIf="!loading && publications.length === 0" class="empty-state">
     <svg xmlns="http://www.w3.org/2000/svg" class="empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
     </svg>
     <p class="empty-text">Aucune offre disponible pour le moment</p>
   </div>
@@ -136,22 +177,21 @@
 <div class="modal" [class.modal-open]="showMyOffersModal">
   <div class="modal-box max-w-4xl max-h-[80vh] overflow-y-auto">
     <h3 class="font-bold text-lg mb-4">Mes Offres</h3>
-    
-    <!-- Loader -->
+
     <div *ngIf="loading" class="flex justify-center py-8">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
 
-    <!-- Liste vide -->
     <div *ngIf="!loading && myPublications.length === 0" class="text-center py-8">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
       <p class="text-gray-500 mb-4">Vous n'avez aucune offre pour le moment</p>
       <button class="btn btn-primary" (click)="openCreateModal()">Créer ma première offre</button>
     </div>
 
-    <!-- Liste des offres -->
     <div class="my-offers-list" *ngIf="!loading && myPublications.length > 0">
       <div *ngFor="let pub of myPublications" class="my-offer-item">
         <div class="flex-1">
@@ -165,13 +205,15 @@
         <div class="flex gap-2 flex-shrink-0">
           <button class="btn btn-sm btn-ghost" (click)="openEditModal(pub)" title="Modifier">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             <span class="hidden sm:inline">Modifier</span>
           </button>
           <button class="btn btn-sm btn-error" (click)="openDeleteModal(pub)" title="Supprimer">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
             <span class="hidden sm:inline">Supprimer</span>
           </button>
@@ -200,12 +242,8 @@
         <label class="label">
           <span class="label-text">Titre <span class="text-error">*</span></span>
         </label>
-        <input 
-          type="text" 
-          placeholder="Ex: Vente de riz de qualité" 
-          class="input input-bordered"
-          formControlName="titre"
-        />
+        <input type="text" placeholder="Ex: Vente de riz de qualité" class="input input-bordered"
+          formControlName="titre" />
       </div>
 
       <!-- Description -->
@@ -213,42 +251,24 @@
         <label class="label">
           <span class="label-text">Description <span class="text-error">*</span></span>
         </label>
-        <textarea 
-          placeholder="Décrivez votre offre en détails..."
-          class="textarea textarea-bordered h-24"
-          formControlName="description"
-        ></textarea>
+        <textarea placeholder="Décrivez votre offre en détails..." class="textarea textarea-bordered h-24"
+          formControlName="description"></textarea>
       </div>
 
-      <!-- Localisation -->
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Pays <span class="text-error">*</span></span>
-          </label>
-          <select 
-            class="select select-bordered"
-            formControlName="paysId"
-            (change)="onPaysChange(+$any($event.target).value)"
-          >
-            <option [ngValue]="null">Sélectionner un pays</option>
-            <option *ngFor="let p of pays" [ngValue]="p.id">{{ p.nom }}</option>
-          </select>
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Ville <span class="text-error">*</span></span>
-          </label>
-          <select 
-            class="select select-bordered"
-            formControlName="villeId"
-            [disabled]="!offreForm.value.paysId"
-          >
-            <option [ngValue]="null">Sélectionner une ville</option>
-            <option *ngFor="let v of villes" [ngValue]="v.id">{{ v.nom }}</option>
-          </select>
-        </div>
+      <!-- Ville (Madagascar uniquement) -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Ville <span class="text-error">*</span></span>
+        </label>
+        <select class="select select-bordered" formControlName="villeId" [disabled]="loadingVilles || villes.length === 0">
+          <option [ngValue]="null">
+            {{ loadingVilles ? 'Chargement des villes...' : villes.length === 0 ? 'Aucune ville disponible' : 'Sélectionner une ville' }}
+          </option>
+          <option *ngFor="let v of villes" [ngValue]="v.id">{{ v.nom }}</option>
+        </select>
+        <label class="label" *ngIf="!loadingVilles && villes.length > 0">
+          <span class="label-text-alt">📍 Madagascar</span>
+        </label>
       </div>
 
       <!-- Photos -->
@@ -256,25 +276,15 @@
         <label class="label">
           <span class="label-text">Photos <span class="text-error">*</span> (Max {{ maxImages }})</span>
         </label>
-        <input 
-          type="file" 
-          accept="image/*"
-          multiple
-          class="file-input file-input-bordered"
-          (change)="onFileSelected($event)"
-          [disabled]="imagePreviews.length >= maxImages"
-        />
-        
-        <!-- Aperçu des images -->
+        <input type="file" accept="image/*" multiple class="file-input file-input-bordered"
+          (change)="onFileSelected($event)" [disabled]="imagePreviews.length >= maxImages" />
+
         <div class="image-previews" *ngIf="imagePreviews.length > 0">
           <div *ngFor="let preview of imagePreviews; let i = index" class="image-preview-item">
             <img [src]="preview.url" [alt]="'Image ' + (i+1)" />
-            <button 
-              type="button"
-              class="btn-remove-image"
-              (click)="removeImage(i)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button type="button" class="btn-remove-image" (click)="removeImage(i)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -286,12 +296,9 @@
       <div class="products-form-section mb-4">
         <div class="flex justify-between items-center mb-3">
           <label class="label-text font-semibold">Produits <span class="text-error">*</span></label>
-          <button 
-            type="button" 
-            class="btn btn-sm btn-circle btn-primary"
-            (click)="addProduit()"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button type="button" class="btn btn-sm btn-circle btn-primary" (click)="addProduit()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
           </button>
@@ -313,12 +320,8 @@
             <tbody formArrayName="produits">
               <tr *ngFor="let produit of produits.controls; let i = index" [formGroupName]="i">
                 <td>
-                  <input 
-                    type="text" 
-                    placeholder="Libellé"
-                    class="input input-sm input-bordered w-full"
-                    formControlName="libelle"
-                  />
+                  <input type="text" placeholder="Libellé" class="input input-sm input-bordered w-full"
+                    formControlName="libelle" />
                 </td>
                 <td>
                   <select class="select select-sm select-bordered" formControlName="categorieId">
@@ -327,12 +330,8 @@
                   </select>
                 </td>
                 <td>
-                  <input 
-                    type="number" 
-                    step="0.01"
-                    class="input input-sm input-bordered w-20"
-                    formControlName="quantite"
-                  />
+                  <input type="number" step="0.01" class="input input-sm input-bordered w-20"
+                    formControlName="quantite" />
                 </td>
                 <td>
                   <select class="select select-sm select-bordered" formControlName="uniteMesure">
@@ -340,24 +339,18 @@
                   </select>
                 </td>
                 <td>
-                  <input 
-                    type="number" 
-                    step="0.01"
-                    class="input input-sm input-bordered w-28"
-                    formControlName="prixUnitaire"
-                  />
+                  <input type="number" step="0.01" class="input input-sm input-bordered w-28"
+                    formControlName="prixUnitaire" />
                 </td>
                 <td class="font-semibold">
                   {{ formatPrice(calculateProduitTotal(i)) }}
                 </td>
                 <td>
-                  <button 
-                    type="button"
-                    class="btn btn-sm btn-ghost btn-circle text-error"
-                    (click)="removeProduit(i)"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <button type="button" class="btn btn-sm btn-ghost btn-circle text-error" (click)="removeProduit(i)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </td>
@@ -371,13 +364,9 @@
         </div>
       </div>
 
-      <!-- Marquer comme vendu (uniquement en mode édition) -->
+      <!-- Marquer comme vendu -->
       <div *ngIf="showEditModal && selectedPublication?.statut === 'VALIDE'" class="mb-4">
-        <button 
-          type="button"
-          class="btn btn-warning btn-block"
-          (click)="markAsSold(selectedPublication!)"
-        >
+        <button type="button" class="btn btn-warning btn-block" (click)="markAsSold(selectedPublication!)">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
@@ -387,19 +376,10 @@
 
       <!-- Actions -->
       <div class="modal-action">
-        <button 
-          type="button"
-          class="btn btn-ghost"
-          (click)="closeAllModals()"
-          [disabled]="loading"
-        >
+        <button type="button" class="btn btn-ghost" (click)="closeAllModals()" [disabled]="loading">
           Annuler
         </button>
-        <button 
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="loading"
-        >
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
           <span class="loading loading-spinner" *ngIf="loading"></span>
           {{ showEditModal ? 'Modifier' : 'Soumettre mon Offre' }}
         </button>
@@ -415,27 +395,82 @@
   <div class="modal-box">
     <h3 class="font-bold text-lg mb-4">Confirmer la suppression</h3>
     <p class="py-4">
-      Êtes-vous sûr de vouloir supprimer l'offre 
+      Êtes-vous sûr de vouloir supprimer l'offre
       <span class="font-bold">{{ selectedPublication?.titre }}</span> ?
       Cette action est irréversible.
     </p>
     <div class="modal-action">
-      <button 
-        class="btn btn-ghost"
-        (click)="closeAllModals()"
-        [disabled]="loading"
-      >
+      <button class="btn btn-ghost" (click)="closeAllModals()" [disabled]="loading">
         Annuler
       </button>
-      <button 
-        class="btn btn-error"
-        (click)="confirmDelete()"
-        [disabled]="loading"
-      >
+      <button class="btn btn-error" (click)="confirmDelete()" [disabled]="loading">
         <span class="loading loading-spinner" *ngIf="loading"></span>
         Supprimer
       </button>
     </div>
   </div>
   <div class="modal-backdrop" (click)="closeAllModals()"></div>
+</div>
+
+<!-- Modal Prévisualisation des Images -->
+<input type="checkbox" [checked]="showImagePreviewModal" class="modal-toggle" id="modal-image-preview" />
+<div class="modal" [class.modal-open]="showImagePreviewModal">
+  <div class="modal-box max-w-5xl max-h-[90vh] p-0 relative">
+    <button 
+      class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 z-10 bg-base-100"
+      (click)="closeImagePreview()">
+      ✕
+    </button>
+
+    <div class="relative">
+      <img 
+        *ngIf="currentImageGallery[selectedImageIndex]"
+        [src]="currentImageGallery[selectedImageIndex].url" 
+        [alt]="'Image ' + (selectedImageIndex + 1)"
+        class="w-full h-auto max-h-[70vh] object-contain bg-base-200"
+      />
+
+      <button 
+        *ngIf="currentImageGallery.length > 1"
+        class="btn btn-circle btn-ghost absolute left-4 top-1/2 -translate-y-1/2 bg-base-100/80 hover:bg-base-100"
+        (click)="previousImage()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <button 
+        *ngIf="currentImageGallery.length > 1"
+        class="btn btn-circle btn-ghost absolute right-4 top-1/2 -translate-y-1/2 bg-base-100/80 hover:bg-base-100"
+        (click)="nextImage()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      <div 
+        *ngIf="currentImageGallery.length > 1"
+        class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-base-100/80 px-4 py-2 rounded-full">
+        <span class="text-sm font-semibold">
+          {{ selectedImageIndex + 1 }} / {{ currentImageGallery.length }}
+        </span>
+      </div>
+    </div>
+
+    <div 
+      *ngIf="currentImageGallery.length > 1" 
+      class="flex gap-2 p-4 overflow-x-auto bg-base-100">
+      <img 
+        *ngFor="let image of currentImageGallery; let i = index"
+        [src]="image.url"
+        [alt]="'Miniature ' + (i + 1)"
+        class="w-20 h-20 object-cover rounded cursor-pointer transition-all"
+        [class.ring-2]="i === selectedImageIndex"
+        [class.ring-primary]="i === selectedImageIndex"
+        [class.opacity-50]="i !== selectedImageIndex"
+        (click)="selectedImageIndex = i"
+      />
+    </div>
+  </div>
+  <label class="modal-backdrop" (click)="closeImagePreview()"></label>
 </div>
