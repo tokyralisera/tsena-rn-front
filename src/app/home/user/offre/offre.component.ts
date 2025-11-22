@@ -6,6 +6,7 @@ import {
   FormArray,
   ReactiveFormsModule,
   Validators,
+  FormsModule,
 } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import {
@@ -45,7 +46,7 @@ interface ImagePreview {
 @Component({
   selector: 'app-offres-user',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ToastComponent],
+  imports: [CommonModule, ReactiveFormsModule, ToastComponent, FormsModule],
   templateUrl: './offre.component.html',
   styleUrl: './offre.component.scss',
 })
@@ -64,6 +65,14 @@ export class OffresUserComponent implements OnInit {
   totalPages = 1;
   totalItems = 0;
   itemsPerPage = 10;
+
+  searchTerm: string = '';
+  selectedCategorieFilter: number | null = null;
+  selectedVilleFilter: number | null = null;
+  selectedOffreStatutFilter: string = ''; //! 'VENDU' ou 'NON_VENDU' ou ''
+  showFilters: boolean = false;
+  sortBy: 'createdAt' | 'updatedAt' | 'titre' = 'createdAt';
+  sortOrder: 'asc' | 'desc' = 'desc';
 
   showMyOffersModal = false;
   showCreateModal = false;
@@ -281,11 +290,73 @@ export class OffresUserComponent implements OnInit {
           this.toastService.error('Erreur lors du chargement des offres');
         },
       });
+
+    this.publicationService
+      .searchPublications(
+        this.currentPage,
+        this.itemsPerPage,
+        this.searchTerm,
+        this.selectedCategorieFilter || undefined,
+        this.selectedVilleFilter || undefined,
+        this.selectedOffreStatutFilter || undefined,
+        this.sortBy,
+        this.sortOrder
+      )
+      .subscribe({
+        next: (response: any) => {
+          this.publications = response.data;
+          this.totalItems = response.meta.total;
+          this.totalPages = response.meta.totalPages;
+          this.loading = false;
+
+          if (this.publications && this.publications.length > 0) {
+            this.publications.forEach(pub => {
+              if (pub.offre && pub.offre.produits) {
+                pub.offre.produits.forEach((prod, idx) => {
+                  console.log(`Publication[${pub.id}] Produit[${idx}]`, prod);
+                });
+              }
+            });
+          }
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des offres', error);
+          this.loading = false;
+          this.toastService.error('Erreur lors du chargement des offres');
+        },
+      });
+  }
+
+  //? Méthode de recherche
+  onSearch(): void {
+    this.currentPage = 1; // Réinitialiser à la première page
+    this.loadPublications();
+  }
+
+  //? Réinitialiser les filtres
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.selectedCategorieFilter = null;
+    this.selectedVilleFilter = null;
+    this.selectedOffreStatutFilter = '';
+    this.sortBy = 'createdAt';
+    this.sortOrder = 'desc';
+    this.currentPage = 1;
+    this.loadPublications();
+  }
+
+  //? Toggle des filtres avancés
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  //? Changer l'ordre de tri
+  changeSortOrder(): void {
+    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    this.loadPublications();
   }
 
   loadMyPublications(): void {
-    console.log('🔍 Chargement de MES offres...');
-
     this.loading = true;
 
     this.http

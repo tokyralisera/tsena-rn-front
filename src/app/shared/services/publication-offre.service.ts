@@ -116,7 +116,7 @@ export interface Statistics {
 export class PublicationOffreService {
   private apiUrl = `${environment.apiUrl}/publications/offres`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   //? Admin - Récupérer les publications pour validation
   getPublicationsForAdmin(
@@ -160,5 +160,36 @@ export class PublicationOffreService {
     return produits.reduce((total, produit) => {
       return total + this.calculateProductTotal(produit);
     }, 0);
+  }
+
+  //? Recherche avancée de publications
+  searchPublications(
+    page: number = 1,
+    limit: number = 10,
+    searchTerm?: string,
+    categorieId?: number,
+    villeId?: number,
+    offreStatut?: string,
+    sortBy: 'createdAt' | 'updatedAt' | 'titre' = 'createdAt',
+    sortOrder: 'asc' | 'desc' = 'desc'
+  ): Observable<PaginatedResponse<Publication>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('sortBy', sortBy)
+      .set('sortOrder', sortOrder);
+    if (searchTerm && searchTerm.trim()) {
+      params = params.set('search', searchTerm.trim());
+    }
+    if (categorieId) {
+      params = params.set('categorieId', categorieId.toString());
+    }
+    if (villeId) {
+      params = params.set('villeId', villeId.toString());
+    }
+    if (offreStatut) {
+      params = params.set('offreStatut', offreStatut);
+    }
+    return this.http.get<PaginatedResponse<Publication>>(`${this.apiUrl}/search`, { params });
   }
 }
