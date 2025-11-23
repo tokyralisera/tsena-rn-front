@@ -1,57 +1,352 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
-// Animation au survol
-.cursor-pointer {
-  transition: all 0.2s ease;
-  
-  &:hover {
-    transform: translateX(2px);
-  }
-  
-  &:active {
-    transform: scale(0.98);
-  }
+// ==========================================
+// CONTAINER PRINCIPAL
+// ==========================================
+
+.chat-list-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+  overflow: hidden;
 }
 
-// Conversation active
-.bg-blue-50 {
-  position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(to bottom, #3b82f6, #2563eb);
-  }
-}
+// ==========================================
+// HEADER DE LA LISTE
+// ==========================================
 
-// Scroll personnalisé et élégant
-.overflow-y-auto {
-  &::-webkit-scrollbar {
-    width: 6px;
+.list-header {
+  flex-shrink: 0;
+  padding: 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(90deg, rgba(46, 173, 86, 0.02) 0%, transparent 100%);
+
+  .list-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.75rem 0;
   }
-  
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgba(156, 163, 175, 0.3);
-    border-radius: 3px;
-    
-    &:hover {
-      background: rgba(156, 163, 175, 0.5);
+
+  .search-wrapper {
+    position: relative;
+
+    .search-input {
+      width: 100%;
+      padding: 0.625rem 0.75rem 0.625rem 2.5rem;
+      background: #f9fafb;
+      border: 2px solid #e5e7eb;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: #2EAD56;
+        box-shadow: 0 0 0 3px rgba(46, 173, 86, 0.1);
+        background: white;
+      }
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1.125rem;
+      height: 1.125rem;
+      color: #9ca3af;
+      pointer-events: none;
     }
   }
 }
 
-// Animation d'apparition des conversations
+// ==========================================
+// LISTE DES CONVERSATIONS
+// ==========================================
+
+.conversations-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(46, 173, 86, 0.3) 0%, rgba(48, 196, 201, 0.3) 100%);
+    border-radius: 3px;
+
+    &:hover {
+      background: linear-gradient(180deg, rgba(46, 173, 86, 0.5) 0%, rgba(48, 196, 201, 0.5) 100%);
+    }
+  }
+}
+
+// ==========================================
+// ÉTATS (LOADING, EMPTY)
+// ==========================================
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+
+  .loading-content {
+    text-align: center;
+
+    .loading-spinner {
+      width: 2rem;
+      height: 2rem;
+      border: 3px solid rgba(46, 173, 86, 0.1);
+      border-top-color: #2EAD56;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 0.75rem;
+    }
+
+    .loading-text {
+      font-size: 0.875rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  text-align: center;
+
+  .empty-icon-wrapper {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, rgba(46, 173, 86, 0.1) 0%, rgba(48, 196, 201, 0.1) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+      color: #2EAD56;
+    }
+  }
+
+  .empty-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.25rem;
+  }
+
+  .empty-description {
+    font-size: 0.8125rem;
+    color: #6b7280;
+  }
+}
+
+// ==========================================
+// ITEM DE CONVERSATION
+// ==========================================
+
+.conversation-item {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &:hover {
+    background: linear-gradient(90deg, rgba(46, 173, 86, 0.03) 0%, transparent 100%);
+    transform: translateX(2px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.active {
+    background: linear-gradient(90deg, rgba(46, 173, 86, 0.08) 0%, rgba(48, 196, 201, 0.05) 100%);
+    border-left: 3px solid #2EAD56;
+    padding-left: calc(1rem - 3px);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, #2EAD56 0%, #30C4C9 100%);
+    }
+  }
+
+  .conversation-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+// Avatar
+.avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+
+  .avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #2EAD56 0%, #30C4C9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 8px rgba(46, 173, 86, 0.25);
+  }
+
+  .online-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0.75rem;
+    height: 0.75rem;
+    background: #2EAD56;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+}
+
+// Informations de la conversation
+.conversation-info {
+  flex: 1;
+  min-width: 0;
+
+  .info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+
+    .user-name {
+      font-weight: 700;
+      color: #1f2937;
+      font-size: 0.875rem;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .message-time {
+      font-size: 0.6875rem;
+      color: #6b7280;
+      flex-shrink: 0;
+      margin-left: 0.5rem;
+    }
+  }
+
+  .info-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.375rem;
+
+    .last-message {
+      font-size: 0.8125rem;
+      color: #6b7280;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .unread-badge {
+      flex-shrink: 0;
+      min-width: 1.25rem;
+      height: 1.25rem;
+      padding: 0 0.375rem;
+      background: linear-gradient(135deg, #2EAD56 0%, #30C4C9 100%);
+      color: white;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(46, 173, 86, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+  }
+
+  .publication-title {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    svg {
+      width: 0.75rem;
+      height: 0.75rem;
+      flex-shrink: 0;
+      color: #2EAD56;
+    }
+  }
+}
+
+// ==========================================
+// ANIMATIONS
+// ==========================================
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -63,16 +358,54 @@
   }
 }
 
-// Badge non lu animation
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
+// ==========================================
+// RESPONSIVE
+// ==========================================
 
-.bg-blue-500 {
-  animation: pulse 2s ease-in-out infinite;
+@media (max-width: 768px) {
+  .list-header {
+    padding: 1rem;
+
+    .list-title {
+      font-size: 1rem;
+      margin-bottom: 0.625rem;
+    }
+
+    .search-wrapper {
+      .search-input {
+        padding: 0.5rem 0.625rem 0.5rem 2.25rem;
+        font-size: 0.8125rem;
+      }
+
+      .search-icon {
+        left: 0.625rem;
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+  }
+
+  .conversation-item {
+    padding: 0.75rem;
+
+    .avatar-wrapper .avatar {
+      width: 2.5rem;
+      height: 2.5rem;
+      font-size: 0.8125rem;
+    }
+
+    .conversation-info {
+      .info-header .user-name {
+        font-size: 0.8125rem;
+      }
+
+      .info-body .last-message {
+        font-size: 0.75rem;
+      }
+
+      .publication-title {
+        font-size: 0.6875rem;
+      }
+    }
+  }
 }

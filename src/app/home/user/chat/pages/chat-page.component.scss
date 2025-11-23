@@ -1,11 +1,232 @@
-:host {
-  display: block;
+// Container principal
+.page-container {
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+  background: #F8F9FB;
   height: 100vh;
-  overflow: hidden; // Désactive le scroll global
-  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-// Animations
+// ==========================================
+// EN-TÊTE MODERNE - VERSION FINALE
+// ==========================================
+
+.page-header-modern {
+  background: white;
+  padding: 2rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #e5e7eb;
+  position: relative;
+  flex-shrink: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #2EAD56 0%, #30C4C9 50%, transparent 100%);
+  }
+
+  .header-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .btn-back-mobile {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.5rem;
+      background: rgba(46, 173, 86, 0.1);
+      border: 1px solid rgba(46, 173, 86, 0.2);
+      color: #2EAD56;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(46, 173, 86, 0.15);
+        transform: translateX(-2px);
+      }
+
+      svg {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+
+      @media (max-width: 768px) {
+        display: flex;
+        
+        &.visible {
+          display: flex;
+        }
+        
+        &:not(.visible) {
+          display: none;
+        }
+      }
+    }
+
+    .header-content {
+      flex: 1;
+
+      .page-title-modern {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #2EAD56 0%, #30C4C9 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.2;
+      }
+
+      .page-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+      }
+    }
+  }
+
+  .header-actions-modern {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+}
+
+// Status badge
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 2px solid;
+  transition: all 0.2s ease;
+
+  &.online {
+    background: linear-gradient(135deg, rgba(46, 173, 86, 0.1) 0%, rgba(48, 196, 201, 0.1) 100%);
+    color: #2EAD56;
+    border-color: rgba(46, 173, 86, 0.3);
+  }
+
+  &.offline {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+
+  .status-indicator {
+    position: relative;
+    display: flex;
+    width: 0.5rem;
+    height: 0.5rem;
+
+    .status-ping {
+      position: absolute;
+      display: inline-flex;
+      height: 100%;
+      width: 100%;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.75;
+      animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    .status-dot {
+      position: relative;
+      display: inline-flex;
+      border-radius: 50%;
+      height: 0.5rem;
+      width: 0.5rem;
+      background: currentColor;
+    }
+  }
+
+  .status-text {
+    white-space: nowrap;
+  }
+}
+
+// ==========================================
+// CONTENEUR PRINCIPAL - VERSION ÉLARGIE
+// ==========================================
+
+.content-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  margin: 0;
+  padding: 1.5rem; // Padding uniforme réduit
+  overflow: hidden;
+  min-height: 0;
+}
+
+.chat-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: none; // Pas de limite de largeur
+  margin: 0;
+  width: 100%;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.chat-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 360px 1fr; // Sidebar encore plus étroite
+  gap: 0;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(46, 173, 86, 0.1);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.chat-sidebar {
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.chat-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+// ==========================================
+// ANIMATIONS
+// ==========================================
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -17,39 +238,111 @@
   }
 }
 
-// Responsive - Mobile first
+// ==========================================
+// RESPONSIVE
+// ==========================================
+
+@media (max-width: 1024px) {
+  .content-container {
+    padding: 1rem;
+  }
+
+  .chat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-sidebar {
+    border-right: none;
+
+    &.mobile-hidden {
+      display: none;
+    }
+  }
+
+  .chat-main {
+    &.mobile-hidden {
+      display: none;
+    }
+
+    &.mobile-visible {
+      display: flex;
+    }
+  }
+}
+
 @media (max-width: 768px) {
-  // Sur mobile, la liste et le chat prennent tout l'écran
-  .md\:col-span-5,
-  .md\:col-span-7 {
-    width: 100% !important;
+  .page-header-modern {
+    padding: 1.5rem 1rem;
+
+    .header-left {
+      gap: 0.75rem;
+
+      .header-content {
+        .page-title-modern {
+          font-size: 1.75rem;
+        }
+
+        .page-subtitle {
+          font-size: 0.875rem;
+        }
+      }
+    }
+
+    .header-actions-modern {
+      .status-badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+
+        .status-text {
+          display: none;
+        }
+      }
+    }
   }
-  
-  // Masquer les éléments non essentiels sur mobile
-  .hidden\:sm\:block {
-    display: none;
+
+  .content-container {
+    padding: 0.5rem;
+  }
+
+  .chat-grid {
+    border-radius: 0.75rem;
   }
 }
 
-// Tablettes
+@media (max-width: 480px) {
+  .page-header-modern {
+    padding: 1rem;
+
+    .header-left {
+      .header-content {
+        .page-title-modern {
+          font-size: 1.5rem;
+        }
+
+        .page-subtitle {
+          font-size: 0.8125rem;
+        }
+      }
+    }
+  }
+
+  .content-container {
+    padding: 0.375rem;
+  }
+}
+
+// ==========================================
+// TABLETTES
+// ==========================================
+
 @media (min-width: 768px) and (max-width: 1024px) {
-  // Ajuster les proportions pour tablettes
-  .md\:col-span-5 {
-    grid-column: span 5 / span 5;
-  }
-  
-  .md\:col-span-7 {
-    grid-column: span 7 / span 7;
+  .chat-grid {
+    grid-template-columns: 320px 1fr;
   }
 }
 
-// Desktop
 @media (min-width: 1024px) {
-  .lg\:col-span-4 {
-    grid-column: span 4 / span 4;
-  }
-  
-  .lg\:col-span-8 {
-    grid-column: span 8 / span 8;
+  .chat-grid {
+    grid-template-columns: 380px 1fr;
   }
 }
