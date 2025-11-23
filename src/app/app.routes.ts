@@ -59,6 +59,8 @@ export const routes: Routes = [
           { path: 'approbations-offres', component: ApprobationOffreComponent },
           { path: 'approbations-demandes', component: ApprobationsDemandesComponent },
           { path: 'infos-creation', component: InfosCreationComponent },
+          { path: 'offres', component: OffresUserComponent },
+          { path: 'demandes', component: DemandeUserComponent },
 
         ],
       },

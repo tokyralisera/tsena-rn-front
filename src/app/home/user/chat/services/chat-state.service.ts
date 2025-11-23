@@ -20,7 +20,7 @@ export class ChatStateService {
     private _unreadCount = signal(0);
     private _typingUsers = signal<Map<number, UserInfo>>(new Map());
     private _currentUser = signal<UserInfo | null>(null);
-    private _isWebSocketReady = signal(false); // NOUVEAU
+    private _isWebSocketReady = signal(false);
 
     // Computed Signals
     conversations = this._conversations.asReadonly();
@@ -146,7 +146,16 @@ export class ChatStateService {
      */
     addMessage(message: Message): void {
         const current = this._messages();
-        this._messages.set([...current, message]);
+        
+        // 🆕 VÉRIFIER QUE LE MESSAGE N'EXISTE PAS DÉJÀ
+        const messageExists = current.some(m => m.id === message.id);
+        
+        if (!messageExists) {
+            console.log('➕ Ajout du message:', message.id);
+            this._messages.set([...current, message]);
+        } else {
+            console.log('⚠️ Message déjà présent, ignoré:', message.id);
+        }
     }
 
     /**
@@ -203,34 +212,46 @@ export class ChatStateService {
      * Configuration des listeners WebSocket
      */
     private setupWebSocketListeners(): void {
-        // Nouveau message reçu
+        // 🆕 NOUVEAU MESSAGE REÇU - CORRIGÉ
         this.websocketService.onMessageReceived().subscribe((event) => {
-            console.log('Message received:', event);
+            console.log('📨 Message received:', event);
 
-            if (event.conversationId === this._activeConversationId()) {
+            const activeConvId = this._activeConversationId();
+            
+            // Si c'est pour la conversation active, ajouter le message
+            if (event.conversationId === activeConvId) {
+                console.log('✅ Message pour la conversation active');
                 this.addMessage(event.message);
+                
+                // Marquer comme lu immédiatement
                 this.websocketService.markAsRead(event.conversationId);
+                this.chatService.markAsRead(event.conversationId).subscribe();
             } else {
+                // Sinon, incrémenter le compteur de non lus
+                console.log('📬 Message pour une autre conversation');
                 this._unreadCount.update((count) => count + 1);
             }
 
+            // Toujours recharger la liste des conversations pour mettre à jour le dernier message
             this.loadConversations();
         });
 
-        // Message envoyé confirmé
+        // 🆕 MESSAGE ENVOYÉ CONFIRMÉ - CORRIGÉ
         this.websocketService.onMessageSent().subscribe((event) => {
-            console.log('Message sent:', event);
+            console.log('📤 Message sent confirmation:', event);
+            
+            // Ajouter le message si ce n'est pas déjà fait
             if (event.message.conversationId === this._activeConversationId()) {
-                const messages = this._messages();
-                if (!messages.find((m) => m.id === event.message.id)) {
-                    this.addMessage(event.message);
-                }
+                this.addMessage(event.message);
             }
+            
+            // Recharger les conversations pour mettre à jour
+            this.loadConversations();
         });
 
         // Quelqu'un est en train de taper
         this.websocketService.onUserTyping().subscribe((event) => {
-            console.log('User typing:', event);
+            console.log('⌨️ User typing:', event);
             const typingMap = new Map(this._typingUsers());
 
             if (event.isTyping) {
@@ -241,6 +262,7 @@ export class ChatStateService {
 
             this._typingUsers.set(typingMap);
 
+            // Auto-clear après 3 secondes
             if (event.isTyping) {
                 setTimeout(() => {
                     const currentMap = new Map(this._typingUsers());
@@ -252,7 +274,7 @@ export class ChatStateService {
 
         // Messages lus
         this.websocketService.onMessagesRead().subscribe((event) => {
-            console.log('Messages read:', event);
+            console.log('✓✓ Messages read:', event);
             if (event.conversationId === this._activeConversationId()) {
                 const messages = this._messages().map((m) => ({
                     ...m,
@@ -264,14 +286,14 @@ export class ChatStateService {
 
         // Notification de nouveau message
         this.websocketService.onNewMessageNotification().subscribe((event) => {
-            console.log('New message notification:', event);
+            console.log('🔔 New message notification:', event);
             this._unreadCount.update((count) => count + 1);
             this.loadConversations();
         });
 
         // Erreurs
         this.websocketService.onError().subscribe((error) => {
-            console.error('WebSocket error:', error);
+            console.error('❌ WebSocket error:', error);
         });
     }
 

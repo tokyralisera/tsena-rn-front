@@ -137,7 +137,7 @@ export class PublicationOffreService {
 
   //? Admin - Statistiques
   getStatistics(): Observable<Statistics> {
-    return this.http.get<Statistics>(`${this.apiUrl}/statistics`);
+    return this.http.get<Statistics>(`${this.apiUrl}/admin/statistics`);
   }
 
   //? Admin - Valider ou rejeter une publication

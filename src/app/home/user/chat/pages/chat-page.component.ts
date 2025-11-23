@@ -26,7 +26,10 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   // Mobile view state
   showChatWindow = false;
 
-  ngOnInit(): void {
+  // 🆕 État pour l'auto-ouverture
+  private pendingConversationId: number | null = null;
+
+  async ngOnInit(): Promise<void> {
     console.log('🚀 ChatPage ngOnInit');
 
     const userStr = localStorage.getItem('user_data');
@@ -49,23 +52,41 @@ export class ChatPageComponent implements OnInit, OnDestroy {
       prenomUtilisateur: user.prenomUtilisateur,
     });
 
+    // ÉTAPE 1: Capturer le queryParam AVANT de charger les conversations
+    this.route.queryParams.subscribe(params => {
+      const conversationId = params['conversation']; // ⚠️ Changé de 'conversationId' à 'conversation'
+      if (conversationId) {
+        this.pendingConversationId = Number(conversationId);
+        console.log('🎯 Conversation à ouvrir:', this.pendingConversationId);
+      }
+    });
+
     // Connecter au WebSocket
     console.log('🔌 Tentative de connexion WebSocket...');
     this.connectWebSocket(token);
 
-    // Charger les conversations
-    this.chatState.loadConversations();
-    this.chatState.loadUnreadCount();
+    //  ÉTAPE 2: Charger les conversations et attendre
+    await this.chatState.loadConversations();
+    await this.chatState.loadUnreadCount();
 
-    this.route.queryParams.subscribe(params => {
-      const conversationId = params['conversationId'];
-      if (conversationId) {
-        setTimeout(() => {
-          this.onConversationSelected(Number(conversationId));
-        }, 500);
-      }
-    });
+    // ÉTAPE 3: Si on a une conversation en attente, l'ouvrir
+    if (this.pendingConversationId) {
+      setTimeout(() => {
+        console.log('✅ Auto-ouverture de la conversation:', this.pendingConversationId);
+        this.onConversationSelected(this.pendingConversationId!);
+        
+        // Nettoyer le queryParam de l'URL (optionnel)
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true
+        });
+        
+        this.pendingConversationId = null;
+      }, 500);
+    }
   }
+
   ngOnDestroy(): void {
     // Déconnecter du WebSocket
     this.websocketService.disconnect();
@@ -78,6 +99,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.websocketService.onConnectionStatus().subscribe((connected) => {
       this.isConnected = connected;
       console.log('WebSocket connection status:', connected);
+
       if (connected) {
         setTimeout(() => {
           this.chatState.initializeWebSocketListeners();
@@ -85,13 +107,11 @@ export class ChatPageComponent implements OnInit, OnDestroy {
         }, 500);
       }
     });
-
   }
 
   onConversationSelected(conversationId: number): void {
     console.log('💬 Conversation sélectionnée ID:', conversationId);
     this.chatState.setActiveConversation(conversationId);
-
 
     // En mode mobile, afficher la fenêtre de chat
     if (window.innerWidth < 768) {

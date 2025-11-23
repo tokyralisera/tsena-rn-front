@@ -173,6 +173,9 @@ export class DemandeUserComponent implements OnInit {
     return this.currentUserId === publication.auteur.id;
   }
 
+  /**
+   * Initier une conversation pour une demande
+   */
   contactAuthor(publication: Publication, event?: Event): void {
     if (event) {
       event.stopPropagation();
@@ -197,36 +200,29 @@ export class DemandeUserComponent implements OnInit {
 
     this.loading = true;
 
-    this.chatService
-      .initiateConversationWithContext(
-        publication.id,
-        publication.titre,
-        'DEMANDE'
-      )
-      .subscribe({
-        next: (response) => {
-          console.log('✅ Conversation créée:', response);
-          this.toastService.success('Conversation démarrée avec l\'auteur');
-          this.chatService.navigateToConversation(response.conversation.id);
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('❌ Erreur lors de la création de la conversation:', error);
+    this.chatService.initiateConversationAndNavigate(publication.id).subscribe({
+      next: (conversation: any) => {
+        console.log('✅ Conversation créée:', conversation);
+        this.toastService.success('Redirection vers la messagerie...');
+        this.loading = false;
+      },
+      error: (error: any) => {
+        console.error('❌ Erreur lors de la création de la conversation:', error);
 
-          if (error.status === 409) {
-            this.toastService.info('Une conversation existe déjà pour cette demande');
-            if (error.error?.conversationId) {
-              this.chatService.navigateToConversation(error.error.conversationId);
-            }
-          } else if (error.status === 401) {
-            this.toastService.error('Vous devez être connecté pour contacter l\'auteur');
-          } else {
-            this.toastService.error('Erreur lors de la création de la conversation');
-          }
+        if (error.status === 400) {
+          const message = error.error?.message || 'Erreur lors de la création de la conversation';
+          this.toastService.error(message);
+        } else if (error.status === 404) {
+          this.toastService.error('Publication introuvable');
+        } else if (error.status === 401) {
+          this.toastService.error('Vous devez être connecté pour contacter l\'auteur');
+        } else {
+          this.toastService.error('Erreur lors de la création de la conversation');
+        }
 
-          this.loading = false;
-        },
-      });
+        this.loading = false;
+      },
+    });
   }
 
   // ==========================================
@@ -513,10 +509,10 @@ export class DemandeUserComponent implements OnInit {
     console.log('  - Description valide:', this.demandeForm.get('description')?.valid, 'Valeur:', this.demandeForm.get('description')?.value, 'Longueur:', this.demandeForm.get('description')?.value?.length);
     console.log('  - VilleId valide:', this.demandeForm.get('villeId')?.valid, 'Valeur:', this.demandeForm.get('villeId')?.value);
     console.log('  - Produits count:', this.produits.length);
-    
+
     if (this.demandeForm.invalid) {
       this.demandeForm.markAllAsTouched();
-      
+
       // Messages d'erreur spécifiques
       const errors = [];
       if (this.demandeForm.get('titre')?.invalid) {
@@ -529,7 +525,7 @@ export class DemandeUserComponent implements OnInit {
       if (this.demandeForm.get('villeId')?.invalid) {
         errors.push('Veuillez sélectionner une ville');
       }
-      
+
       this.toastService.warning(errors.length > 0 ? errors.join('\n') : 'Veuillez remplir tous les champs requis');
       return;
     }

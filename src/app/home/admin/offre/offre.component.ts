@@ -1,12 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Publication, PublicationStatut, PublicationOffreService, Produit } from '../../../shared/services/publication-offre.service';
-
+import { 
+  Publication, 
+  PublicationStatut, 
+  PublicationOffreService, 
+  Produit 
+} from '../../../shared/services/publication-offre.service';
+import { ToastService } from '../../../shared/services/toast.service';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
 @Component({
-  selector: 'app-approbation',
+  selector: 'app-approbation-offre',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ToastComponent],
   templateUrl: './offre.component.html',
   styleUrl: './offre.component.scss'
 })
@@ -32,12 +38,19 @@ export class ApprobationOffreComponent implements OnInit {
 
   PublicationStatut = PublicationStatut;
 
-  constructor(private publicationService: PublicationOffreService) {}
+  constructor(
+    private publicationService: PublicationOffreService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadPublications();
     this.loadStatistics();
   }
+
+  // ==========================================
+  // CHARGEMENT DES DONNÉES
+  // ==========================================
 
   loadPublications(): void {
     this.loading = true;
@@ -55,7 +68,7 @@ export class ApprobationOffreComponent implements OnInit {
       error: (error) => {
         console.error('Erreur lors du chargement des publications', error);
         this.loading = false;
-        this.showToast('Erreur lors du chargement des publications', 'error');
+        this.toastService.error('Erreur lors du chargement des publications');
       }
     });
   }
@@ -72,9 +85,14 @@ export class ApprobationOffreComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur lors du chargement des statistiques', error);
+        this.toastService.error('Erreur lors du chargement des statistiques');
       }
     });
   }
+
+  // ==========================================
+  // MODALS
+  // ==========================================
 
   openDetailModal(publication: Publication): void {
     this.selectedPublication = publication;
@@ -106,57 +124,34 @@ export class ApprobationOffreComponent implements OnInit {
     this.loading = true;
     this.publicationService.updateStatut(this.selectedPublication.id, statut).subscribe({
       next: () => {
-        this.showToast(
-          `Publication ${this.actionType === 'VALIDER' ? 'validée' : 'rejetée'} avec succès`,
-          'success'
-        );
+        const message = this.actionType === 'VALIDER' 
+          ? 'Publication validée avec succès' 
+          : 'Publication rejetée avec succès';
+        
+        this.toastService.success(message);
         this.closeConfirmModal();
         this.closeDetailModal();
         this.loadPublications();
         this.loadStatistics();
+        this.loading = false;
       },
       error: (error) => {
         console.error('Erreur lors de la mise à jour du statut', error);
         this.loading = false;
-        this.showToast('Erreur lors de la mise à jour du statut', 'error');
+        this.toastService.error('Erreur lors de la mise à jour du statut');
       }
     });
   }
 
-  calculateProductTotal(produit: Produit): number {
-    return this.publicationService.calculateProductTotal(produit);
-  }
-
-  calculateOffreTotal(): number {
-    if (!this.selectedPublication?.offre?.produits) return 0;
-    return this.publicationService.calculateOffreTotal(this.selectedPublication.offre.produits);
-  }
-
-  formatPrice(price: number): string {
-    return new Intl.NumberFormat('mg-MG', {
-      style: 'currency',
-      currency: 'MGA'
-    }).format(price);
-  }
-
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  getAuteurFullName(publication: Publication): string {
-    return `${publication.auteur.prenomUtilisateur} ${publication.auteur.nomUtilisateur}`;
-  }
+  // ==========================================
+  // PAGINATION
+  // ==========================================
 
   changePage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
       this.loadPublications();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
@@ -176,8 +171,57 @@ export class ApprobationOffreComponent implements OnInit {
     return pages;
   }
 
-  showToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
-    console.log(`[${type.toUpperCase()}] ${message}`);
-    // Implémentez votre système de toast ici
+  // ==========================================
+  // CALCULS ET FORMATAGE
+  // ==========================================
+
+  calculateProductTotal(produit: Produit): number {
+    return this.publicationService.calculateProductTotal(produit);
+  }
+
+  calculateOffreTotal(): number {
+    if (!this.selectedPublication?.offre?.produits) return 0;
+    return this.publicationService.calculateOffreTotal(this.selectedPublication.offre.produits);
+  }
+
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('mg-MG', {
+      style: 'currency',
+      currency: 'MGA',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price);
+  }
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  getAuteurFullName(publication: Publication): string {
+    if (!publication || !publication.auteur) {
+      return 'Auteur inconnu';
+    }
+    return `${publication.auteur.prenomUtilisateur} ${publication.auteur.nomUtilisateur}`;
+  }
+
+  /**
+   * Retourne le libellé de la catégorie d'un produit, même si c'est un id
+   */
+  getCategorieLibelle(produit: Produit): string {
+    // Si produit.categorie est un id (number)
+    if (typeof produit.categorie === 'number') {
+      return '';
+    }
+    // Si produit.categorie est un objet avec nom
+    if (produit.categorie && typeof produit.categorie === 'object') {
+      return (produit.categorie as any).nom || (produit.categorie as any).libelle || '';
+    }
+    return '';
   }
 }

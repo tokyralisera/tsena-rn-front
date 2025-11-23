@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import {
   Conversation,
@@ -30,24 +31,14 @@ export class ChatService {
   }
 
   /**
-   * 🆕 Initier une conversation avec contexte et message automatique
-   * Utilisé quand un utilisateur clique sur "L'offre m'intéresse"
+   * Méthode helper pour initier une conversation et naviguer vers le chat
+   * À utiliser dans les boutons "L'offre m'intéresse" / "Je peux fournir"
    */
-  initiateConversationWithContext(
-    publicationId: number,
-    publicationTitre: string,
-    publicationType: 'OFFRE' | 'DEMANDE'
-  ): Observable<{ conversation: Conversation; message?: Message }> {
-    const messageTemplate = publicationType === 'OFFRE'
-      ? `Bonjour, je suis intéressé(e) par votre offre "${publicationTitre}". Pouvons-nous discuter des détails ?`
-      : `Bonjour, j'ai peut-être ce que vous cherchez concernant "${publicationTitre}". Je souhaiterais en discuter avec vous.`;
-
-    return this.http.post<{ conversation: Conversation; message?: Message }>(
-      `${this.apiUrl}/conversations/initiate`,
-      {
-        publicationId,
-        messageInitial: messageTemplate,
-      }
+  initiateConversationAndNavigate(publicationId: number): Observable<Conversation> {
+    return this.createConversation(publicationId).pipe(
+      tap((conversation: Conversation) => {
+        this.navigateToConversation(conversation.id);
+      })
     );
   }
 
@@ -55,7 +46,7 @@ export class ChatService {
    * Rediriger vers le chat avec une conversation active
    */
   navigateToConversation(conversationId: number): void {
-    this.router.navigate(['/home/chat'], {
+    this.router.navigate(['/home/user/chat'], {
       queryParams: { conversation: conversationId },
     });
   }

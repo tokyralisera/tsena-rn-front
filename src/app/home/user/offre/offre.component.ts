@@ -195,64 +195,58 @@ export class OffresUserComponent implements OnInit {
     return this.currentUserId === publication.auteur.id;
   }
 
-  /**
-   * Initier une conversation pour une offre
-   */
-  contactSeller(publication: Publication, event?: Event): void {
-    if (event) {
-      event.stopPropagation();
-    }
-
-    if (this.isMyOffer(publication)) {
-      this.toastService.warning('Vous ne pouvez pas contacter votre propre offre');
-      return;
-    }
-
-    if (publication.statut !== 'VALIDE') {
-      this.toastService.warning('Cette offre n\'est pas encore validée');
-      return;
-    }
-
-    if (publication.offre.statut === 'VENDU') {
-      this.toastService.info('Cette offre a déjà été vendue');
-      return;
-    }
-
-    console.log('📞 Initiation de la conversation pour l\'offre:', publication.id);
-
-    this.loading = true;
-
-    this.chatService
-      .initiateConversationWithContext(
-        publication.id,
-        publication.titre,
-        'OFFRE'
-      )
-      .subscribe({
-        next: (response) => {
-          console.log('✅ Conversation créée:', response);
-          this.toastService.success('Conversation démarrée avec le vendeur');
-          this.chatService.navigateToConversation(response.conversation.id);
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('❌ Erreur lors de la création de la conversation:', error);
-
-          if (error.status === 409) {
-            this.toastService.info('Une conversation existe déjà pour cette offre');
-            if (error.error?.conversationId) {
-              this.chatService.navigateToConversation(error.error.conversationId);
-            }
-          } else if (error.status === 401) {
-            this.toastService.error('Vous devez être connecté pour contacter le vendeur');
-          } else {
-            this.toastService.error('Erreur lors de la création de la conversation');
-          }
-
-          this.loading = false;
-        },
-      });
+/**
+ * Initier une conversation pour une offre
+ */
+contactSeller(publication: Publication, event?: Event): void {
+  if (event) {
+    event.stopPropagation();
   }
+
+  // Vérifications
+  if (this.isMyOffer(publication)) {
+    this.toastService.warning('Vous ne pouvez pas contacter votre propre offre');
+    return;
+  }
+
+  if (publication.statut !== 'VALIDE') {
+    this.toastService.warning('Cette offre n\'est pas encore validée');
+    return;
+  }
+
+  if (publication.offre.statut === 'VENDU') {
+    this.toastService.info('Cette offre a déjà été vendue');
+    return;
+  }
+
+  console.log('📞 Initiation de la conversation pour l\'offre:', publication.id);
+
+  this.loading = true;
+
+  this.chatService.initiateConversationAndNavigate(publication.id).subscribe({
+    next: (conversation: any) => {
+      console.log('✅ Conversation créée:', conversation);
+      this.toastService.success('Redirection vers la messagerie...');
+      this.loading = false;
+    },
+    error: (error: any) => {
+      console.error('❌ Erreur lors de la création de la conversation:', error);
+
+      if (error.status === 400) {
+        const message = error.error?.message || 'Erreur lors de la création de la conversation';
+        this.toastService.error(message);
+      } else if (error.status === 404) {
+        this.toastService.error('Publication introuvable');
+      } else if (error.status === 401) {
+        this.toastService.error('Vous devez être connecté pour contacter le vendeur');
+      } else {
+        this.toastService.error('Erreur lors de la création de la conversation');
+      }
+
+      this.loading = false;
+    },
+  });
+}
 
   // ==========================================
   // CHARGEMENT DES DONNÉES
@@ -597,7 +591,7 @@ export class OffresUserComponent implements OnInit {
     console.log('  - Description valide:', this.offreForm.get('description')?.valid, 'Valeur:', this.offreForm.get('description')?.value);
     console.log('  - VilleId valide:', this.offreForm.get('villeId')?.valid, 'Valeur:', this.offreForm.get('villeId')?.value);
     console.log('  - Produits count:', this.produits.length);
-    
+
     if (this.offreForm.invalid) {
       this.offreForm.markAllAsTouched();
       this.toastService.warning('Veuillez remplir tous les champs requis');
@@ -618,7 +612,7 @@ export class OffresUserComponent implements OnInit {
     formData.append('titre', this.offreForm.value.titre);
     formData.append('description', this.offreForm.value.description);
     formData.append('villeId', this.offreForm.value.villeId.toString());
-    
+
     // Envoyer produits comme array, pas stringifié
     this.offreForm.value.produits.forEach((produit: any, index: number) => {
       formData.append(`produits[${index}][libelle]`, produit.libelle);
