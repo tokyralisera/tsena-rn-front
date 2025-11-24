@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { DashboardStats, DemandeStatisticsData, OffreStatisticsData } from '../../../shared/interfaces/statistics.model';
 import { DashboardService } from '../../../shared/services/dashboard.service';
-
+import { ToastService } from '../../../shared/services/toast.service';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
 interface StatCard {
   title: string;
@@ -11,12 +12,13 @@ interface StatCard {
   icon: string;
   trend?: number;
   color: string;
+  description?: string;
 }
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ToastComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
@@ -41,8 +43,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   salesRate = 0;
   offreValidationRate = 0;
   demandeValidationRate = 0;
+  offreRejectionRate = 0;
+  demandeRejectionRate = 0;
+  demandeExpirationRate = 0;
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(
+    private dashboardService: DashboardService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -69,18 +77,51 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.offresStats = data.offres;
           this.demandesStats = data.demandes;
 
+          // Vérifier la cohérence des données
+          this.validateData();
+
           this.calculateMetrics();
           this.prepareStatCards();
 
           this.isLoading = false;
+          console.log('✅ Statistiques chargées:', {
+            offres: this.offresStats,
+            demandes: this.demandesStats,
+            metrics: {
+              conversionRate: this.conversionRate,
+              salesRate: this.salesRate,
+              offreValidationRate: this.offreValidationRate,
+              demandeValidationRate: this.demandeValidationRate,
+            }
+          });
         },
         error: (error) => {
-          console.error('Erreur lors du chargement des statistiques:', error);
+          console.error('❌ Erreur lors du chargement des statistiques:', error);
           this.hasError = true;
           this.errorMessage = 'Impossible de charger les statistiques du dashboard';
           this.isLoading = false;
+          this.toastService.error('Erreur lors du chargement des statistiques');
         },
       });
+  }
+
+  /**
+   * Valider la cohérence des données reçues
+   */
+  private validateData(): void {
+    if (this.offresStats) {
+      const offresValid = this.dashboardService.validatePublicationsData(this.offresStats);
+      if (!offresValid) {
+        console.warn('⚠️ Incohérence détectée dans les données des offres');
+      }
+    }
+
+    if (this.demandesStats) {
+      const demandesValid = this.dashboardService.validatePublicationsData(this.demandesStats);
+      if (!demandesValid) {
+        console.warn('⚠️ Incohérence détectée dans les données des demandes');
+      }
+    }
   }
 
   /**
@@ -93,6 +134,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.salesRate = this.dashboardService.getSalesRate(this.offresStats);
     this.offreValidationRate = this.dashboardService.getOffreValidationRate(this.offresStats);
     this.demandeValidationRate = this.dashboardService.getDemandeValidationRate(this.demandesStats);
+    this.offreRejectionRate = this.dashboardService.getOffreRejectionRate(this.offresStats);
+    this.demandeRejectionRate = this.dashboardService.getDemandeRejectionRate(this.demandesStats);
+    this.demandeExpirationRate = this.dashboardService.getDemandeExpirationRate(this.demandesStats);
   }
 
   /**
@@ -104,15 +148,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.statCards = [
       {
         title: 'Total Offres',
-        value: this.dashboardService.formatNumber(this.offresStats.totalPublications),
+        value: this.formatNumber(this.offresStats.totalPublications),
         icon: 'shopping-bag',
         color: 'primary',
+        description: 'Publications totales'
       },
       {
         title: 'Total Demandes',
-        value: this.dashboardService.formatNumber(this.demandesStats.totalPublications),
+        value: this.formatNumber(this.demandesStats.totalPublications),
         icon: 'search',
         color: 'info',
+        description: 'Publications totales'
       },
       {
         title: 'Taux de Vente',
@@ -120,13 +166,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         icon: 'trending-up',
         trend: this.salesRate,
         color: 'success',
+        description: 'Offres vendues'
       },
       {
-        title: 'Demandes Trouvées',
+        title: 'Taux de Conversion',
         value: this.dashboardService.formatPercentage(this.conversionRate),
         icon: 'check-circle',
         trend: this.conversionRate,
         color: 'warning',
+        description: 'Demandes trouvées'
       },
     ];
   }
@@ -135,6 +183,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Rafraîchir les données
    */
   refreshData(): void {
+    this.toastService.info('Actualisation des données...');
     this.loadDashboardData();
   }
 
@@ -142,8 +191,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Formater un nombre avec gestion du undefined
    */
   formatNumber(value: number | undefined): string {
-    if (value === undefined || value === null) return '0';
     return this.dashboardService.formatNumber(value);
+  }
+
+  /**
+   * Formater un pourcentage
+   */
+  formatPercentage(value: number | undefined): string {
+    return this.dashboardService.formatPercentage(value);
   }
 
   /**
@@ -182,6 +237,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Obtenir le total des offres (vendu + nonVendu)
+   */
+  getTotalOffres(): number {
+    return this.getOffresVendu() + this.getOffresNonVendu();
+  }
+
+  /**
    * Obtenir une valeur sûre pour demandes.trouvee
    */
   getDemandesTrouvee(): number {
@@ -203,6 +265,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Obtenir le total des demandes (trouvée + non trouvée + expirée)
+   */
+  getTotalDemandes(): number {
+    return this.getDemandesTrouvee() + this.getDemandesNonTrouvee() + this.getDemandesExpiree();
+  }
+
+  /**
    * Obtenir une valeur sûre pour publications.valide (demandes)
    */
   getDemandesValide(): number {
@@ -221,5 +290,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   getDemandesRejete(): number {
     return this.demandesStats?.publications?.rejete ?? 0;
+  }
+
+  /**
+   * Vérifier si les données sont chargées
+   */
+  get hasData(): boolean {
+    return this.offresStats !== null && this.demandesStats !== null;
   }
 }

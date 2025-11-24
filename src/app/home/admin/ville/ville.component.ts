@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { CreateVilleDto, UpdateVilleDto, Ville, VilleService } from '../../../shared/services/ville.service';
 import { Pays, PaysService } from '../../../shared/services/pays.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-ville',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ToastComponent],
   templateUrl: './ville.component.html',
   styleUrl: './ville.component.scss'
 })
@@ -47,13 +48,17 @@ export class VilleComponent implements OnInit {
     this.loadVilles();
   }
 
+  // ==========================================
+  // CHARGEMENT DES DONNÉES
+  // ==========================================
+
   loadPays(): void {
     this.paysService.getAll(1, 1000).subscribe({
       next: (response) => {
         this.pays = response.data;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des pays', error);
+        console.error('Erreur lors du chargement des pays:', error);
         this.toastService.error('Erreur lors du chargement des pays');
       }
     });
@@ -68,12 +73,16 @@ export class VilleComponent implements OnInit {
         this.loading = false;
       },
       error: (error: any) => {
-        console.error('Erreur lors du chargement des villes', error);
+        console.error('Erreur lors du chargement des villes:', error);
         this.loading = false;
         this.toastService.error('Erreur lors du chargement des villes');
       }
     });
   }
+
+  // ==========================================
+  // MODALS - AJOUT/ÉDITION
+  // ==========================================
 
   openAddModal(): void {
     this.isEditMode = false;
@@ -99,6 +108,10 @@ export class VilleComponent implements OnInit {
     this.selectedVille = null;
   }
 
+  // ==========================================
+  // MODAL SUPPRESSION
+  // ==========================================
+
   openDeleteModal(ville: Ville): void {
     this.selectedVille = ville;
     this.showDeleteModal = true;
@@ -109,6 +122,10 @@ export class VilleComponent implements OnInit {
     this.selectedVille = null;
   }
 
+  // ==========================================
+  // SOUMISSION DU FORMULAIRE
+  // ==========================================
+
   onSubmit(): void {
     if (this.villeForm.invalid) {
       this.villeForm.markAllAsTouched();
@@ -116,10 +133,13 @@ export class VilleComponent implements OnInit {
       return;
     }
 
-    const formData = this.villeForm.value;
-    // Nettoyer le code postal s'il est vide
+    const formData = { ...this.villeForm.value };
+    
+    // Nettoyer le code postal s'il est vide ou ne contient que des espaces
     if (!formData.codePostal || formData.codePostal.trim() === '') {
       delete formData.codePostal;
+    } else {
+      formData.codePostal = formData.codePostal.trim();
     }
 
     if (this.isEditMode && this.selectedVille) {
@@ -132,15 +152,16 @@ export class VilleComponent implements OnInit {
   createVille(data: CreateVilleDto): void {
     this.loading = true;
     this.villeService.create(data).subscribe({
-      next: () => {
+      next: (response) => {
         this.toastService.success('Ville créée avec succès');
         this.closeModal();
         this.loadVilles();
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Erreur lors de la création de la ville', error);
+        console.error('Erreur lors de la création de la ville:', error);
         this.loading = false;
-        this.toastService.error('Erreur lors de la création de la ville');
+        this.toastService.error(error.error?.message || 'Erreur lors de la création de la ville');
       }
     });
   }
@@ -148,15 +169,16 @@ export class VilleComponent implements OnInit {
   updateVille(id: number, data: UpdateVilleDto): void {
     this.loading = true;
     this.villeService.update(id, data).subscribe({
-      next: () => {
+      next: (response) => {
         this.toastService.success('Ville modifiée avec succès');
         this.closeModal();
         this.loadVilles();
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Erreur lors de la modification de la ville', error);
+        console.error('Erreur lors de la modification de la ville:', error);
         this.loading = false;
-        this.toastService.error('Erreur lors de la modification de la ville');
+        this.toastService.error(error.error?.message || 'Erreur lors de la modification de la ville');
       }
     });
   }
@@ -166,22 +188,27 @@ export class VilleComponent implements OnInit {
 
     this.loading = true;
     this.villeService.delete(this.selectedVille.id).subscribe({
-      next: () => {
+      next: (response) => {
         this.toastService.success('Ville supprimée avec succès');
         this.closeDeleteModal();
         this.loadVilles();
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Erreur lors de la suppression de la ville', error);
+        console.error('Erreur lors de la suppression de la ville:', error);
         this.loading = false;
-        this.toastService.error('Erreur lors de la suppression de la ville');
+        this.toastService.error(error.error?.message || 'Erreur lors de la suppression de la ville');
       }
     });
   }
 
+  // ==========================================
+  // RECHERCHE ET FILTRES
+  // ==========================================
+
   onSearch(): void {
     this.currentPage = 1;
-    this.loadVilles();
+    // Pas besoin de recharger, le getter filteredVilles gère la recherche côté client
   }
 
   onFilterByPays(): void {
@@ -194,13 +221,17 @@ export class VilleComponent implements OnInit {
     this.searchTerm = '';
     this.currentPage = 1;
     this.loadVilles();
-    this.toastService.info('Filtres réinitialisés');
   }
+
+  // ==========================================
+  // PAGINATION
+  // ==========================================
 
   changePage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
       this.loadVilles();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
@@ -220,10 +251,18 @@ export class VilleComponent implements OnInit {
     return pages;
   }
 
+  // ==========================================
+  // HELPERS
+  // ==========================================
+
   getPaysName(paysId: number): string {
     const pays = this.pays.find(p => p.id === paysId);
     return pays ? pays.nom : 'Inconnu';
   }
+
+  // ==========================================
+  // GETTERS
+  // ==========================================
 
   get nomControl() {
     return this.villeForm.get('nom');
@@ -240,11 +279,13 @@ export class VilleComponent implements OnInit {
   get filteredVilles(): Ville[] {
     if (!this.searchTerm) return this.villes;
     
-    const term = this.searchTerm.toLowerCase();
+    const term = this.searchTerm.toLowerCase().trim();
     return this.villes.filter(ville => 
       ville.nom.toLowerCase().includes(term) ||
       ville.codePostal?.toLowerCase().includes(term) ||
-      ville.pays.nom.toLowerCase().includes(term)
+      ville.pays.nom.toLowerCase().includes(term) ||
+      ville.pays.code.toLowerCase().includes(term) ||
+      ville.id.toString().includes(term)
     );
   }
 }

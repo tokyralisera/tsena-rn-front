@@ -1,296 +1,294 @@
-<!-- Container principal avec spacing uniforme -->
+<app-toast></app-toast>
+
 <div class="page-container">
   
-  <!-- En-tête moderne avec gradient -->
-  <div class="page-header">
-    <div class="header-content">
-      <div class="header-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" class="header-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <!-- En-tête moderne harmonisé -->
+  <div class="page-header-modern">
+    <div class="header-left">
+      <h1 class="page-title-modern">Gestion des Villes</h1>
+      <p class="page-subtitle">Gérez les villes disponibles sur la plateforme</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat-badge cities">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
+        <div class="stat-info">
+          <span class="stat-value">{{ filteredVilles.length }}</span>
+          <span class="stat-label">Villes</span>
+        </div>
       </div>
-      <div class="header-text">
-        <h1 class="header-title">Gestion des Villes</h1>
-        <p class="header-subtitle">Gérez les villes disponibles sur la plateforme</p>
-      </div>
-    </div>
-
-    <!-- Statistiques rapides -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-value">{{ filteredVilles.length }}</div>
-        <div class="stat-label">Villes</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">{{ pays.length }}</div>
-        <div class="stat-label">Pays</div>
+      <div class="stat-badge countries">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+        </svg>
+        <div class="stat-info">
+          <span class="stat-value">{{ pays.length }}</span>
+          <span class="stat-label">Pays</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Barre d'actions -->
-  <div class="actions-bar">
-    <div class="filters-group">
-      <!-- Recherche avec animation -->
-      <div class="search-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input 
-          type="text" 
-          placeholder="Rechercher une ville..." 
-          class="input input-bordered search-input"
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
-        />
-        @if (searchTerm) {
-          <button class="clear-search-btn" (click)="searchTerm = ''; onSearch()">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <!-- Conteneur principal -->
+  <div class="content-container">
+    
+    <!-- Barre d'actions -->
+    <div class="actions-bar">
+      <div class="filters-group">
+        <!-- Recherche -->
+        <div class="search-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Rechercher une ville..." 
+            class="search-input"
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+          />
+          <button 
+            *ngIf="searchTerm" 
+            class="clear-search-btn" 
+            (click)="searchTerm = ''; onSearch()"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        }
-      </div>
+        </div>
 
-      <!-- Filtre par pays -->
-      <div class="select-wrapper">
-        <select 
-          class="select select-bordered select-filter"
-          [(ngModel)]="selectedPaysFilter"
-          (change)="onFilterByPays()"
-        >
-          <option [ngValue]="null">🌍 Tous les pays</option>
-          @for (p of pays; track p.id) {
-            <option [ngValue]="p.id">{{ p.nom }} ({{ p.code }})</option>
-          }
-        </select>
-      </div>
+        <!-- Filtre par pays -->
+        <div class="select-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" class="select-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+          </svg>
+          <select 
+            class="select-filter"
+            [(ngModel)]="selectedPaysFilter"
+            (change)="onFilterByPays()"
+          >
+            <option [ngValue]="null">Tous les pays</option>
+            <option *ngFor="let p of pays" [ngValue]="p.id">
+              {{ p.nom }} ({{ p.code }})
+            </option>
+          </select>
+        </div>
 
-      <!-- Bouton réinitialiser -->
-      @if (selectedPaysFilter || searchTerm) {
+        <!-- Bouton réinitialiser -->
         <button 
-          class="btn btn-ghost btn-sm gap-2" 
+          *ngIf="selectedPaysFilter || searchTerm"
+          class="btn-reset" 
           (click)="clearFilter()"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Réinitialiser
+          <span>Réinitialiser</span>
         </button>
-      }
+      </div>
+
+      <!-- Bouton Ajouter -->
+      <button class="btn-add" (click)="openAddModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Nouvelle ville</span>
+      </button>
     </div>
 
-    <!-- Bouton Ajouter avec animation -->
-    <button class="btn btn-primary gap-2 add-btn" (click)="openAddModal()">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg>
-      Nouvelle ville
-    </button>
-  </div>
+    <!-- Tableau des villes -->
+    <div class="data-card">
+      
+      <!-- Loading state -->
+      <div *ngIf="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Chargement des villes...</p>
+      </div>
 
-  <!-- Tableau moderne -->
-  <div class="data-card">
-    <div class="overflow-x-auto">
-      <table class="table table-zebra">
-        <thead>
-          <tr>
-            <th class="table-header">
-              <div class="flex items-center gap-2">
-                <span class="font-semibold">Ville</span>
-              </div>
-            </th>
-            <th class="table-header">Code Postal</th>
-            <th class="table-header">Pays</th>
-            <th class="table-header">Créée le</th>
-            <th class="table-header text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (loading) {
+      <!-- État vide -->
+      <div *ngIf="!loading && filteredVilles.length === 0" class="empty-state">
+        <div class="empty-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <h3 class="empty-title">Aucune ville trouvée</h3>
+        <p class="empty-description">
+          {{ searchTerm || selectedPaysFilter ? 'Essayez de modifier vos filtres' : 'Ajoutez une nouvelle ville pour commencer' }}
+        </p>
+      </div>
+
+      <!-- Tableau -->
+      <div *ngIf="!loading && filteredVilles.length > 0" class="table-wrapper">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td colspan="5" class="text-center py-12">
-                <div class="flex flex-col items-center gap-3">
-                  <span class="loading loading-spinner loading-lg text-primary"></span>
-                  <span class="text-base-content/60">Chargement des villes...</span>
-                </div>
-              </td>
+              <th>Ville</th>
+              <th>Code Postal</th>
+              <th>Pays</th>
+              <th>Créée le</th>
+              <th class="text-right">Actions</th>
             </tr>
-          }
-          
-          @if (!loading && filteredVilles.length === 0) {
-            <tr>
-              <td colspan="5" class="text-center py-12">
-                <div class="flex flex-col items-center gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-base-content/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                  <div class="text-center">
-                    <p class="font-semibold text-base-content/70">Aucune ville trouvée</p>
-                    <p class="text-sm text-base-content/50">Essayez de modifier vos filtres ou ajoutez une nouvelle ville</p>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          }
-          
-          @for (v of filteredVilles; track v.id) {
-            <tr class="table-row-hover">
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of filteredVilles" class="table-row">
               <td>
-                <div class="flex items-center gap-3">
+                <div class="city-info">
                   <div class="city-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
-                  <div>
-                    <div class="font-semibold text-base-content">{{ v.nom }}</div>
-                    <div class="text-xs text-base-content/60">ID: {{ v.id }}</div>
+                  <div class="city-details">
+                    <div class="city-name">{{ v.nom }}</div>
+                    <div class="city-id">ID: {{ v.id }}</div>
                   </div>
                 </div>
               </td>
               <td>
-                @if (v.codePostal) {
-                  <span class="badge badge-ghost badge-sm font-mono">{{ v.codePostal }}</span>
-                } @else {
-                  <span class="text-base-content/40 text-sm">Non renseigné</span>
-                }
+                <span *ngIf="v.codePostal" class="postal-code">{{ v.codePostal }}</span>
+                <span *ngIf="!v.codePostal" class="no-data">Non renseigné</span>
               </td>
               <td>
-                <div class="flex items-center gap-2">
-                  <div class="country-flag">{{ v.pays.code }}</div>
-                  <span class="font-medium">{{ v.pays.nom }}</span>
+                <div class="country-badge">
+                  <span class="country-flag">{{ v.pays.code }}</span>
+                  <span class="country-name">{{ v.pays.nom }}</span>
                 </div>
               </td>
               <td>
-                <div class="flex items-center gap-2 text-sm text-base-content/70">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="date-info">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  {{ v.createdAt | date:'dd/MM/yyyy' }}
+                  <span>{{ v.createdAt | date:'dd/MM/yyyy' }}</span>
                 </div>
               </td>
               <td class="text-right">
                 <div class="action-buttons">
                   <button 
-                    class="btn btn-sm btn-ghost action-btn edit-btn" 
+                    class="btn-action edit" 
                     (click)="openEditModal(v)"
                     title="Modifier"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
                   <button 
-                    class="btn btn-sm btn-ghost action-btn delete-btn" 
+                    class="btn-action delete" 
                     (click)="openDeleteModal(v)"
                     title="Supprimer"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
               </td>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Modal Ajouter/Modifier -->
-  <input type="checkbox" [checked]="showModal" class="modal-toggle" id="ville-modal" />
-  <div class="modal" [class.modal-open]="showModal">
-    <div class="modal-box max-w-md modern-modal">
-      <div class="modal-header-custom">
-        <h3 class="modal-title-custom">
-          @if (isEditMode) {
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Modifier la ville
-          } @else {
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Nouvelle ville
-          }
-        </h3>
-        <button class="btn btn-sm btn-circle btn-ghost" (click)="closeModal()">✕</button>
+          </tbody>
+        </table>
       </div>
-      
-      <form [formGroup]="villeForm" (ngSubmit)="onSubmit()" class="form-modern">
-        <!-- Nom -->
-        <div class="form-group-modern">
-          <label class="label-modern">
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL AJOUTER/MODIFIER -->
+<div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-container small" (click)="$event.stopPropagation()">
+    
+    <!-- Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path *ngIf="!isEditMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <path *ngIf="isEditMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+        <span>{{ isEditMode ? 'Modifier la ville' : 'Nouvelle ville' }}</span>
+      </h3>
+      <button class="btn-close-modal" (click)="closeModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="modal-content">
+      <form [formGroup]="villeForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Nom de la ville -->
+        <div class="form-group">
+          <label class="form-label">
             <span>Nom de la ville</span>
-            <span class="required-indicator">*</span>
+            <span class="required">*</span>
           </label>
           <input 
             type="text" 
-            placeholder="Ex: Paris" 
-            class="input input-bordered w-full input-modern"
-            [class.input-error]="nomControl?.invalid && nomControl?.touched"
+            placeholder="Ex: Paris, Antananarivo..." 
+            class="form-input"
+            [class.error]="nomControl?.invalid && nomControl?.touched"
             formControlName="nom"
+            [disabled]="loading"
           />
-          @if (nomControl?.invalid && nomControl?.touched) {
-            <label class="label">
-              <span class="label-text-alt text-error">
-                @if (nomControl?.errors?.['required']) {
-                  <span>Le nom est requis</span>
-                }
-                @if (nomControl?.errors?.['minlength']) {
-                  <span>Minimum 2 caractères</span>
-                }
-              </span>
-            </label>
-          }
+          <span 
+            *ngIf="nomControl?.invalid && nomControl?.touched" 
+            class="form-error"
+          >
+            <span *ngIf="nomControl?.errors?.['required']">Le nom est requis</span>
+            <span *ngIf="nomControl?.errors?.['minlength']">Minimum 2 caractères</span>
+          </span>
         </div>
 
-        <!-- Code Postal -->
-        <div class="form-group-modern">
-          <label class="label-modern">
+        <!-- Code postal -->
+        <div class="form-group">
+          <label class="form-label">
             <span>Code postal</span>
-            <span class="optional-indicator">(optionnel)</span>
+            <span class="optional">(optionnel)</span>
           </label>
           <input 
             type="text" 
-            placeholder="Ex: 75001" 
-            class="input input-bordered w-full input-modern"
+            placeholder="Ex: 75001, 101..." 
+            class="form-input"
             formControlName="codePostal"
+            [disabled]="loading"
           />
         </div>
 
         <!-- Pays -->
-        <div class="form-group-modern">
-          <label class="label-modern">
+        <div class="form-group">
+          <label class="form-label">
             <span>Pays</span>
-            <span class="required-indicator">*</span>
+            <span class="required">*</span>
           </label>
           <select 
-            class="select select-bordered w-full select-modern"
-            [class.select-error]="paysIdControl?.invalid && paysIdControl?.touched"
+            class="form-select"
+            [class.error]="paysIdControl?.invalid && paysIdControl?.touched"
             formControlName="paysId"
+            [disabled]="loading"
           >
             <option [ngValue]="null" disabled>Sélectionner un pays</option>
-            @for (p of pays; track p.id) {
-              <option [ngValue]="p.id">{{ p.nom }} ({{ p.code }})</option>
-            }
+            <option *ngFor="let p of pays" [ngValue]="p.id">
+              {{ p.nom }} ({{ p.code }})
+            </option>
           </select>
-          @if (paysIdControl?.invalid && paysIdControl?.touched) {
-            <label class="label">
-              <span class="label-text-alt text-error">Le pays est requis</span>
-            </label>
-          }
+          <span 
+            *ngIf="paysIdControl?.invalid && paysIdControl?.touched" 
+            class="form-error"
+          >
+            Le pays est requis
+          </span>
         </div>
 
         <!-- Actions -->
-        <div class="modal-actions-custom">
+        <div class="modal-actions">
           <button 
             type="button" 
-            class="btn btn-ghost" 
+            class="btn-modal-secondary" 
             (click)="closeModal()"
             [disabled]="loading"
           >
@@ -298,62 +296,65 @@
           </button>
           <button 
             type="submit" 
-            class="btn btn-primary gap-2"
+            class="btn-modal-success"
             [disabled]="loading || villeForm.invalid"
           >
-            @if (loading) {
-              <span class="loading loading-spinner loading-sm"></span>
-            }
-            {{ isEditMode ? 'Enregistrer' : 'Créer' }}
+            <span *ngIf="!loading">{{ isEditMode ? 'Enregistrer' : 'Créer' }}</span>
+            <span *ngIf="loading" class="loading-spinner-small"></span>
           </button>
         </div>
       </form>
     </div>
-    <label class="modal-backdrop" for="ville-modal" (click)="closeModal()"></label>
   </div>
+</div>
 
-  <!-- Modal Suppression -->
-  <input type="checkbox" [checked]="showDeleteModal" class="modal-toggle" id="delete-modal" />
-  <div class="modal" [class.modal-open]="showDeleteModal">
-    <div class="modal-box modern-modal delete-modal">
+<!-- MODAL SUPPRESSION -->
+<div *ngIf="showDeleteModal" class="modal-overlay">
+  <div class="modal-container small">
+    <div class="modal-content">
+      
+      <!-- Icône warning -->
       <div class="delete-icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" class="delete-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
+
+      <h3 class="confirm-title">Confirmer la suppression</h3>
       
-      <h3 class="delete-modal-title">Confirmer la suppression</h3>
-      <p class="delete-modal-text">
-        Êtes-vous sûr de vouloir supprimer la ville 
-        <span class="font-bold text-error">{{ selectedVille?.nom }}</span> ?
-        <br><br>
-        <span class="text-sm text-base-content/60">Cette action est irréversible.</span>
-      </p>
-      
-      <div class="modal-actions-custom">
+      <div class="warning-banner danger">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <p>
+          Êtes-vous sûr de vouloir supprimer la ville 
+          <strong>{{ selectedVille?.nom }}</strong> ?
+          <br><br>
+          Cette action est <strong>irréversible</strong>.
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-actions">
         <button 
-          class="btn btn-ghost" 
+          class="btn-modal-secondary" 
           (click)="closeDeleteModal()"
           [disabled]="loading"
         >
           Annuler
         </button>
         <button 
-          class="btn btn-error gap-2" 
+          class="btn-modal-danger" 
           (click)="confirmDelete()"
           [disabled]="loading"
         >
-          @if (loading) {
-            <span class="loading loading-spinner loading-sm"></span>
-          }
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
-          Supprimer définitivement
+          <span *ngIf="!loading">Supprimer définitivement</span>
+          <span *ngIf="loading" class="loading-spinner-small"></span>
         </button>
       </div>
     </div>
-    <label class="modal-backdrop" for="delete-modal" (click)="closeDeleteModal()"></label>
   </div>
-
 </div>

@@ -47,16 +47,17 @@ export class DashboardService {
   }
 
   /**
-   * Calculer le taux de conversion (demandes trouvées / total demandes)
+   * Calculer le taux de conversion (demandes trouvées / total demandes actives)
+   * Note: On exclut les demandes expirées du calcul car elles ne sont plus actives
    */
   getConversionRate(demandes: DemandeStatisticsData): number {
-    const total =
-      demandes.demandes.trouvee +
-      demandes.demandes.nonTrouvee +
-      demandes.demandes.expiree;
+    // Total des demandes actives (trouvée + non trouvée, sans les expirées)
+    const totalActive = demandes.demandes.trouvee + demandes.demandes.nonTrouvee;
     
-    if (total === 0) return 0;
-    return (demandes.demandes.trouvee / total) * 100;
+    if (totalActive === 0) return 0;
+    
+    // Pourcentage de demandes trouvées parmi les demandes actives
+    return (demandes.demandes.trouvee / totalActive) * 100;
   }
 
   /**
@@ -86,6 +87,35 @@ export class DashboardService {
   }
 
   /**
+   * Calculer le taux de rejet pour les offres
+   */
+  getOffreRejectionRate(offres: OffreStatisticsData): number {
+    if (offres.totalPublications === 0) return 0;
+    return (offres.publications.rejete / offres.totalPublications) * 100;
+  }
+
+  /**
+   * Calculer le taux de rejet pour les demandes
+   */
+  getDemandeRejectionRate(demandes: DemandeStatisticsData): number {
+    if (demandes.totalPublications === 0) return 0;
+    return (demandes.publications.rejete / demandes.totalPublications) * 100;
+  }
+
+  /**
+   * Calculer le taux d'expiration des demandes
+   */
+  getDemandeExpirationRate(demandes: DemandeStatisticsData): number {
+    const total = 
+      demandes.demandes.trouvee + 
+      demandes.demandes.nonTrouvee + 
+      demandes.demandes.expiree;
+    
+    if (total === 0) return 0;
+    return (demandes.demandes.expiree / total) * 100;
+  }
+
+  /**
    * Formater un nombre avec séparateurs de milliers
    */
   formatNumber(num: number | null | undefined): string {
@@ -112,7 +142,10 @@ export class DashboardService {
   /**
    * Formater une devise en Ariary (MGA)
    */
-  formatCurrency(num: number): string {
+  formatCurrency(num: number | null | undefined): string {
+    if (num === null || num === undefined || isNaN(num)) {
+      return '0 Ar';
+    }
     const formatted = new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
@@ -123,7 +156,10 @@ export class DashboardService {
   /**
    * Formater une devise en Ariary abrégé
    */
-  formatCurrencyCompact(num: number): string {
+  formatCurrencyCompact(num: number | null | undefined): string {
+    if (num === null || num === undefined || isNaN(num)) {
+      return '0 Ar';
+    }
     if (num >= 1000000) {
       const millions = num / 1000000;
       return `${millions.toFixed(1)}M Ar`;
@@ -132,5 +168,13 @@ export class DashboardService {
       return `${thousands.toFixed(1)}K Ar`;
     }
     return `${num} Ar`;
+  }
+
+  /**
+   * Vérifier la cohérence des données de publications
+   */
+  validatePublicationsData(data: OffreStatisticsData | DemandeStatisticsData): boolean {
+    const sum = data.publications.valide + data.publications.enAttente + data.publications.rejete;
+    return sum === data.totalPublications;
   }
 }

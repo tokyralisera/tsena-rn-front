@@ -1,199 +1,254 @@
-<div class="container mx-auto px-4 py-8">
-  <!-- Header avec icône -->
-  <div class="flex items-center gap-4 mb-6">
-    <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-content" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
+<app-toast></app-toast>
+
+<div class="page-container">
+  <!-- En-tête moderne harmonisé -->
+  <div class="page-header-modern">
+    <div class="header-left">
+      <h1 class="page-title-modern">Approbation Demandes</h1>
+      <p class="page-subtitle">Validez ou rejetez les publications en attente</p>
     </div>
-    <div>
-      <h1 class="text-3xl font-bold text-base-content">Approbation Demandes</h1>
-      <p class="text-base-content/70">Validez ou rejetez les publications en attente</p>
+    <div class="header-stats">
+      <div class="stat-badge pending">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <div class="stat-info">
+          <span class="stat-value">{{ demandesEnAttente }}</span>
+          <span class="stat-label">En attente</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Carte statistiques -->
-  <div class="card bg-gradient-to-r from-primary to-secondary text-primary-content shadow-xl mb-6">
-    <div class="card-body text-center">
-      <div class="text-sm opacity-90">Total Demandes</div>
-      <div class="text-5xl font-bold">{{ demandesEnAttente }}</div>
-      <div class="text-sm opacity-90">Publications en attente</div>
+  <!-- Conteneur principal -->
+  <div class="content-container">
+    
+    <!-- Loader -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Chargement des demandes...</p>
     </div>
-  </div>
 
-  <!-- Loading state -->
-  <div *ngIf="loading" class="flex justify-center items-center h-64">
-    <span class="loading loading-spinner loading-lg text-primary"></span>
-  </div>
+    <!-- État vide -->
+    <div *ngIf="!loading && demandes.length === 0" class="empty-state">
+      <div class="empty-icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <h3 class="empty-title">Aucune demande en attente</h3>
+      <p class="empty-description">Toutes les demandes ont été traitées</p>
+    </div>
 
-  <!-- Liste des demandes -->
-  <div *ngIf="!loading && demandes.length > 0" class="space-y-4">
-    <div *ngFor="let demande of demandes" class="card bg-base-100 shadow-md hover:shadow-xl transition-shadow">
-      <div class="card-body p-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3 flex-1">
-            <!-- Avatar -->
-            <div class="avatar placeholder">
-              <div class="bg-primary text-primary-content rounded-full w-12">
-                <span class="text-lg font-bold">
-                  {{ demande.auteur.nomUtilisateur.charAt(0) }}{{ demande.auteur.prenomUtilisateur.charAt(0) }}
-                </span>
-              </div>
-            </div>
+    <!-- Liste des demandes en attente -->
+    <div class="publications-list" *ngIf="!loading && demandes.length > 0">
+      <div class="publication-card" *ngFor="let demande of demandes">
+        <!-- Avatar -->
+        <div class="publication-avatar">
+          <span class="avatar-letter">
+            {{ demande.auteur.nomUtilisateur.charAt(0) }}{{ demande.auteur.prenomUtilisateur.charAt(0) }}
+          </span>
+        </div>
+        
+        <!-- Informations -->
+        <div class="publication-info">
+          <h3 class="publication-title">{{ demande.titre }}</h3>
+          <p class="publication-author">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            {{ demande.auteur.nomUtilisateur }} {{ demande.auteur.prenomUtilisateur }}
+          </p>
+          <p class="publication-location">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span *ngIf="demande.ville">{{ demande.ville.nom }}</span>
+          </p>
+        </div>
 
-            <!-- Informations -->
-            <div class="flex-1">
-              <h3 class="font-bold text-base">{{ demande.titre }}</h3>
-              <p class="text-sm text-base-content/70">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                {{ demande.auteur.nomUtilisateur }} {{ demande.auteur.prenomUtilisateur }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Bouton Voir -->
-          <button (click)="openDetailModal(demande)" class="btn btn-primary btn-sm gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <!-- Actions -->
+        <div class="publication-actions">
+          <button class="btn-view" (click)="openDetailModal(demande)">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
-            Voir
+            Voir détails
           </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- État vide -->
-  <div *ngIf="!loading && demandes.length === 0" class="text-center py-16">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mx-auto text-base-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-    <h3 class="text-xl font-semibold text-base-content mb-2">Aucune demande en attente</h3>
-    <p class="text-base-content/70">Toutes les demandes ont été traitées</p>
   </div>
 </div>
 
-<!-- ============================================ -->
-<!-- MODAL: DÉTAILS DE LA DEMANDE -->
-<!-- ============================================ -->
-<dialog [class.modal-open]="showDetailModal" class="modal">
-  <div class="modal-box max-w-3xl">
-    <button (click)="closeDetailModal()" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+<!-- MODAL DÉTAILS -->
+<div *ngIf="showDetailModal" class="modal-overlay" (click)="closeDetailModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()" *ngIf="selectedDemande">
     
-    <h3 class="font-bold text-lg mb-4">Détails de la Publication</h3>
+    <!-- Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">Détails de la Demande</h3>
+      <button class="btn-close-modal" (click)="closeDetailModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
 
-    <div *ngIf="selectedDemande" class="space-y-4">
-      <!-- Type et Localisation -->
-      <div class="flex gap-4 items-center">
-        <div>
-          <span class="text-sm text-base-content/70">Type :</span>
-          <span class="badge badge-primary ml-2">DEMANDE</span>
+    <!-- Content -->
+    <div class="modal-content">
+      
+      <!-- Informations principales -->
+      <div class="info-section">
+        <h4 class="section-title">Informations générales</h4>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Titre</span>
+            <span class="info-value">{{ selectedDemande.titre }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Auteur</span>
+            <span class="info-value">{{ selectedDemande.auteur.nomUtilisateur }} {{ selectedDemande.auteur.prenomUtilisateur }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Téléphone</span>
+            <span class="info-value">{{ selectedDemande.auteur.telephone }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Type</span>
+            <span class="type-badge">DEMANDE</span>
+          </div>
+          <div class="info-item full-width">
+            <span class="info-label">Localisation</span>
+            <div class="location-badges">
+              <span class="location-badge">{{ selectedDemande.ville.nom }}</span>
+              <span class="location-badge">{{ selectedDemande.ville.pays.nom }} ({{ selectedDemande.ville.pays.code }})</span>
+            </div>
+          </div>
+          <div class="info-item full-width">
+            <span class="info-label">Date de création</span>
+            <span class="info-value">{{ formatDate(selectedDemande.createdAt) }}</span>
+          </div>
+          <div class="info-item full-width">
+            <span class="info-label">Description</span>
+            <p class="info-description">{{ selectedDemande.description }}</p>
+          </div>
         </div>
-      </div>
-
-      <div>
-        <span class="text-sm text-base-content/70">Localisation :</span>
-        <div class="flex gap-2 mt-1">
-          <span class="badge badge-outline">{{ selectedDemande.ville.nom }}</span>
-          <span class="badge badge-outline">{{ selectedDemande.ville.pays.nom }} ({{ selectedDemande.ville.pays.code }})</span>
-        </div>
-      </div>
-
-      <div>
-        <span class="text-sm text-base-content/70">Date de création :</span>
-        <span class="ml-2">{{ formatDate(selectedDemande.createdAt) }}</span>
-      </div>
-
-      <!-- Titre et Description -->
-      <div>
-        <h4 class="font-bold mb-2">{{ selectedDemande.titre }}</h4>
-        <p class="text-sm text-base-content/80">{{ selectedDemande.description }}</p>
       </div>
 
       <!-- Budget et Deadline -->
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <span class="text-sm text-base-content/70">Budget :</span>
-          <p class="font-semibold text-primary">{{ formatBudget(selectedDemande.demande.budgetMin, selectedDemande.demande.budgetMax) }}</p>
+      <div class="budget-section">
+        <h4 class="section-title">Budget et Délai</h4>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Budget</span>
+            <span class="info-value budget-value">{{ formatBudget(selectedDemande.demande.budgetMin, selectedDemande.demande.budgetMax) }}</span>
+          </div>
+          <div class="info-item" *ngIf="selectedDemande.demande.deadline">
+            <span class="info-label">Deadline</span>
+            <span class="info-value">{{ formatDate(selectedDemande.demande.deadline) }}</span>
+          </div>
+          <div class="info-item full-width">
+            <span class="info-label">Statut de la demande</span>
+            <span [class]="'status-badge ' + getStatutClass(selectedDemande.demande.statutDemande)">
+              {{ getStatutLabel(selectedDemande.demande.statutDemande) }}
+            </span>
+          </div>
         </div>
-        <div *ngIf="selectedDemande.demande.deadline">
-          <span class="text-sm text-base-content/70">Deadline :</span>
-          <p class="font-semibold">{{ formatDate(selectedDemande.demande.deadline) }}</p>
-        </div>
-      </div>
-
-      <!-- Statut de la demande -->
-      <div>
-        <span class="text-sm text-base-content/70">Statut de la demande :</span>
-        <span [class]="'badge ml-2 ' + getStatutBadgeClass(selectedDemande.demande.statutDemande)">
-          {{ getStatutLabel(selectedDemande.demande.statutDemande) }}
-        </span>
       </div>
 
       <!-- Photos -->
-      <div *ngIf="selectedDemande.images && selectedDemande.images.length > 0">
-        <h4 class="font-semibold mb-2">Photos de la demande</h4>
-        <div class="grid grid-cols-3 gap-2">
-          <img 
-            *ngFor="let image of selectedDemande.images" 
-            [src]="image.url" 
-            [alt]="selectedDemande.titre" 
-            class="w-full h-32 object-cover rounded-lg" />
+      <div class="photos-section" *ngIf="selectedDemande.images && selectedDemande.images.length > 0">
+        <h4 class="section-title">Photos de la demande ({{ selectedDemande.images.length }})</h4>
+        <div class="photos-grid">
+          <div *ngFor="let image of selectedDemande.images" class="photo-item">
+            <img [src]="image.url" [alt]="selectedDemande.titre">
+          </div>
         </div>
       </div>
 
-      <!-- Produits demandés -->
-      <div>
-        <h4 class="font-semibold mb-2">Produits de la demande</h4>
-        <div class="overflow-x-auto">
-          <table class="table table-sm">
+      <!-- Produits -->
+      <div class="products-section">
+        <h4 class="section-title">Produits demandés ({{ selectedDemande.demande.produits.length }})</h4>
+        <div class="products-table-wrapper">
+          <table class="products-table">
             <thead>
               <tr>
                 <th>Libellé</th>
                 <th>Catégorie</th>
-                <th>Quantité</th>
-                <th>Prix Unitaire</th>
-                <th>Total</th>
+                <th class="text-right">Quantité</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let produit of selectedDemande.demande.produits">
-                <td>{{ produit.nom }}</td>
-                <td>{{ produit.categorie.nom }}</td>
+                <td class="product-name">{{ produit.nom }}</td>
                 <td>
-                  <span *ngIf="produit.quantite" class="font-semibold">
+                  <span class="category-badge">{{ produit.categorie.nom }}</span>
+                </td>
+                <td class="text-right">
+                  <span *ngIf="produit.quantite" class="quantity-value">
                     {{ produit.quantite }} {{ produit.uniteMesure }}
                   </span>
-                  <span *ngIf="!produit.quantite">-</span>
+                  <span *ngIf="!produit.quantite" class="text-muted">Non spécifié</span>
                 </td>
-                <td colspan="2">-</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
+    </div>
 
-      <!-- Actions -->
-      <div class="flex gap-2 justify-end mt-6">
-        <button (click)="rejeterDemande(selectedDemande.id)" class="btn btn-error gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Rejeter
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="btn-modal-danger" (click)="openConfirmModal('REJETER')" [disabled]="loading">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        <span>Rejeter</span>
+      </button>
+      <button class="btn-modal-success" (click)="openConfirmModal('VALIDER')" [disabled]="loading">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Valider</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMATION -->
+<div *ngIf="showConfirmModal" class="modal-overlay">
+  <div class="modal-container small">
+    <div class="modal-content">
+      <h3 class="confirm-title">Confirmer l'action</h3>
+      
+      <div class="warning-banner" [ngClass]="actionType === 'VALIDER' ? 'success' : 'danger'">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <p>
+          Êtes-vous sûr de vouloir 
+          <strong>{{ actionType === 'VALIDER' ? 'valider' : 'rejeter' }}</strong>
+          cette demande ?
+        </p>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal-secondary" (click)="closeConfirmModal()" [disabled]="loading">
+          Annuler
         </button>
-        <button (click)="validerDemande(selectedDemande.id)" class="btn btn-success gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          Valider
+        <button 
+          [class.btn-modal-success]="actionType === 'VALIDER'"
+          [class.btn-modal-danger]="actionType === 'REJETER'"
+          (click)="confirmAction()"
+          [disabled]="loading">
+          <span *ngIf="!loading">Confirmer</span>
+          <span *ngIf="loading" class="loading-spinner-small"></span>
         </button>
       </div>
     </div>
   </div>
-  <form method="dialog" class="modal-backdrop" (click)="closeDetailModal()">
-    <button>close</button>
-  </form>
-</dialog>
+</div>

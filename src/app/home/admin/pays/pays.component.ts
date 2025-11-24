@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreatePaysDto, Pays, PaysService, UpdatePaysDto } from '../../../shared/services/pays.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { ToastComponent } from '../../../shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-pays',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ToastComponent],
   templateUrl: './pays.component.html',
   styleUrl: './pays.component.scss'
 })
@@ -40,6 +41,10 @@ export class PaysComponent implements OnInit {
     this.loadPays();
   }
 
+  // ==========================================
+  // CHARGEMENT DES DONNÉES
+  // ==========================================
+
   loadPays(): void {
     this.loading = true;
     this.paysService.getAll(this.currentPage, this.itemsPerPage, this.searchTerm).subscribe({
@@ -49,12 +54,16 @@ export class PaysComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des pays', error);
+        console.error('Erreur lors du chargement des pays:', error);
         this.loading = false;
         this.toastService.error('Erreur lors du chargement des pays');
       }
     });
   }
+
+  // ==========================================
+  // MODALS - AJOUT/ÉDITION
+  // ==========================================
 
   openAddModal(): void {
     this.isEditMode = false;
@@ -79,6 +88,10 @@ export class PaysComponent implements OnInit {
     this.selectedPays = null;
   }
 
+  // ==========================================
+  // MODAL SUPPRESSION
+  // ==========================================
+
   openDeleteModal(pays: Pays): void {
     this.selectedPays = pays;
     this.showDeleteModal = true;
@@ -89,6 +102,10 @@ export class PaysComponent implements OnInit {
     this.selectedPays = null;
   }
 
+  // ==========================================
+  // SOUMISSION DU FORMULAIRE
+  // ==========================================
+
   onSubmit(): void {
     if (this.paysForm.invalid) {
       this.paysForm.markAllAsTouched();
@@ -98,7 +115,7 @@ export class PaysComponent implements OnInit {
 
     const formData = {
       ...this.paysForm.value,
-      code: this.paysForm.value.code.toUpperCase()
+      code: this.paysForm.value.code.toUpperCase().trim()
     };
 
     if (this.isEditMode && this.selectedPays) {
@@ -111,15 +128,16 @@ export class PaysComponent implements OnInit {
   createPays(data: CreatePaysDto): void {
     this.loading = true;
     this.paysService.create(data).subscribe({
-      next: () => {
+      next: (response) => {
         this.toastService.success('Pays créé avec succès');
         this.closeModal();
         this.loadPays();
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Erreur lors de la création du pays', error);
+        console.error('Erreur lors de la création du pays:', error);
         this.loading = false;
-        this.toastService.error('Erreur lors de la création du pays');
+        this.toastService.error(error.error?.message || 'Erreur lors de la création du pays');
       }
     });
   }
@@ -127,15 +145,16 @@ export class PaysComponent implements OnInit {
   updatePays(id: number, data: UpdatePaysDto): void {
     this.loading = true;
     this.paysService.update(id, data).subscribe({
-      next: () => {
+      next: (response) => {
         this.toastService.success('Pays modifié avec succès');
         this.closeModal();
         this.loadPays();
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Erreur lors de la modification du pays', error);
+        console.error('Erreur lors de la modification du pays:', error);
         this.loading = false;
-        this.toastService.error('Erreur lors de la modification du pays');
+        this.toastService.error(error.error?.message || 'Erreur lors de la modification du pays');
       }
     });
   }
@@ -145,18 +164,23 @@ export class PaysComponent implements OnInit {
 
     this.loading = true;
     this.paysService.delete(this.selectedPays.id).subscribe({
-      next: () => {
+      next: (response) => {
         this.toastService.success('Pays supprimé avec succès');
         this.closeDeleteModal();
         this.loadPays();
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Erreur lors de la suppression du pays', error);
+        console.error('Erreur lors de la suppression du pays:', error);
         this.loading = false;
-        this.toastService.error('Erreur lors de la suppression du pays');
+        this.toastService.error(error.error?.message || 'Erreur lors de la suppression du pays');
       }
     });
   }
+
+  // ==========================================
+  // RECHERCHE
+  // ==========================================
 
   onSearch(): void {
     this.currentPage = 1;
@@ -167,13 +191,17 @@ export class PaysComponent implements OnInit {
     this.searchTerm = '';
     this.currentPage = 1;
     this.loadPays();
-    this.toastService.info('Recherche réinitialisée');
   }
+
+  // ==========================================
+  // PAGINATION
+  // ==========================================
 
   changePage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
       this.loadPays();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
@@ -193,6 +221,10 @@ export class PaysComponent implements OnInit {
     return pages;
   }
 
+  // ==========================================
+  // GETTERS
+  // ==========================================
+
   get nomControl() {
     return this.paysForm.get('nom');
   }
@@ -204,10 +236,11 @@ export class PaysComponent implements OnInit {
   get filteredPays(): Pays[] {
     if (!this.searchTerm) return this.pays;
     
-    const term = this.searchTerm.toLowerCase();
+    const term = this.searchTerm.toLowerCase().trim();
     return this.pays.filter(pays => 
       pays.nom.toLowerCase().includes(term) ||
-      pays.code.toLowerCase().includes(term)
+      pays.code.toLowerCase().includes(term) ||
+      pays.id.toString().includes(term)
     );
   }
 }
